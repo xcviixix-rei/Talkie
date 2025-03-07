@@ -1,15 +1,18 @@
 {
-    "name": "talkie",
-    "private": true,
-    "scripts": {
-        "start": "concurrently \"cd frontend && npx expo start\" \"cd backend && node server.js\"",
-        "dev:frontend": "cd frontend && npx expo start",
-        "dev:backend": "cd backend && node server.js"
-    },
-    "dependencies": {
-        "concurrently": "^8.2.0"
-    },
-    "devDependencies": {
-        "@types/react-native": "^0.73.0"
-    }
+  "name": "talkie",
+  "private": true,
+  "scripts": {
+    "start": "concurrently \"cd frontend && npx expo start\" \"cd backend && node server.js\"",
+    "dev:frontend": "cd frontend && npx expo start",
+    "dev:backend": "cd backend && node server.js"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.0",
+    "expo": "^52.0.37",
+    "expo-status-bar": "^2.0.1",
+    "talkie": "file:"
+  },
+  "devDependencies": {
+    "@types/react-native": "^0.73.0"
+  }
 }
