@@ -1,10 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import GoogleSign from './components/googleSign'
+import EmailSign from './components/emailSign';
 
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>Talkie talkie!</Text>
+      <GoogleSign />
+      {/* <EmailSign /> */}
       <StatusBar style="auto" />
     </View>
   );
