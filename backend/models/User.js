@@ -1,4 +1,3 @@
-// models/User.js
 import { doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase.js";
 
