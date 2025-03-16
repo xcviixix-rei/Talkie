@@ -2,12 +2,13 @@
     "name": "talkie",
     "private": true,
     "scripts": {
-        "start": "concurrently \"cd frontend && npx expo start\" \"cd backend && node server.js\"",
-        "dev:frontend": "cd frontend && npx expo start",
+        "start": "concurrently \"cd frontend && npx expo run:android\" \"cd backend && node server.js\"",
+        "dev:frontend": "cd frontend && npx expo run:android",
         "dev:backend": "cd backend && node server.js"
     },
     "dependencies": {
-        "concurrently": "^8.2.0"
+        "concurrently": "^8.2.0",
+        "talkie": "file:"
     },
     "devDependencies": {
         "@types/react-native": "^0.73.0"
