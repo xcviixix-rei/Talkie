@@ -4,7 +4,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
-import { auth } from "../config/firebaseConfig";
+import  auth  from "../config/firebaseConfig";
 import { signOut } from "@react-native-firebase/auth";
 
 export default function EmailSign() {
