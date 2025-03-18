@@ -9,7 +9,7 @@ import Loading from "../components/loading";
 
 export default function SignIn() {
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const emailRef = useRef("");
     const passwordRef = useRef("");
@@ -27,14 +27,16 @@ export default function SignIn() {
             <StatusBar style="dark" />
             <View style={{paddingTop: hp(8), paddingHorizontal: wp(5)}} className="flex-1 gap-12">
                 <View className="items-center">
-                    <Image style={{height: hp(20)}} resizeMode="contain" source={require(`../assets/images/icon.png`)} />
+                    <Image style={{height: hp(18.5)}} resizeMode="contain" source={require(`../assets/images/icon.png`)} />
                 </View>
                 <View className="gap-10">
-                    <Text style={{fontSize: hp (4)}} className="font-bold tracking-wider text-center text-neutral-800">Sign In</Text>
+                    <Text style={{fontSize: hp (4)}} className="font-bold tracking-wider text-center text-neutral-800">Welcome back!</Text>
                     {/* input */}
                     <View className="gap-4">
                         <View style={{height: hp(7)}} className="flex-row gap-4 px-4 bg-neutral-100 items-center rounded-2xl">
-                            <Octicons name="mail" size={hp(2.7)} color="gray" />
+                            <View style={{ width: hp(3), alignItems: 'center' }}>
+                                <Octicons name="mail" size={hp(2.7)} color="gray" />
+                            </View>
                             <TextInput
                                 onChangeText={value => emailRef.current = value}
                                 style={{fontSize: hp(2)}}
@@ -45,7 +47,9 @@ export default function SignIn() {
                         </View>
                         <View className="gap-3">
                             <View style={{height: hp(7)}} className="flex-row gap-4 px-4 bg-neutral-100 items-center rounded-2xl">
-                                <Octicons name="lock" size={hp(2.7)} color="gray" />
+                                <View style={{ width: hp(3), alignItems: 'center' }}>
+                                    <Octicons name="lock" size={hp(2.7)} color="gray" />
+                                </View>
                                 <TextInput
                                     onChangeText={value => passwordRef.current = value}
                                     style={{fontSize: hp(2)}}
@@ -64,7 +68,7 @@ export default function SignIn() {
                             {
                                 loading? (
                                     <View className="flex-row justify-center">
-                                        <Loading size={hp(6.5)} />
+                                        <Loading size={hp(7)} />
                                     </View>
                                 ):(
                                     <TouchableOpacity onPress={handleLogin} style={{height: hp(6.5)}} className="bg-indigo-500 rounded-xl justify-center items-center">
