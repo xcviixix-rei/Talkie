@@ -11,8 +11,6 @@ export const AuthContext = createContext();
 export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (user) => {
@@ -59,10 +57,10 @@ export const AuthContextProvider = ({ children }) => {
             const response = await createUserWithEmailAndPassword(auth, email, password);
             console.log("User registered successfully!");
 
-            /*await setDoc(doc(db, "users", response?.user?.uid), {
+            await setDoc(doc(db, "users", response?.user?.uid), {
                 username,
                 userId: response?.user?.uid,
-            });*/
+            });
             return {success: true, data: response?.user};
         }catch (e){
             let message = e.message;

@@ -5,11 +5,13 @@ import {useRouter} from "expo-router";
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from "react-native-responsive-screen";
 import {Octicons} from "@expo/vector-icons";
 import Loading from "../components/loading";
+import {useAuth} from "../context/authContext";
 
 
 export default function SignIn() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const { handleSignIn } = useAuth();
 
     const emailRef = useRef("");
     const passwordRef = useRef("");
@@ -20,6 +22,12 @@ export default function SignIn() {
         }
 
         // login process
+        setLoading(true);
+        const response = await handleSignIn(emailRef.current, passwordRef.current);
+        if (!response.success) {
+            Alert.alert('Sign In', response.data);
+        }
+        setLoading(false);
     }
 
     return(
