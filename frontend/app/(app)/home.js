@@ -1,10 +1,18 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View, Text } from "react-native";
+import {Pressable, Text, View} from "react-native";
 import React from "react";
-import {Slot, Stack} from "expo-router";
+import {useAuth} from "../../context/authContext";
+
 
 export default function Home() {
-    return(
-        <Text>Home</Text>
+    const {handleSignOut} = useAuth();
+    const signOut = async () => {
+        await handleSignOut();
+    }
+    return (
+        <View>
+            <Pressable onPress={signOut}>
+                <Text>signOut</Text>
+            </Pressable>
+        </View>
     )
 }

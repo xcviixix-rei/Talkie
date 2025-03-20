@@ -1,15 +1,19 @@
 import { StatusBar } from "expo-status-bar";
-import { View, Text, Image, TextInput, TouchableOpacity, Pressable, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Pressable, Alert } from "react-native";
 import React, {useRef, useState} from "react";
 import {useRouter} from "expo-router";
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from "react-native-responsive-screen";
 import {Feather, Octicons} from "@expo/vector-icons";
 import Loading from "../components/loading";
+import CustomKeyboardView from "../components/customKeyboardView";
+import {useAuth} from "../context/authContext";
+
 
 
 export default function SignUp() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const { handleSignUp } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
 
     const emailRef = useRef("");
@@ -20,17 +24,27 @@ export default function SignUp() {
     const handleRegister = async () => {
         if (!emailRef.current || !passwordRef.current || !usernameRef.current) {
             Alert.alert("Please fill in all fields");
+            return;
         }
 
         if (passwordRef.current !== passwordConfirmRef.current) {
             Alert.alert("Password does not match");
+            return;
         }
 
         // register process
+        setLoading(true);
+        let response = await  handleSignUp(usernameRef.current, emailRef.current, passwordRef.current);
+        setLoading(false);
+
+        console.log('signUp', response);
+        if (!response.success) {
+            Alert.alert("Error", response.data);
+        }
     }
 
     return(
-        <View className="flex-1">
+        <CustomKeyboardView>
             <StatusBar style="dark" />
             <View style={{paddingTop: hp(18), paddingHorizontal: wp(5)}} className="flex-1 gap-12">
 
@@ -122,6 +136,6 @@ export default function SignUp() {
                     </View>
                 </View>
             </View>
-        </View>
+        </CustomKeyboardView>
     )
 }

@@ -1,46 +1,83 @@
 import {createContext, useEffect, useState, useContext} from "react";
 
+import {signInWithEmailAndPassword, createUserWithEmailAndPassword,} from "firebase/auth";
+import  auth  from "../config/firebaseConfig";
+import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
+import {doc, addDoc, getDoc, setDoc, getDocs, collection} from "firebase/firestore";
+import db from "../config/firebaseConfig";
+
 export const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
-
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     useEffect(() => {
-        // onAuthStateChanged
+        const unsub = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setIsAuthenticated(true);
+                setUser(user);
+            }else{
+                setIsAuthenticated(false);
+                setUser(null);
+            }
+            return unsub;
+        });
 
         setTimeout(() => {
             setIsAuthenticated(false);
         })
     },[])
 
-    const login = async (email, password) => {
+    const handleSignIn = async (email, password) => {
         try {
-
+            const response = await signInWithEmailAndPassword(auth, email, password);
+            console.log("User logged in!");
         }catch (e){
+            let message = e.message;
+            if (message.includes("(auth/invalid-credential)")) {
+                message = "Invalid email or password";
+            }
+            return {success: false, data: message};
+        }
+    }
+
+    const handleSignOut = async () => {
+        try {
+            await signOut(auth);
+            return {success: true, data: "User signed out successfully!"};
+        }catch (e){
+            return {success: false, data: e.message};
 
         }
     }
 
-    const logout = async (email, password) => {
+    const handleSignUp = async (username, email, password) => {
         try {
+            const response = await createUserWithEmailAndPassword(auth, email, password);
+            console.log("User registered successfully!");
 
+            /*await setDoc(doc(db, "users", response?.user?.uid), {
+                username,
+                userId: response?.user?.uid,
+            });*/
+            return {success: true, data: response?.user};
         }catch (e){
-
-        }
-    }
-
-    const register = async (email, password) => {
-        try {
-
-        }catch (e){
-
+            let message = e.message;
+            if (message.includes("(auth/invalid-email)")) {
+                message = "Invalid email";
+            }
+            if (message.includes("(auth/email-already-in-use)")) {
+                message = "Email already in use";
+            }
+            return {success: false, data: message};
         }
     }
 
     return (
-        <AuthContext.Provider value={{user, isAuthenticated, login, logout, register}}>
+        <AuthContext.Provider value={{user, isAuthenticated, handleSignIn, handleSignOut , handleSignUp}}>
             {children}
         </AuthContext.Provider>
     )
