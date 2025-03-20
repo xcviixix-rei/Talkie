@@ -8,13 +8,13 @@ dotenv.config();
 import "./firebase.js";
 
 // Import routes
-import userRoutes from "./controller/users.js";
-import conversationRoutes from "./controller/conversations.js";
-import messageRoutes from "./controller/messages.js";
-import notificationRoutes from "./controller/notifications.js";
-import typingIndicatorRoutes from "./controller/typingIndicators.js";
-import readReceiptRoutes from "./controller/readReceipts.js";
-import callRoutes from "./controller/calls.js";
+import userRoutes from "./controllers/users.js";
+import conversationRoutes from "./controllers/conversations.js";
+import messageRoutes from "./controllers/messages.js";
+import notificationRoutes from "./controllers/notifications.js";
+import typingIndicatorRoutes from "./controllers/typingIndicators.js";
+import readReceiptRoutes from "./controllers/readReceipts.js";
+import callRoutes from "./controllers/calls.js";
 
 const app = express();
 
