@@ -21,7 +21,7 @@ export default function ConversationHeader({ item, router }) {
               <Entypo name="chevron-left" size={hp(4)} color="#737373" />
             </TouchableOpacity>
             <Image
-              source={item?.profileUrl || require("../assets/icon.png")}
+              source={item?.profileUrl || require("../assets/images/icon.png")}
               style={styles.profileImage}
             />
           </View>

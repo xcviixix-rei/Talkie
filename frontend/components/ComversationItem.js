@@ -95,7 +95,7 @@ export default function ConversationItem({
       style={[styles.container, noBorder && styles.noBorder]}
     >
       <Image
-        source={item?.profileUrl || require("../assets/icon.png")}
+        source={item?.profileUrl || require("../assets/images/icon.png")}
         style={styles.image}
       />
       <View style={styles.textContainer}>

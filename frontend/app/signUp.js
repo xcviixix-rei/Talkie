@@ -4,8 +4,8 @@ import React, {useRef, useState} from "react";
 import {useRouter} from "expo-router";
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from "react-native-responsive-screen";
 import {Feather, Octicons} from "@expo/vector-icons";
-import Loading from "../components/loading";
-import CustomKeyboardView from "../components/customKeyboardView";
+import Loading from "../components/Loading";
+import CustomKeyboardView from "../components/CustomKeyboardView";
 import {useAuth} from "../context/authContext";
 
 

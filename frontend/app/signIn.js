@@ -4,7 +4,7 @@ import React, {useRef, useState} from "react";
 import {useRouter} from "expo-router";
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from "react-native-responsive-screen";
 import {Octicons} from "@expo/vector-icons";
-import Loading from "../components/loading";
+import Loading from "../components/Loading";
 import {useAuth} from "../context/authContext";
 
 

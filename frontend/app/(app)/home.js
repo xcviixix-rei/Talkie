@@ -13,17 +13,17 @@ export default function Home() {
   const [users, setusers] = useState([
     {
       username: "duc",
-      profileUrl: require("../../assets/conech.jpg"),
+      profileUrl: require("../../assets/images/conech.jpg"),
       userId: "1",
     },
     {
       username: "phong",
-      profileUrl: require("../../assets/phuthuy.jpg"),
+      profileUrl: require("../../assets/images/phuthuy.jpg"),
       userId: "2",
     },
     {
       username: "dat",
-      profileUrl: require("../../assets/conrong.jpg"),
+      profileUrl: require("../../assets/images/conrong.jpg"),
       userId: "3",
     },
   ]);
