@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 android/
+my-expo-app/
 
 # Expo
 .expo/
