@@ -127,7 +127,7 @@ export default function GoogleSign() {
                 <Text>You are currently logged out</Text>
               ) : (
                 <View>
-                  <Text>Welcome {user.displayName}</Text>
+                  {/* <Text>Welcome {user.displayName}</Text> */}
                   <Text>Email: {user.email}</Text>
                   <Button onPress={handleSignOut} title="LogOut" color="red" />
                 </View>
