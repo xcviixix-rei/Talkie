@@ -1,15 +1,18 @@
 import ConversationList from "../../components/ConversationList";
 import { useState, useEffect } from "react";
 import { View, StatusBar, ActivityIndicator } from "react-native";
-// import "../global.css";
+import { useRouter } from "expo-router";
+import { useAuth } from "../../context/authContext";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+import { db } from "../../config/firebaseConfig";
 
 export default function Home() {
-  //const { logout, user } = useauth();
-  user = {
-    username: "manh",
-    // profileUrl: require("../assets/conech.jpg"),
-    userId: "1",
-  };
+  const router = useRouter();
+  const { user } = useAuth();
+
   const [users, setusers] = useState([
     {
       username: "duc",
@@ -36,14 +39,14 @@ export default function Home() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <StatusBar style="light" />
       {users.length > 0 ? (
         <ConversationList users={users} currentUser={user} />
       ) : (
         <View className="flex item-center">
           <ActivityIndicator size="large" />
-          {/*<loading size={hp(10)}/>*/}
+          <loading size={hp(10)} />
         </View>
       )}
     </View>

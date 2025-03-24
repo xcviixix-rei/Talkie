@@ -13,6 +13,7 @@ import CustomKeyboardView from "../../components/CustomKeyboardView";
 import { Ionicons } from "@expo/vector-icons";
 import { getconversationId } from "../../utils/common";
 import { db } from "../../config/firebaseConfig";
+import { useAuth } from "../../context/authContext";
 import {
   Timestamp,
   collection,
@@ -26,11 +27,7 @@ import {
 export default function Conversation() {
   const item = useLocalSearchParams();
   const router = useRouter();
-  user = {
-    username: "manh",
-    // profileUrl: require("../assets/conech.jpg"),
-    userId: "1",
-  };
+  const { user } = useAuth();
   const [messages, setMessages] = useState([
     {
       username: "manh",
@@ -236,27 +233,26 @@ export default function Conversation() {
     if (!message) return;
     if (inputRef) inputRef?.current?.clear();
 
-    // try {
-    //   let conversationId = getConversationId([user, ...item]);
-    //   const docRef = doc(db, "conversations");
-    //   const messageRef = collection(docRef, "message");
+    try {
+      let conversationId = getConversationId([user, ...item]);
+      const docRef = doc(db, "conversations");
+      const messageRef = collection(docRef, "message");
 
-    //   const newDoc = await addDoc(messageRef, {
-    //     userId: user?.userId,
-    //     message: message,
-    //     userfileUrl: user?.userfileUrl,
-    //     senderName: User?.userName,
-    //     createdAt: Timestamp.fromDate(new Date()),
-    //   });
-    // } catch (err) {
-    //   Alert.alert("Message", err.message);
-    // }
+      const newDoc = await addDoc(messageRef, {
+        userId: user?.userId,
+        message: message,
+        userfileUrl: user?.userfileUrl,
+        senderName: user?.userName,
+        createdAt: Timestamp.fromDate(new Date()),
+      });
+    } catch (err) {
+      Alert.alert("Message", err.message);
+    }
   };
 
   return (
     <CustomKeyboardView inChat={true}>
       <View style={styles.container}>
-        {/* <StatusBar style="dark" /> */}
         <ConversationHeader item={item} router={router} />
         <View style={styles.header} />
         <View style={styles.main}>
