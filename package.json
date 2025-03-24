@@ -1,19 +1,26 @@
 {
-    "name": "talkie",
-    "private": true,
-    "scripts": {
-        "start": "concurrently \"cd frontend && npx expo run:android\" \"cd backend && node server.js\"",
-        "dev:frontend": "cd frontend && npx expo run:android",
-        "dev:backend": "cd backend && node server.js"
-    },
-    "dependencies": {
-        "concurrently": "^8.2.0",
-        "dotenv": "^16.4.7",
-        "firebase": "^11.4.0",
-        "react-native-dotenv": "^3.4.11",
-        "talkie": "file:"
-    },
-    "devDependencies": {
-        "@types/react-native": "^0.73.0"
-    }
+  "name": "talkie",
+  "private": true,
+  "scripts": {
+    "start": "concurrently \"cd frontend && npx expo run:android\" \"cd backend && node server.js\"",
+    "dev:frontend": "cd frontend && npx expo run:android",
+    "dev:backend": "cd backend && node server.js",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.0",
+    "dotenv": "^16.4.7",
+    "expo": "^52.0.39",
+    "firebase": "^11.4.0",
+    "react-native-dotenv": "^3.4.11",
+    "talkie": "file:",
+    "react": "18.3.1",
+    "react-native": "0.76.7",
+    "react-native-responsive-screen": "^1.4.2"
+  },
+  "devDependencies": {
+    "@types/react-native": "^0.73.0"
+  },
+  "version": "1.0.0"
 }
