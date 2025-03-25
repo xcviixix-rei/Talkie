@@ -13,7 +13,7 @@ const MainLayout = () => {
     const inApp = segments[0] === "(app)";
     const redirect = () => {
       if (isAuthenticated && !inApp) {
-        router.replace("/home");
+        router.replace("/callscreen");
       } else if (!isAuthenticated) {
         router.replace("/signIn");
       }
