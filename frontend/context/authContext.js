@@ -13,21 +13,19 @@ export const AuthContextProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
 
     useEffect(() => {
-        const unsub = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setIsAuthenticated(true);
                 setUser(user);
-            }else{
+            } else {
                 setIsAuthenticated(false);
                 setUser(null);
             }
-            return unsub;
         });
 
-        setTimeout(() => {
-            setIsAuthenticated(false);
-        })
-    },[])
+        // Cleanup subscription khi component unmount
+        return () => unsubscribe();
+    }, []); // Dependency array rỗng để chạy một lần khi mount
 
     const handleSignIn = async (email, password) => {
         try {
