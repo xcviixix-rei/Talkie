@@ -6,18 +6,20 @@
     "dev:frontend": "cd frontend && npx expo run:android",
     "dev:backend": "cd backend && node server.js",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "emu": "emulator -avd phone1 -no-snapshot-load"
   },
   "dependencies": {
     "concurrently": "^8.2.0",
     "dotenv": "^16.4.7",
     "expo": "^52.0.39",
     "firebase": "^11.4.0",
-    "react-native-dotenv": "^3.4.11",
-    "talkie": "file:",
     "react": "18.3.1",
     "react-native": "0.76.7",
-    "react-native-responsive-screen": "^1.4.2"
+    "react-native-dotenv": "^3.4.11",
+    "react-native-responsive-screen": "^1.4.2",
+    "react-native-svg": "^15.11.2",
+    "talkie": "file:"
   },
   "devDependencies": {
     "@types/react-native": "^0.73.0"
