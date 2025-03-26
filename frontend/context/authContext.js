@@ -1,10 +1,8 @@
 import {createContext, useEffect, useState, useContext} from "react";
-
 import {signInWithEmailAndPassword, createUserWithEmailAndPassword,} from "firebase/auth";
 import  auth  from "../config/firebaseConfig";
 import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
-import {doc, addDoc, getDoc, setDoc, getDocs, collection} from "firebase/firestore";
-import db from "../config/firebaseConfig";
+
 
 export const AuthContext = createContext();
 
@@ -53,13 +51,33 @@ export const AuthContextProvider = ({ children }) => {
     const handleSignUp = async (username, email, password) => {
         try {
             const response = await createUserWithEmailAndPassword(auth, email, password);
+            console.log(response);
             console.log("User registered successfully!");
-
-            await setDoc(doc(db, "users", response?.user?.uid), {
+            const id = response.user.uid;
+            const full_name = username;
+            const userData = {
+                id,
                 username,
-                userId: response?.user?.uid,
+                full_name,
+                profile_pic: "https://www.gravatar.com/avatar/?d=identicon",
+                status: "Active",
+                contacts: [],
+                created_at: new Date().toISOString()
+            };
+            const apiResponse = await fetch('http://localhost:5000/api/users/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData)
             });
-            return {success: true, data: response?.user};
+            if (!apiResponse.ok) {
+                throw new Error(`API Error: ${apiResponse.status}`);
+            }
+
+
+
+
         }catch (e){
             let message = e.message;
             if (message.includes("(auth/invalid-email)")) {
