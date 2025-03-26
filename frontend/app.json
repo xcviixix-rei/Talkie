@@ -27,6 +27,16 @@
       "favicon": "./assets/images/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-router"]
+    "plugins": [
+      "expo-router",
+      [
+        "expo-font",
+        {
+          "fonts": ["node_modules/@expo-google-fonts/balsamiq-sans/BalsamiqSans_700Bold.ttf"]
+        }
+      ]
+
+
+    ]
   }
 }
