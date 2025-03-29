@@ -27,16 +27,58 @@ export const AuthContextProvider = ({ children }) => {
 
     const handleSignIn = async (email, password) => {
         try {
+            // 1. Sign in with Firebase Authentication
             const response = await signInWithEmailAndPassword(auth, email, password);
-            console.log("User logged in!");
-        }catch (e){
+            console.log("User logged in successfully!", response);
+
+            // 2. Get the user's unique ID from Firebase
+            const userId = response.user.uid;
+
+            // 3. Fetch user info from your backend API
+            const apiResponse = await fetch(`http://localhost:5000/api/users/${userId}`,
+                {
+                    method: 'GET',
+                });
+
+            if (!apiResponse.ok) {
+                throw new Error(`Failed to fetch user data: ${apiResponse.status}`);
+            }
+
+            const userData = await apiResponse.json();
+            console.log("User data fetched successfully!", userData);
+
+            // 4. Return success with user data
+            return {
+                success: true,
+                data: {
+                    message: "Login successful",
+                    user: userData
+                }
+            };
+
+        } catch (e) {
             let message = e.message;
+
+            // Handle common Firebase errors
             if (message.includes("(auth/invalid-credential)")) {
                 message = "Invalid email or password";
+            } else if (message.includes("(auth/user-not-found)")) {
+                message = "User not found";
+            } else if (message.includes("(auth/wrong-password)")) {
+                message = "Incorrect password";
+            } else if (message.includes("(auth/too-many-requests)")) {
+                message = "Too many attempts. Try again later";
+            } else if (message.includes("(auth/user-disabled)")) {
+                message = "This account has been disabled";
             }
-            return {success: false, data: message};
+
+            console.error("Login error:", e);
+            return {
+                success: false,
+                error: message,
+            };
         }
-    }
+    };
 
     const handleSignOut = async () => {
         try {
@@ -76,9 +118,13 @@ export const AuthContextProvider = ({ children }) => {
             }
 
 
+            // 4. Return success if everything worked
+            return {
+                success: true, data: "User registered successfully!"
+            };
 
 
-        }catch (e){
+            }catch (e){
             let message = e.message;
             if (message.includes("(auth/invalid-email)")) {
                 message = "Invalid email";
