@@ -1,5 +1,8 @@
 import express from "express";
+import { query, getDocs, where } from "firebase/firestore";
 import { User } from "../models/User.js";
+import { Conversation } from "../models/Conversation.js";
+
 
 const router = express.Router();
 
@@ -22,6 +25,31 @@ router.get("/", async (req, res) => {
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+// Get conversations for a specific user
+router.get("/:id/conversations", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.get(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const userConversationsQuery = query(
+      Conversation.collectionRef(),
+      where("participants", "array-contains", { user_id: id, username: user.username })
+    );
+    const querySnapshot = await getDocs(userConversationsQuery);
+    const conversations = [];
+    querySnapshot.forEach((docSnap) => {
+      conversations.push(new Conversation({ id: docSnap.id, ...docSnap.data() }));
+    });
+    res.json(conversations);
+  } catch (error) {
+    console.error("Error fetching conversations for user:", error);
+    res.status(500).json({ error: "Failed to fetch conversations" });
   }
 });
 
