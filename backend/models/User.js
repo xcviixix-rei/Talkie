@@ -19,11 +19,17 @@ export class User {
   static async create(data) {
     const { id, ...rest } = data;
     
+    // Check if a user with the same username already exists
+    const q = query(User.collectionRef(), where("username", "==", username));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      throw new Error("Username already exists");
+    }
+    
     const timeoutMs = 5000; // Timeout after 5 seconds
 
     const operation = (async () => {
       if (!id) {
-        console.log(rest);
         await addDoc(collection(db, "users"), rest);
         return new User(data);
       }
@@ -37,13 +43,6 @@ export class User {
 
     // Return whichever completes first: the Firestore operation or the timeout.
     return Promise.race([operation, timeoutPromise]);
-    if (!id) {
-      console.log(rest);
-      await addDoc(collection(db, "users"), rest);
-      return new User(data);
-    }
-    await setDoc(doc(db, "users", id), rest);
-    return new User(data);
   }
 
   static async get(id) {

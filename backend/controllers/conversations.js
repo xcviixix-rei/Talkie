@@ -1,5 +1,7 @@
 import express from "express";
+import { query, where, getDocs } from "firebase/firestore";
 import { Conversation } from "../models/Conversation.js";
+import { Message } from "../models/Message.js";
 
 const router = express.Router();
 
@@ -59,6 +61,59 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     console.error("Error deleting conversation:", error);
     res.status(500).json({ error: "Failed to delete conversation" });
+  }
+});
+
+
+
+
+// Get messages in a conversation that include specific content in their text
+router.get("/:conversationId/messages/search", async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { query: searchQuery } = req.query;
+    if (!searchQuery) {
+      return res.status(400).json({ error: "Search query required" });
+    }
+
+    // Query messages filtered by conversationId
+    const messagesQuery = query(
+      Message.collectionRef(),
+      where("conversation_id", "==", conversationId)
+    );
+    const querySnapshot = await getDocs(messagesQuery);
+    const messages = [];
+    
+    // Filter messages locally by checking if text includes the search query
+    querySnapshot.forEach((docSnap) => {
+      const messageData = docSnap.data();
+      if (messageData.text && messageData.text.includes(searchQuery)) {
+        messages.push(new Message({ id: docSnap.id, ...messageData }));
+      }
+    });
+
+    res.json(messages);
+  } catch (error) {
+    console.error("Error searching messages in conversation:", error);
+    res.status(500).json({ error: "Failed to search messages" });
+  }
+});
+
+
+
+// Get a specific message inside a conversation
+router.get("/:conversationId/messages/:messageId", async (req, res) => {
+  try {
+    const { conversationId, messageId } = req.params;
+    const message = await Message.get(messageId);
+    if (message && message.conversation_id === conversationId) {
+      res.json(message);
+    } else {
+      res.status(404).json({ error: "Message not found in the conversation" });
+    }
+  } catch (error) {
+    console.error("Error fetching message in conversation:", error);
+    res.status(500).json({ error: "Failed to fetch message" });
   }
 });
 
