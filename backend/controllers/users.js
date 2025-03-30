@@ -28,6 +28,39 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Search for a user by username
+router.get("/search", async (req, res) => {
+  try {
+    const { username } = req.query;
+    if (!username) {
+      return res.status(400).json({ error: "Username query parameter is required" });
+    }
+    // Create a query to find user with the provided username
+    const userQuery = query(
+      User.collectionRef(),
+      // where("username", "==", username)
+    );
+    const querySnapshot = await getDocs(userQuery);
+    const users = [];
+    querySnapshot.forEach((docSnap) => {
+      const userData = docSnap.data();
+      if (
+        userData.username &&
+        userData.username.toLowerCase().includes(username.toLowerCase())
+      ) {
+        users.push(new User({ id: docSnap.id, ...userData }));
+      }
+    });
+    if (users.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json(users);
+  } catch (error) {
+    console.error("Error searching user by username:", error);
+    res.status(500).json({ error: "Failed to search user" });
+  }
+});
+
 // Get conversations for a specific user
 router.get("/:id/conversations", async (req, res) => {
   try {
