@@ -37,7 +37,6 @@ export default function SignUp() {
         let response = await  handleSignUp(usernameRef.current, emailRef.current, passwordRef.current);
         setLoading(false);
 
-        console.log('signUp', response);
         if (!response.success) {
             Alert.alert("Error", response.data);
         }

@@ -1,44 +1,78 @@
-import {createContext, useEffect, useState, useContext} from "react";
-
-import {signInWithEmailAndPassword, createUserWithEmailAndPassword,} from "firebase/auth";
-import  auth  from "../config/firebaseConfig";
+import {createContext, useContext, useEffect, useState} from "react";
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword,} from "firebase/auth";
+import auth from "../config/firebaseConfig";
 import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
-import {doc, addDoc, getDoc, setDoc, getDocs, collection} from "firebase/firestore";
-import db from "../config/firebaseConfig";
+
 
 export const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
+        return onAuthStateChanged(auth, async (firebaseUser) => {
+            setIsLoading(true);
+            if (firebaseUser) {
+
+                const userData = await fetchUserData(firebaseUser.uid);
+                setUser({
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    emailVerified: firebaseUser.emailVerified,
+
+                    username: userData?.username || '',
+                    profile_pic: userData?.profile_pic || '',
+                    status: userData?.status || 'offline',
+                    contacts: userData?.contacts || [],
+                });
                 setIsAuthenticated(true);
-                setUser(user);
             } else {
                 setIsAuthenticated(false);
                 setUser(null);
             }
+            setIsLoading(false);
         });
+    }, []);
 
-        // Cleanup subscription khi component unmount
-        return () => unsubscribe();
-    }, []); // Dependency array rỗng để chạy một lần khi mount
+
+    const fetchUserData = async (userID) => {
+        try {
+            const response = await fetch(`http://10.0.2.2:5000/api/users/${userID}`,
+                {
+                    method: 'GET',
+                });
+            return await response.json();
+        } catch (error) {
+            console.error("Fetch user data failed:", error);
+            return {};
+        }
+    };
 
     const handleSignIn = async (email, password) => {
         try {
-            const response = await signInWithEmailAndPassword(auth, email, password);
-            console.log("User logged in!");
-        }catch (e){
+            await signInWithEmailAndPassword(auth, email, password);
+            return {
+                success: true,
+            };
+
+        } catch (e) {
             let message = e.message;
+
             if (message.includes("(auth/invalid-credential)")) {
                 message = "Invalid email or password";
+            } else if (message.includes("(auth/user-not-found)")) {
+                message = "User not found";
             }
-            return {success: false, data: message};
+
+            console.error("Login error:", e);
+            return {
+                success: false,
+                error: message,
+            };
         }
-    }
+    };
 
     const handleSignOut = async () => {
         try {
@@ -53,14 +87,31 @@ export const AuthContextProvider = ({ children }) => {
     const handleSignUp = async (username, email, password) => {
         try {
             const response = await createUserWithEmailAndPassword(auth, email, password);
-            console.log("User registered successfully!");
-
-            await setDoc(doc(db, "users", response?.user?.uid), {
+            const id = response.user.uid;
+            const full_name = username;
+            const userData = {
+                id,
                 username,
-                userId: response?.user?.uid,
+                full_name,
+                profile_pic: "https://www.gravatar.com/avatar/?d=identicon",
+                status: "Active",
+                contacts: [],
+                created_at: new Date().toISOString()
+            };
+            await fetch('http://10.0.2.2:5000/api/users/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(userData)
             });
-            return {success: true, data: response?.user};
-        }catch (e){
+
+            return {
+                success: true
+            };
+
+            }catch (e){
             let message = e.message;
             if (message.includes("(auth/invalid-email)")) {
                 message = "Invalid email";
