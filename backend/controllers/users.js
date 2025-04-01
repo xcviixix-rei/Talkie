@@ -1,5 +1,8 @@
 import express from "express";
+import { query, getDocs, where } from "firebase/firestore";
 import { User } from "../models/User.js";
+import { Conversation } from "../models/Conversation.js";
+
 
 const router = express.Router();
 
@@ -22,6 +25,64 @@ router.get("/", async (req, res) => {
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+// Search for a user by username
+router.get("/search", async (req, res) => {
+  try {
+    const { username } = req.query;
+    if (!username) {
+      return res.status(400).json({ error: "Username query parameter is required" });
+    }
+    // Create a query to find user with the provided username
+    const userQuery = query(
+      User.collectionRef(),
+      // where("username", "==", username)
+    );
+    const querySnapshot = await getDocs(userQuery);
+    const users = [];
+    querySnapshot.forEach((docSnap) => {
+      const userData = docSnap.data();
+      if (
+        userData.username &&
+        userData.username.toLowerCase().includes(username.toLowerCase())
+      ) {
+        users.push(new User({ id: docSnap.id, ...userData }));
+      }
+    });
+    if (users.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json(users);
+  } catch (error) {
+    console.error("Error searching user by username:", error);
+    res.status(500).json({ error: "Failed to search user" });
+  }
+});
+
+// Get conversations for a specific user
+router.get("/:id/conversations", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.get(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    const userConversationsQuery = query(
+      Conversation.collectionRef(),
+      where("participants", "array-contains", { user_id: id, username: user.username })
+    );
+    const querySnapshot = await getDocs(userConversationsQuery);
+    const conversations = [];
+    querySnapshot.forEach((docSnap) => {
+      conversations.push(new Conversation({ id: docSnap.id, ...docSnap.data() }));
+    });
+    res.json(conversations);
+  } catch (error) {
+    console.error("Error fetching conversations for user:", error);
+    res.status(500).json({ error: "Failed to fetch conversations" });
   }
 });
 
