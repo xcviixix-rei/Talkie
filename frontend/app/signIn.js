@@ -25,7 +25,7 @@ export default function SignIn() {
         setLoading(true);
         const response = await handleSignIn(emailRef.current, passwordRef.current);
         if (!response.success) {
-            Alert.alert('Sign In', response.data);
+            Alert.alert('Sign In', response.error);
         }
         setLoading(false);
     }
