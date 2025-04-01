@@ -1,6 +1,6 @@
-import {createContext, useEffect, useState, useContext} from "react";
-import {signInWithEmailAndPassword, createUserWithEmailAndPassword,} from "firebase/auth";
-import  auth  from "../config/firebaseConfig";
+import {createContext, useContext, useEffect, useState} from "react";
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword,} from "firebase/auth";
+import auth from "../config/firebaseConfig";
 import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
 
 
@@ -9,67 +9,61 @@ export const AuthContext = createContext();
 export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (user) {
+        return onAuthStateChanged(auth, async (firebaseUser) => {
+            setIsLoading(true);
+            if (firebaseUser) {
+
+                const userData = await fetchUserData(firebaseUser.uid);
+                setUser({
+                    uid: firebaseUser.uid,
+                    email: firebaseUser.email,
+                    emailVerified: firebaseUser.emailVerified,
+
+                    username: userData?.username || '',
+                    profile_pic: userData?.profile_pic || '',
+                    status: userData?.status || 'offline',
+                    contacts: userData?.contacts || [],
+                });
                 setIsAuthenticated(true);
-                setUser(user);
             } else {
                 setIsAuthenticated(false);
                 setUser(null);
             }
+            setIsLoading(false);
         });
+    }, []);
 
-        // Cleanup subscription khi component unmount
-        return () => unsubscribe();
-    }, []); // Dependency array rỗng để chạy một lần khi mount
 
-    const handleSignIn = async (email, password) => {
+    const fetchUserData = async (userID) => {
         try {
-            // 1. Sign in with Firebase Authentication
-            const response = await signInWithEmailAndPassword(auth, email, password);
-            console.log("User logged in successfully!", response);
-
-            // 2. Get the user's unique ID from Firebase
-            const userId = response.user.uid;
-
-            // 3. Fetch user info from your backend API
-            const apiResponse = await fetch(`http://localhost:5000/api/users/${userId}`,
+            const response = await fetch(`http://10.0.2.2:5000/api/users/${userID}`,
                 {
                     method: 'GET',
                 });
+            return await response.json();
+        } catch (error) {
+            console.error("Fetch user data failed:", error);
+            return {};
+        }
+    };
 
-            if (!apiResponse.ok) {
-                throw new Error(`Failed to fetch user data: ${apiResponse.status}`);
-            }
-
-            const userData = await apiResponse.json();
-            console.log("User data fetched successfully!", userData);
-
-            // 4. Return success with user data
+    const handleSignIn = async (email, password) => {
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
             return {
                 success: true,
-                data: {
-                    message: "Login successful",
-                    user: userData
-                }
             };
 
         } catch (e) {
             let message = e.message;
 
-            // Handle common Firebase errors
             if (message.includes("(auth/invalid-credential)")) {
                 message = "Invalid email or password";
             } else if (message.includes("(auth/user-not-found)")) {
                 message = "User not found";
-            } else if (message.includes("(auth/wrong-password)")) {
-                message = "Incorrect password";
-            } else if (message.includes("(auth/too-many-requests)")) {
-                message = "Too many attempts. Try again later";
-            } else if (message.includes("(auth/user-disabled)")) {
-                message = "This account has been disabled";
             }
 
             console.error("Login error:", e);
@@ -93,8 +87,6 @@ export const AuthContextProvider = ({ children }) => {
     const handleSignUp = async (username, email, password) => {
         try {
             const response = await createUserWithEmailAndPassword(auth, email, password);
-            console.log(response);
-            console.log("User registered successfully!");
             const id = response.user.uid;
             const full_name = username;
             const userData = {
@@ -106,23 +98,18 @@ export const AuthContextProvider = ({ children }) => {
                 contacts: [],
                 created_at: new Date().toISOString()
             };
-            const apiResponse = await fetch('http://localhost:5000/api/users/', {
+            await fetch('http://10.0.2.2:5000/api/users/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(userData)
             });
-            if (!apiResponse.ok) {
-                throw new Error(`API Error: ${apiResponse.status}`);
-            }
 
-
-            // 4. Return success if everything worked
             return {
-                success: true, data: "User registered successfully!"
+                success: true
             };
-
 
             }catch (e){
             let message = e.message;
