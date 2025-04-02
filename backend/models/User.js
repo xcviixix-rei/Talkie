@@ -1,5 +1,6 @@
 import { doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase.js";
+import { query, getDocs, where } from "firebase/firestore";
 
 export class User {
   constructor({ id, username, full_name, profile_pic, status, contacts, created_at }) {
