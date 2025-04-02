@@ -12,21 +12,23 @@ export const AuthContextProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        return onAuthStateChanged(auth, async (firebaseUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             setIsLoading(true);
             if (firebaseUser) {
-
                 const userData = await fetchUserData(firebaseUser.uid);
-                setUser({
+                const newUser = {
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
                     emailVerified: firebaseUser.emailVerified,
-
                     username: userData?.username || '',
                     profile_pic: userData?.profile_pic || '',
                     status: userData?.status || 'offline',
                     contacts: userData?.contacts || [],
-                });
+                };
+                if (JSON.stringify(newUser) !== JSON.stringify(user)) {
+                    console.log("user", newUser);
+                    setUser(newUser);
+                }
                 setIsAuthenticated(true);
             } else {
                 setIsAuthenticated(false);
@@ -34,7 +36,9 @@ export const AuthContextProvider = ({ children }) => {
             }
             setIsLoading(false);
         });
-    }, []);
+
+        return () => unsubscribe();
+    }, [user]);
 
 
     const fetchUserData = async (userID) => {
