@@ -1,4 +1,5 @@
 import express from "express";
+import { query, getDocs, where } from "firebase/firestore";
 import { TypingIndicator } from "../models/TypingIndicator.js";
 
 const router = express.Router();

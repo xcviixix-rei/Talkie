@@ -1,5 +1,6 @@
 import { doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase.js";
+import { query, getDocs, where } from "firebase/firestore";
 
 export class Notification {
   constructor({ id, user_id, device_tokens }) {
