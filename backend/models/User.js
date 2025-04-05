@@ -18,11 +18,11 @@ export class User {
   }
 
   static async create(data) {
-    const { id, username, ...rest } = data;
+    const { id, ...rest } = data;
     console.log(data);
     
     // Check if a user with the same username already exists
-    const q = query(User.collectionRef(), where("username", "==", username));
+    const q = query(User.collectionRef(), where("username", "==", rest.username));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
       throw new Error("Username already exists");
