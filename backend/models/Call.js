@@ -1,6 +1,6 @@
 import { doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase.js";
-import { query, getDocs, where } from "firebase/firestore";
+import { query, where } from "firebase/firestore";
 
 export class Call {
   constructor({ id, type, participants, initiator_id, status, started_at, ended_at, duration, recording_url }) {

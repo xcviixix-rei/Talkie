@@ -1,4 +1,4 @@
-import { doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
+import { doc, addDoc, setDoc, updateDoc, deleteDoc, collection } from "firebase/firestore";
 import { db } from "../firebase.js";
 import { query, getDocs, where } from "firebase/firestore";
 
@@ -18,7 +18,8 @@ export class User {
   }
 
   static async create(data) {
-    const { id, ...rest } = data;
+    const { id, username, ...rest } = data;
+    console.log(data);
     
     // Check if a user with the same username already exists
     const q = query(User.collectionRef(), where("username", "==", username));
