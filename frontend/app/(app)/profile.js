@@ -7,6 +7,7 @@ export default function ProfileScreen() {
 
     return (
         <>
+
             <ScrollView style={styles.container}>
                 <View style={styles.header}>
                     {user?.profile_pic ? (
