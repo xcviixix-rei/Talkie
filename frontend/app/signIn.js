@@ -1,17 +1,17 @@
 import {StatusBar} from "expo-status-bar";
-import {Alert, Image, Pressable, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {Alert, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import React, {useRef, useState} from "react";
-import {useRouter} from "expo-router";
+import {router} from "expo-router";
 import {heightPercentageToDP as hp, widthPercentageToDP as wp} from "react-native-responsive-screen";
 import {Octicons} from "@expo/vector-icons";
 import Loading from "../components/Loading";
+import CustomKeyboardView from "../components/CustomKeyboardView";
 import {useAuth} from "../context/authContext";
 
-
 export default function SignIn() {
-    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const {handleSignIn} = useAuth();
+    const [showPassword, setShowPassword] = useState(false);
 
     const emailRef = useRef("");
     const passwordRef = useRef("");
@@ -19,94 +19,171 @@ export default function SignIn() {
     const handleLogin = async () => {
         if (!emailRef.current || !passwordRef.current) {
             Alert.alert("Please fill in all fields");
+            return;
         }
 
         // login process
         setLoading(true);
-        const response = await handleSignIn(emailRef.current, passwordRef.current);
-        if (!response.success) {
-            Alert.alert('Sign In', response.error);
-        }
+        let response = await handleSignIn(emailRef.current, passwordRef.current);
         setLoading(false);
+
+        if (!response.success) {
+            Alert.alert("Error", response.data);
+        }
     }
 
     return (
-        <View className="flex-1">
+        <CustomKeyboardView>
             <StatusBar style="dark"/>
-            <View style={{paddingTop: hp(8), paddingHorizontal: wp(5)}} className="flex-1 gap-12">
-                <View className="items-center">
-                    <Image style={{height: hp(18.5)}} resizeMode="contain"
-                           source={require(`../assets/images/icon.png`)}/>
-                </View>
-                <View className="gap-10">
-                    <Text style={{fontSize: hp(4)}} className="font-bold tracking-wider text-center text-neutral-800">Welcome
-                        back!</Text>
-                    {/* input */}
-                    <View className="gap-4">
-                        <View style={{height: hp(7)}}
-                              className="flex-row gap-4 px-4 bg-neutral-100 items-center rounded-2xl">
-                            <View style={{width: hp(3), alignItems: 'center'}}>
+            <View style={styles.container}>
+                <View style={styles.formContainer}>
+                    <Text style={styles.headerText}>
+                        Welcome{"\n"}Back
+                    </Text>
+
+                    <View style={styles.inputsContainer}>
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.iconContainer}>
                                 <Octicons name="mail" size={hp(2.7)} color="gray"/>
                             </View>
                             <TextInput
                                 onChangeText={value => emailRef.current = value}
-                                style={{fontSize: hp(2)}}
-                                className="flex-1 font-semibold text-neutral-700"
+                                style={styles.input}
                                 placeholder='Email address'
-                                placeholderTextColor={'gray'}
+                                placeholderTextColor='gray'
                             />
                         </View>
-                        <View className="gap-3">
-                            <View style={{height: hp(7)}}
-                                  className="flex-row gap-4 px-4 bg-neutral-100 items-center rounded-2xl">
-                                <View style={{width: hp(3), alignItems: 'center'}}>
-                                    <Octicons name="lock" size={hp(2.7)} color="gray"/>
-                                </View>
-                                <TextInput
-                                    onChangeText={value => passwordRef.current = value}
-                                    style={{fontSize: hp(2)}}
-                                    className="flex-1 font-semibold text-neutral-700"
-                                    placeholder='Password'
-                                    secureTextEntry={true}
-                                    placeholderTextColor={'gray'}
-                                />
+
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.iconContainer}>
+                                <Octicons name="lock" size={hp(2.7)} color="gray"/>
                             </View>
-                            <Text style={{fontSize: hp(1.8)}} className="text-right font-semibold text-neutral-500">Forgot
-                                password?</Text>
+                            <TextInput
+                                onChangeText={value => passwordRef.current = value}
+                                style={styles.input}
+                                placeholder='Password'
+                                secureTextEntry={!showPassword}
+                                placeholderTextColor='gray'
+                            />
+                            <TouchableOpacity
+                                onPress={() => setShowPassword(!showPassword)}
+                                style={styles.eyeIcon}
+                            >
+                                <Octicons
+                                    name={showPassword ? "eye" : "eye-closed"}
+                                    size={hp(2.7)}
+                                    color="gray"
+                                />
+                            </TouchableOpacity>
                         </View>
 
-                        {/*submit button*/}
+                        {loading ? (
+                            <View style={styles.loadingContainer}>
+                                <Loading size={hp(7)}/>
+                            </View>
+                        ) : (
+                            <TouchableOpacity
+                                onPress={handleLogin}
+                                style={styles.signInButton}
+                            >
+                                <Text style={styles.signInButtonText}>
+                                    Sign In
+                                </Text>
+                            </TouchableOpacity>
+                        )}
 
-                        <View>
-                            {
-                                loading ? (
-                                    <View className="flex-row justify-center">
-                                        <Loading size={hp(7)}/>
-                                    </View>
-                                ) : (
-                                    <TouchableOpacity onPress={handleLogin} style={{height: hp(6.5)}}
-                                                      className="bg-indigo-500 rounded-xl justify-center items-center">
-                                        <Text style={{fontSize: hp(2.7)}}
-                                              className="text-white font-bold tracking-wider">
-                                            Sign In
-                                        </Text>
-                                    </TouchableOpacity>
-                                )
-                            }
-                        </View>
-
-
-                        {/*sign up*/}
-                        <View className="flex-row justify-center">
-                            <Text style={{fontSize: hp(1.9)}} className=" font-semibold text-neutral-500">Don't have an
-                                account?</Text>
+                        <View style={styles.signUpContainer}>
+                            <Text style={styles.signUpText}>
+                                Don't have an account?
+                            </Text>
                             <Pressable onPress={() => router.push("/signUp")}>
-                                <Text style={{fontSize: hp(1.9)}} className="text-indigo-500 font-bold"> Sign Up</Text>
+                                <Text style={styles.signUpLink}>
+                                    Sign Up
+                                </Text>
                             </Pressable>
                         </View>
                     </View>
                 </View>
             </View>
-        </View>
-    )
+        </CustomKeyboardView>
+    );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingTop: hp(18),
+        paddingHorizontal: wp(5)
+    },
+    formContainer: {
+        gap: 40
+    },
+    headerText: {
+        fontSize: hp(4),
+        fontWeight: 'bold',
+        letterSpacing: 0.5,
+        textAlign: 'left',
+        color: '#333'
+    },
+    inputsContainer: {
+        gap: 16
+    },
+    inputWrapper: {
+        height: hp(7),
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        gap: 12
+    },
+    iconContainer: {
+        width: hp(3),
+        alignItems: 'center'
+    },
+    input: {
+        flex: 1,
+        fontSize: hp(2),
+        fontWeight: '600',
+        color: '#333'
+    },
+    eyeIcon: {
+        padding: 4
+    },
+    signInButton: {
+        height: hp(6.5),
+        backgroundColor: '#6366f1',
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 8
+    },
+    signInButtonText: {
+        fontSize: hp(2.7),
+        color: 'white',
+        fontWeight: 'bold',
+        letterSpacing: 0.5
+    },
+    loadingContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 8
+    },
+    signUpContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 12
+    },
+    signUpText: {
+        fontSize: hp(1.9),
+        fontWeight: '600',
+        color: '#6b7280'
+    },
+    signUpLink: {
+        fontSize: hp(1.9),
+        fontWeight: 'bold',
+        color: '#6366f1',
+        marginLeft: 4
+    }
+});

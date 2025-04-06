@@ -1,5 +1,5 @@
 import {StatusBar} from "expo-status-bar";
-import {Alert, Pressable, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {Alert, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import React, {useRef, useState} from "react";
 import {useRouter} from "expo-router";
 import {heightPercentageToDP as hp, widthPercentageToDP as wp} from "react-native-responsive-screen";
@@ -7,7 +7,6 @@ import {Feather, Octicons} from "@expo/vector-icons";
 import Loading from "../components/Loading";
 import CustomKeyboardView from "../components/CustomKeyboardView";
 import {useAuth} from "../context/authContext";
-
 
 export default function SignUp() {
     const router = useRouter();
@@ -44,103 +43,180 @@ export default function SignUp() {
     return (
         <CustomKeyboardView>
             <StatusBar style="dark"/>
-            <View style={{paddingTop: hp(18), paddingHorizontal: wp(5)}} className="flex-1 gap-12">
+            <View style={styles.container}>
+                <View style={styles.formContainer}>
+                    <Text style={styles.headerText}>
+                        Create{"\n"}Account
+                    </Text>
 
-                <View className="gap-10">
-                    <Text style={{fontSize: hp(4)}}
-                          className="font-bold tracking-wider text-left text-neutral-800">Create{"\n"}Account</Text>
-                    {/* input */}
-                    <View className="gap-4">
-                        <View style={{height: hp(7)}}
-                              className="flex-row gap-4 px-4 bg-neutral-100 items-center rounded-2xl">
-                            <View style={{width: hp(3), alignItems: 'center'}}>
+                    <View style={styles.inputsContainer}>
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.iconContainer}>
                                 <Feather name="user" size={hp(2.7)} color="gray"/>
                             </View>
                             <TextInput
                                 onChangeText={value => usernameRef.current = value}
-                                style={{fontSize: hp(2)}}
-                                className="flex-1 font-semibold text-neutral-700"
+                                style={styles.input}
                                 placeholder='Username'
-                                placeholderTextColor={'gray'}
+                                placeholderTextColor='gray'
                             />
                         </View>
-                        <View style={{height: hp(7)}}
-                              className="flex-row gap-4 px-4 bg-neutral-100 items-center rounded-2xl">
-                            <View style={{width: hp(3), alignItems: 'center'}}>
+
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.iconContainer}>
                                 <Octicons name="mail" size={hp(2.7)} color="gray"/>
                             </View>
                             <TextInput
                                 onChangeText={value => emailRef.current = value}
-                                style={{fontSize: hp(2)}}
-                                className="flex-1 font-semibold text-neutral-700"
+                                style={styles.input}
                                 placeholder='Email address'
-                                placeholderTextColor={'gray'}
+                                placeholderTextColor='gray'
                             />
                         </View>
-                        <View style={{height: hp(7)}}
-                              className="flex-row gap-4 px-4 bg-neutral-100 items-center rounded-2xl">
-                            <View style={{width: hp(3), alignItems: 'center'}}>
+
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.iconContainer}>
                                 <Octicons name="lock" size={hp(2.7)} color="gray"/>
                             </View>
                             <TextInput
                                 onChangeText={value => passwordRef.current = value}
-                                style={{fontSize: hp(2)}}
-                                className="flex-1 font-semibold text-neutral-700"
+                                style={styles.input}
                                 placeholder='Password'
                                 secureTextEntry={!showPassword}
-                                placeholderTextColor={'gray'}
+                                placeholderTextColor='gray'
                             />
-                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                                <Octicons name={showPassword ? "eye" : "eye-closed"} size={hp(2.7)} color="gray"/>
+                            <TouchableOpacity
+                                onPress={() => setShowPassword(!showPassword)}
+                                style={styles.eyeIcon}
+                            >
+                                <Octicons
+                                    name={showPassword ? "eye" : "eye-closed"}
+                                    size={hp(2.7)}
+                                    color="gray"
+                                />
                             </TouchableOpacity>
                         </View>
-                        <View style={{height: hp(7)}}
-                              className="flex-row gap-4 px-4 bg-neutral-100 items-center rounded-2xl">
-                            <View style={{width: hp(3), alignItems: 'center'}}>
+
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.iconContainer}>
                                 <Octicons name="shield-lock" size={hp(2.7)} color="gray"/>
                             </View>
                             <TextInput
                                 onChangeText={value => passwordConfirmRef.current = value}
-                                style={{fontSize: hp(2)}}
-                                className="flex-1 font-semibold text-neutral-700"
+                                style={styles.input}
                                 placeholder='Confirm Password'
                                 secureTextEntry={!showPassword}
-                                placeholderTextColor={'gray'}
+                                placeholderTextColor='gray'
                             />
                         </View>
 
-                        {/*submit button*/}
+                        {loading ? (
+                            <View style={styles.loadingContainer}>
+                                <Loading size={hp(7)}/>
+                            </View>
+                        ) : (
+                            <TouchableOpacity
+                                onPress={handleRegister}
+                                style={styles.signUpButton}
+                            >
+                                <Text style={styles.signUpButtonText}>
+                                    Sign Up
+                                </Text>
+                            </TouchableOpacity>
+                        )}
 
-                        <View>
-                            {
-                                loading ? (
-                                    <View className="flex-row justify-center">
-                                        <Loading size={hp(7)}/>
-                                    </View>
-                                ) : (
-                                    <TouchableOpacity onPress={handleRegister} style={{height: hp(6.5)}}
-                                                      className="bg-indigo-500 rounded-xl justify-center items-center">
-                                        <Text style={{fontSize: hp(2.7)}}
-                                              className="text-white font-bold tracking-wider">
-                                            Sign Up
-                                        </Text>
-                                    </TouchableOpacity>
-                                )
-                            }
-                        </View>
-
-
-                        {/*sign up*/}
-                        <View className="flex-row justify-center">
-                            <Text style={{fontSize: hp(1.9)}} className=" font-semibold text-neutral-500">Already have
-                                an account?</Text>
+                        <View style={styles.signInContainer}>
+                            <Text style={styles.signInText}>
+                                Already have an account?
+                            </Text>
                             <Pressable onPress={() => router.push("/signIn")}>
-                                <Text style={{fontSize: hp(1.9)}} className="text-indigo-500 font-bold"> Sign In</Text>
+                                <Text style={styles.signInLink}>
+                                    Sign In
+                                </Text>
                             </Pressable>
                         </View>
                     </View>
                 </View>
             </View>
         </CustomKeyboardView>
-    )
+    );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        paddingTop: hp(18),
+        paddingHorizontal: wp(5)
+    },
+    formContainer: {
+        gap: 40
+    },
+    headerText: {
+        fontSize: hp(4),
+        fontWeight: 'bold',
+        letterSpacing: 0.5,
+        textAlign: 'left',
+        color: '#333'
+    },
+    inputsContainer: {
+        gap: 16
+    },
+    inputWrapper: {
+        height: hp(7),
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        gap: 12
+    },
+    iconContainer: {
+        width: hp(3),
+        alignItems: 'center'
+    },
+    input: {
+        flex: 1,
+        fontSize: hp(2),
+        fontWeight: '600',
+        color: '#333'
+    },
+    eyeIcon: {
+        padding: 4
+    },
+    signUpButton: {
+        height: hp(6.5),
+        backgroundColor: '#6366f1',
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 8
+    },
+    signUpButtonText: {
+        fontSize: hp(2.7),
+        color: 'white',
+        fontWeight: 'bold',
+        letterSpacing: 0.5
+    },
+    loadingContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 8
+    },
+    signInContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 12
+    },
+    signInText: {
+        fontSize: hp(1.9),
+        fontWeight: '600',
+        color: '#6b7280'
+    },
+    signInLink: {
+        fontSize: hp(1.9),
+        fontWeight: 'bold',
+        color: '#6366f1',
+        marginLeft: 4
+    }
+});

@@ -1,14 +1,12 @@
 import {Image, ScrollView, StyleSheet, Text, View} from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 import {useAuth} from "../../context/authContext";
-import {Stack} from "expo-router";
 
 export default function ProfileScreen() {
     const {user} = useAuth();
 
     return (
         <>
-            <Stack.Screen options={{title: 'Your Profile'}}/>
             <ScrollView style={styles.container}>
                 <View style={styles.header}>
                     {user?.profile_pic ? (
