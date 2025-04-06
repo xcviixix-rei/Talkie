@@ -33,10 +33,11 @@ export default function SignUp() {
         // register process
         setLoading(true);
         let response = await handleSignUp(usernameRef.current, emailRef.current, passwordRef.current);
-        setLoading(false);
+
 
         if (!response.success) {
             Alert.alert("Error", response.data);
+            setLoading(false);
         }
     }
 

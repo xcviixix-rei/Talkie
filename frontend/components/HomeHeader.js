@@ -4,7 +4,7 @@ import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 import {router} from "expo-router";
 
-export default function ConversationListHeader() {
+export default function HomeHeader() {
     const insets = useSafeAreaInsets();
     const [fontsLoaded] = useFonts({BalsamiqSans_700Bold});
 
