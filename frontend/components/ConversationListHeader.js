@@ -1,21 +1,31 @@
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BalsamiqSans_700Bold, useFonts } from "@expo-google-fonts/balsamiq-sans";
-import { View, Text, Pressable, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { useAuth } from "../context/authContext";
-import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
-import { router } from "expo-router";
+import {useSafeAreaInsets} from "react-native-safe-area-context";
+import {BalsamiqSans_700Bold, useFonts} from "@expo-google-fonts/balsamiq-sans";
+import {Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {useAuth} from "../context/authContext";
+import {Ionicons} from "@expo/vector-icons";
+import {useEffect, useState} from "react";
+import {router, usePathname} from "expo-router";
 
 export default function ConversationListHeader() {
     const insets = useSafeAreaInsets();
-    const [fontsLoaded] = useFonts({ BalsamiqSans_700Bold });
-    const { handleSignOut, user } = useAuth();
+    const [fontsLoaded] = useFonts({BalsamiqSans_700Bold});
+    const {handleSignOut, user} = useAuth();
     const [showDropdown, setShowDropdown] = useState(false);
+    const pathname = usePathname();
+
+    // Close dropdown when navigating away
+    useEffect(() => {
+        setShowDropdown(false);
+    }, [pathname]);
 
     const handleSignOutPress = async () => {
-        setShowDropdown(false);
-        await handleSignOut();
-        router.replace("/signIn");
+        try {
+            setShowDropdown(false);
+            await handleSignOut();
+            router.replace("/signIn");
+        } catch (error) {
+            console.error("Sign out failed:", error);
+        }
     };
 
     const navigateToProfile = () => {
@@ -27,8 +37,10 @@ export default function ConversationListHeader() {
         return null;
     }
 
+    const userInitial = user?.username ? user.username.charAt(0).toUpperCase() : 'U';
+
     return (
-        <View style={[styles.headerContainer, { paddingTop: insets.top }]}>
+        <View style={[styles.headerContainer, {paddingTop: insets.top}]}>
             <View style={styles.titleContainer}>
                 <Text style={styles.titleText}>
                     Talkie
@@ -39,16 +51,20 @@ export default function ConversationListHeader() {
                 onPress={() => setShowDropdown(!showDropdown)}
                 style={styles.avatarContainer}
                 activeOpacity={0.7}
+                accessible={true}
+                accessibilityLabel="User menu"
+                accessibilityRole="button"
             >
                 {user?.profile_pic ? (
                     <Image
-                        source={{ uri: user.profile_pic }}
+                        source={{uri: user.profile_pic}}
                         style={styles.avatar}
+                        defaultSource={require('../assets/images/conech.jpg')}
                     />
                 ) : (
                     <View style={[styles.avatar, styles.avatarPlaceholder]}>
                         <Text style={styles.avatarText}>
-                            {user?.username?.charAt(0) || 'U'}
+                            {userInitial}
                         </Text>
                     </View>
                 )}
@@ -57,27 +73,33 @@ export default function ConversationListHeader() {
             {showDropdown && (
                 <>
                     <TouchableOpacity
-                        style={styles.dropdownOverlay}
+                        style={[styles.dropdownOverlay, {top: insets.top + 60}]}
                         activeOpacity={1}
                         onPress={() => setShowDropdown(false)}
                     />
 
-                    <View style={styles.dropdownMenu}>
+                    <View style={[styles.dropdownMenu, {top: insets.top + 60}]}>
                         <TouchableOpacity
                             style={styles.dropdownItem}
                             onPress={navigateToProfile}
+                            accessible={true}
+                            accessibilityLabel="Your Profile"
+                            accessibilityRole="button"
                         >
-                            <Ionicons name="person-outline" size={20} color="#333" />
+                            <Ionicons name="person-outline" size={20} color="#333"/>
                             <Text style={styles.dropdownItemText}>Your Profile</Text>
                         </TouchableOpacity>
 
-                        <View style={styles.divider} />
+                        <View style={styles.divider}/>
 
                         <TouchableOpacity
                             style={styles.dropdownItem}
                             onPress={handleSignOutPress}
+                            accessible={true}
+                            accessibilityLabel="Log Out"
+                            accessibilityRole="button"
                         >
-                            <Ionicons name="log-out-outline" size={20} color="#333" />
+                            <Ionicons name="log-out-outline" size={20} color="#333"/>
                             <Text style={styles.dropdownItemText}>Log Out</Text>
                         </TouchableOpacity>
                     </View>
@@ -97,10 +119,11 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: "#e5e5e5",
         backgroundColor: "#fff",
+        zIndex: 1,
     },
     titleContainer: {
         flex: 1,
-        alignItems: 'left',
+        alignItems: 'flex-start',
         paddingLeft: 6,
     },
     titleText: {
@@ -114,8 +137,6 @@ const styles = StyleSheet.create({
         height: 40,
         borderRadius: 20,
         overflow: 'hidden',
-        margin: 0,
-        padding: 0,
     },
     avatar: {
         width: '100%',
@@ -134,26 +155,26 @@ const styles = StyleSheet.create({
     },
     dropdownOverlay: {
         position: 'absolute',
-        top: 0,
+        top: insets => insets.top + 60,
         left: 0,
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.2)',
+        zIndex: 1,
     },
     dropdownMenu: {
         position: 'absolute',
-        top: 60,
         right: 16,
         backgroundColor: 'white',
         borderRadius: 8,
         paddingVertical: 8,
         width: 200,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-        zIndex: 10,
+        zIndex: 2,
     },
     dropdownItem: {
         flexDirection: 'row',
