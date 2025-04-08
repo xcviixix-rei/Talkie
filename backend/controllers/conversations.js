@@ -67,6 +67,32 @@ router.delete("/:id", async (req, res) => {
 
 
 
+// List all messages in a conversation
+router.get("/:conversationId/messages", async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+
+    // Query messages filtered by conversationId
+    const messagesQuery = query(
+      Message.collectionRef(),
+      where("conversation_id", "==", conversationId)
+    );
+    const querySnapshot = await getDocs(messagesQuery);
+    const messages = [];
+    
+    querySnapshot.forEach((docSnap) => {
+      messages.push(new Message({ id: docSnap.id, ...docSnap.data() }));
+    });
+
+    res.json(messages);
+  } catch (error) {
+    console.error("Error fetching messages for conversation:", error);
+    res.status(500).json({ error: "Failed to fetch messages" });
+  }
+});
+
+
+
 // Get messages in a conversation that include specific content in their text
 router.get("/:conversationId/messages/search", async (req, res) => {
   try {
