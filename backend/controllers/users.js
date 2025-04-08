@@ -72,7 +72,8 @@ router.get("/:id/conversations", async (req, res) => {
     }
     const userConversationsQuery = query(
       Conversation.collectionRef(),
-      where("participants", "array-contains", { user_id: id, username: user.username })
+
+      where("participants", "array-contains", id)
     );
     const querySnapshot = await getDocs(userConversationsQuery);
     const conversations = [];
