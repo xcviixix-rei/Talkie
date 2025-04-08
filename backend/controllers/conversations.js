@@ -118,3 +118,34 @@ router.get("/:conversationId/messages/:messageId", async (req, res) => {
 });
 
 export default router;
+
+// Get all messages in a conversation
+router.get("/:conversationId/messages", async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+
+    // Verify that the conversation exists
+    const conversation = await Conversation.get(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+
+    // Query messages filtered by conversationId
+    const messagesQuery = query(
+      Message.collectionRef(),
+      where("conversation_id", "==", conversationId)
+    );
+
+    const querySnapshot = await getDocs(messagesQuery);
+    const messages = [];
+
+    querySnapshot.forEach((docSnap) => {
+      messages.push(new Message({ id: docSnap.id, ...docSnap.data() }));
+    });
+
+    res.json(messages);
+  } catch (error) {
+    console.error("Error fetching messages for conversation:", error);
+    res.status(500).json({ error: "Failed to fetch messages" });
+  }
+});

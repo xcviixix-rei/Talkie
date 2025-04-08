@@ -2,6 +2,7 @@ import {createContext, useContext, useEffect, useState} from "react";
 import {createUserWithEmailAndPassword, signInWithEmailAndPassword,} from "firebase/auth";
 import auth from "../config/firebaseConfig";
 import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
+import {fetchUserData} from "../api/users";
 
 
 export const AuthContext = createContext();
@@ -41,18 +42,6 @@ export const AuthContextProvider = ({ children }) => {
     }, [user]);
 
 
-    const fetchUserData = async (userID) => {
-        try {
-            const response = await fetch(`http://10.0.2.2:5000/api/users/${userID}`,
-                {
-                    method: 'GET',
-                });
-            return await response.json();
-        } catch (error) {
-            console.error("Fetch user data failed:", error);
-            return {};
-        }
-    };
 
     const handleSignIn = async (email, password) => {
         try {
