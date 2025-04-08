@@ -1,340 +1,225 @@
-import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+import {ActivityIndicator, Alert, StyleSheet, TextInput, TouchableOpacity, View} from "react-native";
+import React, {useEffect, useRef, useState} from "react";
+import {useLocalSearchParams, useRouter} from "expo-router";
 import ConversationHeader from "../../components/ConversationHeader";
 import MessageList from "../../components/MessageList";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
-import { StyleSheet } from "react-native";
+import {heightPercentageToDP as hp, widthPercentageToDP as wp} from "react-native-responsive-screen";
 import CustomKeyboardView from "../../components/CustomKeyboardView";
-import { Ionicons } from "@expo/vector-icons";
-import { getconversationId } from "../../utils/common";
-import { db } from "../../config/firebaseConfig";
-import { useAuth } from "../../context/authContext";
-import {
-  Timestamp,
-  collection,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-  setDoc,
-} from "firebase/firestore";
+import {Ionicons} from "@expo/vector-icons";
+import {useAuth} from "../../context/authContext";
 
 export default function Conversation() {
-  const item = useLocalSearchParams();
-  const router = useRouter();
-  const { user } = useAuth();
-  const [messages, setMessages] = useState([
-    {
-      username: "manh",
-      //profileUrl: require("../assets/conech.jpg"),
-      userId: "1",
-      message: "Hello Phong!",
-      createdAt: "2025-03-19T10:15:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message: "Hey Manh! How's it going?",
-      createdAt: "2025-03-19T10:16:00Z",
-    },
-    {
-      username: "manh",
-      //profileUrl: require("../assets/conech.jpg"),
-      userId: "1",
-      message: "I'm doing well! Just working on a new project. What about you?",
-      createdAt: "2025-03-19T10:18:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-    {
-      username: "phong",
-      //profileUrl: require("../assets/phuthuy.jpg"),
-      userId: "2",
-      message:
-        "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-      createdAt: "2025-03-19T10:20:00Z",
-    },
-  ]);
-  const textRef = useRef("");
-  const inputRef = useRef(null);
-  // useEffect(() => {
-  //   createConversationIfNotExists();
-  //   let conversationId = getconversationId([user, ...item]);
-  //   const docRef = doc(db, "conversations");
-  //   const messageRef = collection(docRef, "messages");
-  //   const q = query(messageRef, orderBy("createAt", "asc"));
+    const item = useLocalSearchParams();
+    const router = useRouter();
+    const {user} = useAuth();
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const textRef = useRef("");
+    const inputRef = useRef(null);
 
-  //   let unsub = onSnapshot(q, (snapshot) => {
-  //     let allMessages = snapshot.docs.map((doc) => doc.data());
-  //     setMessages([...allMessages]);
-  //   });
-  // });
+    // Fetch messages for the conversation
+    useEffect(() => {
+        const fetchMessages = async () => {
+            try {
+                setLoading(true);
+                const conversationId = item.conversationId;
 
-  const createConversationIfNotExists = async () => {
-    // call API
-    let conversationId = getconversationID([user, ...item]);
-    await setDoc(doc(db), "conversations", conversationId),
-      {
-        conversationId,
-        createdAt: Timestamp.fromDate(new Date()),
-      };
-  };
+                if (!conversationId) {
+                    console.error("No conversation ID provided");
+                    setLoading(false);
+                    return;
+                }
 
-  const handleSendMessage = async () => {
-    let message = textRef.current.trim();
-    if (!message) return;
-    if (inputRef) inputRef?.current?.clear();
+                // Change the URL to match what you provided
+                const response = await fetch(
+                    `http://10.0.2.2:5000/api/conversations/${conversationId}/messages/`
+                );
 
-    try {
-      let conversationId = getConversationId([user, ...item]);
-      const docRef = doc(db, "conversations");
-      const messageRef = collection(docRef, "message");
+                // Parse the JSON response
+                const data = await response.json();
 
-      const newDoc = await addDoc(messageRef, {
-        userId: user?.userId,
-        message: message,
-        userfileUrl: user?.userfileUrl,
-        senderName: user?.userName,
-        createdAt: Timestamp.fromDate(new Date()),
-      });
-    } catch (err) {
-      Alert.alert("Message", err.message);
-    }
-  };
+                // Transform the API response to match component's expected format
+                const formattedMessages = data.map(msg => ({
+                    id: msg.id,
+                    username: msg.sender.username,
+                    userId: msg.sender.user_id,
+                    message: msg.text,
+                    createdAt: msg.timestamp,
+                    attachments: msg.attachments || [],
+                    seenBy: msg.seen_by || []
+                }));
 
-  return (
-    <CustomKeyboardView inChat={true}>
-      <View style={styles.container}>
-        <ConversationHeader item={item} router={router} />
-        <View style={styles.header} />
-        <View style={styles.main}>
-          <View style={styles.messageList}>
-            <MessageList messages={messages} currentUser={user} />
-          </View>
-          <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <View style={styles.inputBox}>
-                <TextInput
-                  ref={inputRef}
-                  onChangeText={(value) => (textRef.current = value)}
-                  placeholder="Type message ..."
-                  style={styles.textInput}
-                />
-                <TouchableOpacity style={styles.sendButton}>
-                  <Ionicons
-                    name="send"
-                    onPress={handleSendMessage}
-                    size={hp(2.7)}
-                    color="#737373"
-                  />
-                </TouchableOpacity>
-              </View>
+                setMessages(formattedMessages);
+            } catch (error) {
+                console.error("Error fetching messages:", error);
+                Alert.alert("Error", "Failed to load conversation messages");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMessages();
+    }, [item.conversationId]);
+
+    const handleSendMessage = async () => {
+        const message = textRef.current.trim();
+        if (!message) return;
+        if (inputRef.current) inputRef.current.clear();
+        textRef.current = "";
+
+        try {
+            const conversationId = item.conversationId;
+
+            // Optimistically update UI
+            const newMessage = {
+                id: `temp-${Date.now()}`,
+                username: user.username,
+                userId: user.uid,
+                message: message,
+                createdAt: new Date().toISOString(),
+                pending: true
+            };
+
+            setMessages(prev => [...prev, newMessage]);
+
+            // Send message to API
+            const response = await fetch(
+                `http://10.0.2.2:5000/api/conversations/${conversationId}/messages/`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        text: message,
+                        sender_id: user.uid
+                    })
+                }
+            );
+
+            // Parse the response
+            const responseData = await response.json();
+
+            // Replace temp message with actual message
+            setMessages(prev =>
+                prev.map(msg => msg.id === newMessage.id ? {
+                    id: responseData.id,
+                    username: responseData.sender.username,
+                    userId: responseData.sender.user_id,
+                    message: responseData.text,
+                    createdAt: responseData.timestamp,
+                    attachments: responseData.attachments || [],
+                    seenBy: responseData.seen_by || []
+                } : msg)
+            );
+
+        } catch (err) {
+            console.error("Error sending message:", err);
+            Alert.alert("Error", "Failed to send message");
+
+            // Remove failed message from UI
+            setMessages(prev => prev.filter(msg => msg.id !== `temp-${Date.now()}`));
+        }
+    };
+
+    return (
+        <CustomKeyboardView inChat={true}>
+            <View style={styles.container}>
+                <ConversationHeader item={item} router={router}/>
+                <View style={styles.header}/>
+                <View style={styles.main}>
+                    {loading ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color="#1E90FF"/>
+                        </View>
+                    ) : (
+                        <View style={styles.messageList}>
+                            <MessageList messages={messages} currentUser={user}/>
+                        </View>
+                    )}
+                    <View style={styles.inputContainer}>
+                        <View style={styles.inputWrapper}>
+                            <View style={styles.inputBox}>
+                                <TextInput
+                                    ref={inputRef}
+                                    onChangeText={(value) => (textRef.current = value)}
+                                    placeholder="Type message..."
+                                    style={styles.textInput}
+                                />
+                                <TouchableOpacity
+                                    style={styles.sendButton}
+                                    onPress={handleSendMessage}
+                                >
+                                    <Ionicons
+                                        name="send"
+                                        size={hp(2.7)}
+                                        color="#737373"
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </View>
             </View>
-          </View>
-        </View>
-      </View>
-    </CustomKeyboardView>
-  );
+        </CustomKeyboardView>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-  },
-  statusBar: {
-    backgroundColor: "white",
-  },
-  header: {
-    height: hp(1.5),
-    borderBottomWidth: 1,
-    borderBottomColor: "#d1d5db", // border-neutral-300
-  },
-  main: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: "#f3f4f6", // bg-neutral-100
-    overflow: "visible",
-  },
-  messageList: {
-    flex: 1,
-  },
-  inputContainer: {
-    marginBottom: hp(1.0),
-    paddingTop: hp(0.5),
-  },
-  inputWrapper: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginHorizontal: wp(3),
-  },
-  inputBox: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "white",
-    borderWidth: 1,
-    borderColor: "#d1d5db", // border-neutral-300
-    padding: hp(1),
-    borderRadius: 50,
-    width: "100%",
-  },
-  textInput: {
-    flex: 2,
-    fontSize: hp(2),
-    marginRight: wp(10),
-  },
-  sendButton: {
-    backgroundColor: "#e5e7eb", // bg-neutral-200
-    padding: hp(1),
-    borderRadius: 50,
-  },
+    container: {
+        flex: 1,
+        backgroundColor: "white",
+    },
+    statusBar: {
+        backgroundColor: "white",
+    },
+    header: {
+        height: hp(1.5),
+        borderBottomWidth: 1,
+        borderBottomColor: "#d1d5db",
+    },
+    main: {
+        flex: 1,
+        justifyContent: "center",
+        backgroundColor: "#f3f4f6",
+        overflow: "visible",
+    },
+    messageList: {
+        flex: 1,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    inputContainer: {
+        marginBottom: hp(1.0),
+        paddingTop: hp(0.5),
+    },
+    inputWrapper: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginHorizontal: wp(3),
+    },
+    inputBox: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        backgroundColor: "white",
+        borderWidth: 1,
+        borderColor: "#d1d5db",
+        padding: hp(1),
+        borderRadius: 50,
+        width: "100%",
+    },
+    textInput: {
+        flex: 2,
+        fontSize: hp(2),
+        marginRight: wp(10),
+    },
+    sendButton: {
+        backgroundColor: "#e5e7eb",
+        padding: hp(1),
+        borderRadius: 50,
+    },
 });

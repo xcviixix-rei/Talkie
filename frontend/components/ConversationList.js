@@ -1,15 +1,13 @@
 import {FlatList, View} from "react-native";
 import React from "react";
-import ConversationItem from "./ComversationItem";
-import ConversationListHeader from "./ConversationListHeader";
-import {heightPercentageToDP as hp,} from "react-native-responsive-screen";
+import ConversationItem from "./ConversationItem";
+import {heightPercentageToDP as hp} from "react-native-responsive-screen";
 import {useRouter} from "expo-router";
 
 export default function ConversationList({users, currentUser}) {
     const router = useRouter();
     return (
-        <View className="flex-1">
-            <ConversationListHeader/>
+        <View style={{flex: 1}}>
             <FlatList
                 data={users}
                 contentContainerStyle={{paddingVertical: hp(3)}}

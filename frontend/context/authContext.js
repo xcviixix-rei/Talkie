@@ -2,6 +2,7 @@ import {createContext, useContext, useEffect, useState} from "react";
 import {createUserWithEmailAndPassword, signInWithEmailAndPassword,} from "firebase/auth";
 import auth from "../config/firebaseConfig";
 import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
+import {fetchUserData} from "../api/users";
 
 
 export const AuthContext = createContext();
@@ -12,21 +13,23 @@ export const AuthContextProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        return onAuthStateChanged(auth, async (firebaseUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             setIsLoading(true);
             if (firebaseUser) {
-
                 const userData = await fetchUserData(firebaseUser.uid);
-                setUser({
+                const newUser = {
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
                     emailVerified: firebaseUser.emailVerified,
-
                     username: userData?.username || '',
                     profile_pic: userData?.profile_pic || '',
                     status: userData?.status || 'offline',
                     contacts: userData?.contacts || [],
-                });
+                };
+                if (JSON.stringify(newUser) !== JSON.stringify(user)) {
+                    console.log("user", newUser);
+                    setUser(newUser);
+                }
                 setIsAuthenticated(true);
             } else {
                 setIsAuthenticated(false);
@@ -34,21 +37,11 @@ export const AuthContextProvider = ({ children }) => {
             }
             setIsLoading(false);
         });
-    }, []);
+
+        return () => unsubscribe();
+    }, [user]);
 
 
-    const fetchUserData = async (userID) => {
-        try {
-            const response = await fetch(`http://10.0.2.2:5000/api/users/${userID}`,
-                {
-                    method: 'GET',
-                });
-            return await response.json();
-        } catch (error) {
-            console.error("Fetch user data failed:", error);
-            return {};
-        }
-    };
 
     const handleSignIn = async (email, password) => {
         try {

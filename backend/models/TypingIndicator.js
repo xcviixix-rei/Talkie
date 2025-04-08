@@ -1,5 +1,6 @@
 import { doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase.js";
+import { query, where } from "firebase/firestore";
 
 export class TypingIndicator {
   constructor({ id, conversation_id, typing_users }) {

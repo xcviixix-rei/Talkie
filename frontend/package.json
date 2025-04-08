@@ -21,6 +21,7 @@
     "@react-native-google-signin/google-signin": "^13.2.0",
     "@stream-io/react-native-webrtc": "^125.0.8",
     "@stream-io/video-react-native-sdk": "^1.10.17",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "expo": "~52.0.37",
     "expo-font": "~13.0.4",

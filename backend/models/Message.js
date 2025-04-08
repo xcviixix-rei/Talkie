@@ -1,5 +1,6 @@
 import { doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase.js";
+import { query, where } from "firebase/firestore";
 
 export class Message {
   constructor({ id, conversation_id, sender, text, attachments, timestamp, seen_by }) {
