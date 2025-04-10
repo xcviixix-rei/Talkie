@@ -1,6 +1,6 @@
 import {FlatList, View} from "react-native";
 import React from "react";
-import ConversationItem from "./ComversationItem";
+import ConversationItem from "./ConversationItem";
 import {heightPercentageToDP as hp} from "react-native-responsive-screen";
 import {useRouter} from "expo-router";
 

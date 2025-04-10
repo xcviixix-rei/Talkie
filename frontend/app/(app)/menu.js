@@ -20,21 +20,6 @@ export default function MenuScreen() {
     return (
         <>
             <SafeAreaView style={styles.container}>
-                <View style={styles.profileSection}>
-                    {user?.profile_pic ? (
-                        <Image
-                            source={{uri: user.profile_pic}}
-                            style={styles.profileImage}
-                        />
-                    ) : (
-                        <View style={styles.profileImagePlaceholder}>
-                            <Text style={styles.profileImageText}>
-                                {user?.username?.charAt(0) || 'U'}
-                            </Text>
-                        </View>
-                    )}
-                    <Text style={styles.username}>{user?.username || 'User'}</Text>
-                </View>
 
                 <View style={styles.menuItems}>
                     <TouchableOpacity
