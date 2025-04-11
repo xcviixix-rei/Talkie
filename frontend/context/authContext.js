@@ -1,7 +1,6 @@
 import {createContext, useContext, useEffect, useState} from "react";
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword,} from "firebase/auth";
 import auth from "../config/firebaseConfig";
-import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
+import {onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword} from "@react-native-firebase/auth";
 
 
 export const AuthContext = createContext();
@@ -12,33 +11,36 @@ export const AuthContextProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        setIsLoading(true);
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            setIsLoading(true);
-            if (firebaseUser) {
-                const userData = await fetchUserData(firebaseUser.uid);
-                const newUser = {
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    emailVerified: firebaseUser.emailVerified,
-                    username: userData?.username || '',
-                    profile_pic: userData?.profile_pic || '',
-                    status: userData?.status || 'offline',
-                    contacts: userData?.contacts || [],
-                };
-                if (JSON.stringify(newUser) !== JSON.stringify(user)) {
-                    console.log("user", newUser);
+            try {
+                if (firebaseUser) {
+                    const userData = await fetchUserData(firebaseUser.uid);
+                    const newUser = {
+                        uid: firebaseUser.uid,
+                        email: firebaseUser.email,
+                        emailVerified: firebaseUser.emailVerified,
+                        username: userData?.username || '',
+                        profile_pic: userData?.profile_pic || '',
+                        status: userData?.status || 'offline',
+                        contacts: userData?.contacts || [],
+                    };
                     setUser(newUser);
+                    setIsAuthenticated(true);
+                } else {
+                    setIsAuthenticated(false);
+                    setUser(null);
                 }
-                setIsAuthenticated(true);
-            } else {
+            } catch (error) {
+                console.error("Auth state change error:", error);
                 setIsAuthenticated(false);
-                setUser(null);
+            } finally {
+                setIsLoading(false);
             }
-            setIsLoading(false);
         });
 
         return () => unsubscribe();
-    }, [user]);
+    }, []);
 
 
     const fetchUserData = async (userID) => {
