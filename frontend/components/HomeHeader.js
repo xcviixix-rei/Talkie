@@ -12,6 +12,10 @@ export default function HomeHeader() {
         router.push("/menu");
     };
 
+    const navigateToSearch = () => {
+        router.push("/search");
+    };
+
     if (!fontsLoaded) {
         return null;
     }
@@ -24,13 +28,22 @@ export default function HomeHeader() {
                 </Text>
             </View>
 
-            <TouchableOpacity
-                onPress={navigateToMenu}
-                style={styles.menuButton}
-                activeOpacity={0.7}
-            >
-                <Ionicons name="menu-outline" size={36} color="#1E90FF"/>
-            </TouchableOpacity>
+            <View style={styles.iconsContainer}>
+                <TouchableOpacity
+                    onPress={navigateToSearch}
+                    style={styles.iconButton}
+                    activeOpacity={0.7}
+                >
+                    <Ionicons name="search-outline" size={28} color="#1E90FF"/>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={navigateToMenu}
+                    style={styles.iconButton}
+                    activeOpacity={0.7}
+                >
+                    <Ionicons name="menu-outline" size={32} color="#1E90FF"/>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
@@ -57,12 +70,17 @@ const styles = StyleSheet.create({
         letterSpacing: 1,
         fontFamily: "BalsamiqSans_700Bold",
     },
-    menuButton: {
+    iconsContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    iconButton: {
         paddingTop: 6,
         width: 40,
         height: 40,
         borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
+        marginLeft: 10,
     },
 });

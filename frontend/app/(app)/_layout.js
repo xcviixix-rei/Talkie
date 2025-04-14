@@ -11,6 +11,14 @@ export default function AppLayout() {
                 name="conversation"
             />
             <Stack.Screen
+                name="search"
+                options={{
+                    title: 'Search',
+                    headerBackTitle: 'Home',
+                    // This ensures when returning from conversation, it goes back to home
+                }}
+            />
+            <Stack.Screen
                 name="menu"
                 options={{
                     title: 'Menu',
