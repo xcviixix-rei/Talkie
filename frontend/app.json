@@ -28,7 +28,6 @@
       "bundler": "metro"
     },
     "plugins": [
-      ["@notifee/react-native"],
       "expo-router",
       [
         "expo-font",
