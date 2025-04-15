@@ -100,7 +100,7 @@ export default function Search() {
 
         if (existingConversation) {
             // Navigate to existing conversation
-            router.replace({
+            router.push({
                 pathname: '/conversation',
                 params: {id: existingConversation.id}
             });
@@ -108,7 +108,7 @@ export default function Search() {
             // Create new conversation and navigate to it
             // In a real app, you would create the conversation via API
             const newConversationId = 'new-' + Date.now();
-            router.replace({
+            router.push({
                 pathname: '/conversation',
                 params: {
                     id: newConversationId,
@@ -120,7 +120,7 @@ export default function Search() {
     };
 
     const handleConversationSelect = (conversationId) => {
-        router.replace({
+        router.push({
             pathname: '/conversation',
             params: {id: conversationId}
         });
