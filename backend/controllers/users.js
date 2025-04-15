@@ -38,7 +38,7 @@ router.get("/search", async (req, res) => {
     // Create a query to find user with the provided username
     const userQuery = query(
       User.collectionRef(),
-      // where("username", "==", username)
+
     );
     const querySnapshot = await getDocs(userQuery);
     const users = [];
@@ -123,5 +123,6 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete user" });
   }
 });
+
 
 export default router;

@@ -15,6 +15,7 @@ import notificationRoutes from "./controllers/notifications.js";
 import typingIndicatorRoutes from "./controllers/typingIndicators.js";
 import readReceiptRoutes from "./controllers/readReceipts.js";
 import callRoutes from "./controllers/calls.js";
+import searchRoutes from "./controllers/search.js";
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/typingIndicators", typingIndicatorRoutes);
 app.use("/api/readReceipts", readReceiptRoutes);
 app.use("/api/calls", callRoutes);
+app.use("/api/search", searchRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
