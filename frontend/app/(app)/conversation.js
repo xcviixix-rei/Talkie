@@ -1,326 +1,505 @@
-import {Alert, StyleSheet, TextInput, TouchableOpacity, View} from "react-native";
-import React, {useRef, useState} from "react";
-import {useLocalSearchParams, useRouter} from "expo-router";
+import {
+  Alert,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+  Text,
+} from "react-native";
+import React, { useRef, useState, useEffect } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import ConversationHeader from "../../components/ConversationHeader";
 import MessageList from "../../components/MessageList";
-import {heightPercentageToDP as hp, widthPercentageToDP as wp,} from "react-native-responsive-screen";
-import CustomKeyboardView from "../../components/CustomKeyboardView";
-import {Ionicons} from "@expo/vector-icons";
-import {db} from "../../config/firebaseConfig";
-import {useAuth} from "../../context/authContext";
-import {collection, doc, setDoc, Timestamp,} from "firebase/firestore";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
+import MediaService from "../../services/mediaService";
+import { Ionicons } from "@expo/vector-icons";
+import { db } from "../../config/firebaseConfig";
+import { useAuth } from "../../context/authContext";
+import axios from "axios";
+import { collection, doc, setDoc, addDoc, Timestamp } from "firebase/firestore";
 
 export default function Conversation() {
-    const item = useLocalSearchParams();
-    const router = useRouter();
-    const {user} = useAuth();
-    const [messages, setMessages] = useState([
-        {
-            username: "manh",
-            //profileUrl: require("../assets/conech.jpg"),
-            userId: "1",
-            message: "Hello Phong!",
-            createdAt: "2025-03-19T10:15:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message: "Hey Manh! How's it going?",
-            createdAt: "2025-03-19T10:16:00Z",
-        },
-        {
-            username: "manh",
-            //profileUrl: require("../assets/conech.jpg"),
-            userId: "1",
-            message: "I'm doing well! Just working on a new project. What about you?",
-            createdAt: "2025-03-19T10:18:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-        {
-            username: "phong",
-            //profileUrl: require("../assets/phuthuy.jpg"),
-            userId: "2",
-            message:
-                "Nice! I'm also busy with some React Native stuff. We should catch up soon.",
-            createdAt: "2025-03-19T10:20:00Z",
-        },
-    ]);
-    const textRef = useRef("");
-    const inputRef = useRef(null);
-    // useEffect(() => {
-    //   createConversationIfNotExists();
-    //   let conversationId = getconversationId([user, ...item]);
-    //   const docRef = doc(db, "conversations");
-    //   const messageRef = collection(docRef, "messages");
-    //   const q = query(messageRef, orderBy("createAt", "asc"));
+  const item = useLocalSearchParams();
+  const router = useRouter();
+  const { user } = useAuth();
+  const [messages, setMessages] = useState([]);
+  const [showMediaButtons, setShowMediaButtons] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [recordingInfo, setRecordingInfo] = useState(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const textRef = useRef("");
+  const inputRef = useRef(null);
+  const timerRef = useRef(null);
+  const audioControlsRef = useRef(null);
 
-    //   let unsub = onSnapshot(q, (snapshot) => {
-    //     let allMessages = snapshot.docs.map((doc) => doc.data());
-    //     setMessages([...allMessages]);
-    //   });
-    // });
-
-    const createConversationIfNotExists = async () => {
-        // call API
-        let conversationId = getconversationID([user, ...item]);
-        await setDoc(doc(db), "conversations", conversationId),
-            {
-                conversationId,
-                createdAt: Timestamp.fromDate(new Date()),
-            };
+  // Clear timer when component unmounts
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      MediaService.cleanup();
     };
+  }, []);
 
-    const handleSendMessage = async () => {
-        let message = textRef.current.trim();
-        if (!message) return;
-        if (inputRef) inputRef?.current?.clear();
+  const createConversationIfNotExists = async () => {
+    // call API
+    let conversationId = getConversationId([user, ...item]);
+    await setDoc(doc(db, "conversations", conversationId), {
+      conversationId,
+      createdAt: Timestamp.fromDate(new Date()),
+    });
+  };
 
-        try {
-            let conversationId = getConversationId([user, ...item]);
-            const docRef = doc(db, "conversations");
-            const messageRef = collection(docRef, "message");
+  const handleSendMessage = async () => {
+    let message = textRef.current.trim();
+    if (!message) return;
+    if (inputRef) inputRef?.current?.clear();
 
-            const newDoc = await addDoc(messageRef, {
-                userId: user?.userId,
-                message: message,
-                userfileUrl: user?.userfileUrl,
-                senderName: user?.userName,
-                createdAt: Timestamp.fromDate(new Date()),
-            });
-        } catch (err) {
-            Alert.alert("Message", err.message);
+    axios
+      .post(
+        `http://10.0.2.2:5000/api/messages/`,
+        {
+          fields: {
+            conversation_id: { stringValue: item.conversation_id },
+            sender: {
+              mapValue: {
+                fields: {
+                  user_id: { stringValue: message.sender.user_id },
+                  username: { stringValue: message.sender.username },
+                },
+              },
+            },
+            text: { stringValue: message.text },
+            attachments: {
+              arrayValue: {
+                values: message.attachments.map((att) => ({
+                  mapValue: {
+                    fields: {
+                      type: { stringValue: att.type },
+                      URL: { stringValue: att.URL },
+                    },
+                  },
+                })),
+              },
+            },
+            timestamp: { timestampValue: message.timestamp },
+            seen_by: {
+              arrayValue: {
+                values: message.seen_by.map((id) => ({ stringValue: id })),
+              },
+            },
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${ID_TOKEN}`,
+          },
         }
-    };
+      )
+      .then((res) => {
+        console.log("Message sent:", res.data);
+      })
+      .catch((err) => {
+        console.error(
+          "Failed to send message:",
+          err.response?.data || err.message
+        );
+      });
+  };
 
-    return (
-        <CustomKeyboardView inChat={true}>
-            <View style={styles.container}>
-                <ConversationHeader item={item} router={router}/>
-                <View style={styles.header}/>
-                <View style={styles.main}>
-                    <View style={styles.messageList}>
-                        <MessageList messages={messages} currentUser={user}/>
-                    </View>
-                    <View style={styles.inputContainer}>
-                        <View style={styles.inputWrapper}>
-                            <View style={styles.inputBox}>
-                                <TextInput
-                                    ref={inputRef}
-                                    onChangeText={(value) => (textRef.current = value)}
-                                    placeholder="Type message ..."
-                                    style={styles.textInput}
-                                />
-                                <TouchableOpacity style={styles.sendButton}>
-                                    <Ionicons
-                                        name="send"
-                                        onPress={handleSendMessage}
-                                        size={hp(2.7)}
-                                        color="#737373"
-                                    />
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                </View>
-            </View>
-        </CustomKeyboardView>
+  const toggleMediaButtons = () => {
+    setShowMediaButtons(!showMediaButtons);
+    console.log(!showMediaButtons);
+  };
+
+  const handleImagePicker = async () => {
+    const image = await MediaService.handleImagePicker();
+    if (image) {
+      console.log("Selected image:", image);
+      // Handle image upload and sending
+    }
+  };
+
+  const handleCamera = async () => {
+    const photo = await MediaService.handleCamera();
+    if (photo) {
+      console.log("Captured photo:", photo);
+      // Handle photo upload and sending
+    }
+  };
+
+  const handleLocation = () => {
+    Alert.alert(
+      "Location",
+      "Location sharing functionality will be implemented here."
     );
+  };
+
+  // Start recording when the mic button is pressed
+  const handleMicPress = async () => {
+    try {
+      // Initialize audio controls if needed
+      if (!audioControlsRef.current) {
+        const controls = await MediaService.handleMic();
+        if (!controls) return;
+        audioControlsRef.current = controls;
+      }
+
+      // Start recording
+      const started = await audioControlsRef.current.startRecording();
+      if (started) {
+        setIsRecording(true);
+        setRecordingDuration(0);
+
+        // Start timer to track recording duration
+        timerRef.current = setInterval(() => {
+          setRecordingDuration((prev) => prev + 1);
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      Alert.alert("Error", "Failed to start recording");
+    }
+  };
+
+  // Stop recording when the mic button is released
+  const handleMicRelease = async () => {
+    if (!isRecording) return;
+
+    try {
+      // Stop timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+
+      // Stop recording
+      const recordingResult = await audioControlsRef.current.stopRecording();
+      setIsRecording(false);
+
+      if (recordingResult && recordingDuration >= 1) {
+        setRecordingInfo(recordingResult);
+        // Auto-play the recording
+        playRecording(recordingResult.uri);
+      } else {
+        // Recording was too short, discard it
+        setRecordingInfo(null);
+        Alert.alert("Info", "Recording was too short");
+      }
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      setIsRecording(false);
+      Alert.alert("Error", "Failed to stop recording");
+    }
+  };
+
+  // Play recorded audio
+  const playRecording = async (uri) => {
+    if (!audioControlsRef.current) return;
+
+    try {
+      setIsPlayingAudio(true);
+      await audioControlsRef.current.playRecording(uri);
+
+      // Reset playing state after the audio finishes
+      // In a production app, you would listen for the audio completion event
+      setTimeout(() => {
+        setIsPlayingAudio(false);
+      }, recordingDuration * 1000 + 500); // Add a small buffer
+    } catch (error) {
+      console.error("Error playing recording:", error);
+      setIsPlayingAudio(false);
+    }
+  };
+
+  // Send recorded audio message
+  const sendAudioMessage = async () => {
+    if (!recordingInfo) return;
+
+    // Here you would upload the audio file and send it as a message
+    Alert.alert("Success", "Audio message would be sent here");
+
+    // Reset after sending
+    setRecordingInfo(null);
+  };
+
+  // Format seconds to MM:SS
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  return (
+    <View style={styles.container}>
+      <ConversationHeader item={item} router={router} />
+      <View style={styles.header} />
+      <View style={styles.main}>
+        <View style={styles.messageList}>
+          <MessageList messages={messages} currentUser={user} />
+        </View>
+        <View style={styles.inputContainer}>
+          {showMediaButtons && (
+            <View style={styles.mediaButtonsContainer}>
+              <TouchableOpacity
+                style={styles.mediaButton}
+                onPress={handleImagePicker}
+              >
+                <Ionicons name="image" size={hp(2.7)} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.mediaButton}
+                onPress={handleCamera}
+              >
+                <Ionicons name="camera" size={hp(2.7)} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.mediaButton}
+                onPress={handleLocation}
+              >
+                <Ionicons name="location" size={hp(2.7)} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.mediaButton,
+                  isRecording && styles.recordingButton,
+                ]}
+                onPressIn={handleMicPress}
+                onPressOut={handleMicRelease}
+              >
+                <Ionicons name="mic" size={hp(2.7)} color="white" />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Recording UI */}
+          {isRecording && (
+            <View style={styles.recordingContainer}>
+              <View style={styles.recordingIndicator}>
+                <View style={styles.recordingDot} />
+                <Text style={styles.recordingText}>
+                  Recording... {formatTime(recordingDuration)}
+                </Text>
+              </View>
+              <Text style={styles.recordingHint}>Release to stop</Text>
+            </View>
+          )}
+
+          {/* Playback UI */}
+          {recordingInfo && !isRecording && (
+            <View style={styles.playbackContainer}>
+              <TouchableOpacity
+                style={styles.playButton}
+                onPress={() => playRecording(recordingInfo.uri)}
+                disabled={isPlayingAudio}
+              >
+                <Ionicons
+                  name={isPlayingAudio ? "pause" : "play"}
+                  size={hp(2.5)}
+                  color="white"
+                />
+              </TouchableOpacity>
+              <View style={styles.audioProgressContainer}>
+                <View
+                  style={[
+                    styles.audioProgress,
+                    { width: isPlayingAudio ? "100%" : "0%" },
+                  ]}
+                />
+              </View>
+              <TouchableOpacity
+                style={styles.sendAudioButton}
+                onPress={sendAudioMessage}
+              >
+                <Ionicons name="send" size={hp(2.2)} color="white" />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Input Box */}
+          {!recordingInfo && (
+            <View style={styles.inputWrapper}>
+              <TouchableOpacity
+                style={styles.plusButton}
+                onPress={toggleMediaButtons}
+              >
+                <Ionicons name="add" size={hp(2.2)} color="white" />
+              </TouchableOpacity>
+              <View style={styles.inputBox}>
+                <TextInput
+                  ref={inputRef}
+                  onChangeText={(value) => (textRef.current = value)}
+                  placeholder="Type message ..."
+                  style={styles.textInput}
+                />
+                <TouchableOpacity
+                  style={styles.sendButton}
+                  onPress={handleSendMessage}
+                >
+                  <Ionicons name="send" size={hp(2.2)} color="white" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "white",
-    },
-    statusBar: {
-        backgroundColor: "white",
-    },
-    header: {
-        height: hp(1.5),
-        borderBottomWidth: 1,
-        borderBottomColor: "#d1d5db", // border-neutral-300
-    },
-    main: {
-        flex: 1,
-        justifyContent: "center",
-        backgroundColor: "#f3f4f6", // bg-neutral-100
-        overflow: "visible",
-    },
-    messageList: {
-        flex: 1,
-    },
-    inputContainer: {
-        marginBottom: hp(1.0),
-        paddingTop: hp(0.5),
-    },
-    inputWrapper: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginHorizontal: wp(3),
-    },
-    inputBox: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        backgroundColor: "white",
-        borderWidth: 1,
-        borderColor: "#d1d5db", // border-neutral-300
-        padding: hp(1),
-        borderRadius: 50,
-        width: "100%",
-    },
-    textInput: {
-        flex: 2,
-        fontSize: hp(2),
-        marginRight: wp(10),
-    },
-    sendButton: {
-        backgroundColor: "#e5e7eb", // bg-neutral-200
-        padding: hp(1),
-        borderRadius: 50,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  statusBar: {
+    backgroundColor: "white",
+  },
+  header: {
+    height: hp(1.5),
+    borderBottomWidth: 1,
+    borderBottomColor: "#d1d5db",
+  },
+  main: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "#f3f4f6",
+    overflow: "visible",
+  },
+  messageList: {
+    flex: 1,
+  },
+  inputContainer: {
+    marginBottom: hp(1.0),
+    paddingTop: hp(0.5),
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginHorizontal: wp(3),
+  },
+  plusButton: {
+    backgroundColor: "#0084ff",
+    padding: hp(1),
+    borderRadius: 50,
+    marginRight: wp(2),
+  },
+  inputBox: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderWidth: 1,
+    height: hp(6.1),
+    borderColor: "#d1d5db",
+    padding: hp(1),
+    borderRadius: 50,
+    flex: 1,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: hp(2),
+    marginRight: wp(2),
+  },
+  sendButton: {
+    backgroundColor: "#0084ff",
+    padding: hp(1),
+    borderRadius: 50,
+  },
+  mediaButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    marginHorizontal: wp(3),
+    marginBottom: hp(1),
+  },
+  mediaButton: {
+    backgroundColor: "#0084ff",
+    padding: hp(1.2),
+    borderRadius: 50,
+    marginHorizontal: wp(1),
+  },
+  recordingButton: {
+    backgroundColor: "#FF3B30", // Red color when recording
+  },
+  recordingContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+    marginHorizontal: wp(3),
+    marginBottom: hp(1),
+  },
+  recordingIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderRadius: 20,
+    paddingHorizontal: wp(4),
+    paddingVertical: hp(1),
+    marginBottom: hp(0.5),
+  },
+  recordingDot: {
+    width: hp(1.2),
+    height: hp(1.2),
+    borderRadius: hp(0.6),
+    backgroundColor: "#FF3B30",
+    marginRight: wp(2),
+  },
+  recordingText: {
+    fontSize: hp(1.8),
+    color: "#333",
+  },
+  recordingHint: {
+    fontSize: hp(1.4),
+    color: "#666",
+  },
+  playbackContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: wp(3),
+    marginBottom: hp(1),
+    backgroundColor: "white",
+    borderRadius: 25,
+    padding: hp(1.2),
+  },
+  playButton: {
+    backgroundColor: "#0084ff",
+    width: hp(5),
+    height: hp(5),
+    borderRadius: hp(2.5),
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: wp(2),
+  },
+  audioProgressContainer: {
+    flex: 1,
+    height: hp(1),
+    backgroundColor: "#e5e7eb",
+    borderRadius: hp(0.5),
+    overflow: "hidden",
+  },
+  audioProgress: {
+    height: "100%",
+    backgroundColor: "#0084ff",
+    borderRadius: hp(0.5),
+    width: "0%",
+    // This transitions from 0% to 100% during playback
+    transition: "width 0.3s linear",
+  },
+  sendAudioButton: {
+    backgroundColor: "#0084ff",
+    width: hp(5),
+    height: hp(5),
+    borderRadius: hp(2.5),
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: wp(2),
+  },
 });
