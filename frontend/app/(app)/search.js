@@ -15,6 +15,10 @@ import {
 import {Ionicons} from '@expo/vector-icons';
 import {router} from 'expo-router';
 import {useAuth} from '../../context/authContext';
+import {fetchQuery} from "../../api/search";
+import {createConversation} from "../../api/conversation";
+import {Alert} from "react-native";
+import Loading from '../../components/Loading';
 
 export default function Search() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -22,40 +26,7 @@ export default function Search() {
     const [results, setResults] = useState([]);
     const {user} = useAuth();
 
-    // These would be replaced with actual API calls
-    const mockUsers = [
-        {
-            username: "duc",
-            profileUrl: require("../../assets/images/conech.jpg"),
-            userId: "1",
-        },
-        {
-            username: "phong",
-            profileUrl: require("../../assets/images/phuthuy.jpg"),
-            userId: "2",
-        },
-        {
-            username: "dat",
-            profileUrl: require("../../assets/images/conrong.jpg"),
-            userId: "3",
-        },
-    ];
-
-    const mockConversations = [
-        {
-            id: '101',
-            name: 'Project Discussion',
-            participants: ['1', '2'],
-            lastMessage: 'Let\'s discuss the new features'
-        },
-        {
-            id: '102',
-            name: 'Weekend Plans',
-            participants: ['1', '3'],
-            lastMessage: 'Are you free this weekend?'
-        }
-    ];
-
+    // In your search.js useEffect
     useEffect(() => {
         if (searchQuery.trim() === '') {
             setResults([]);
@@ -64,66 +35,69 @@ export default function Search() {
 
         setLoading(true);
 
-        // Search logic (simulated API call)
-        setTimeout(() => {
-            // Filter users
-            const matchingUsers = mockUsers.filter(u =>
-                u.username.toLowerCase().includes(searchQuery.toLowerCase()) &&
-                u.userId !== user.userId
-            ).map(u => ({
-                ...u,
-                type: 'user'
-            }));
+        // Set up debounce timer
+        const timer = setTimeout(() => {
+            const searchUsers = async () => {
+                try {
+                    // Get user matches with conversations
+                    if (searchQuery.trim() === '') {
+                        setResults([]);
+                        setLoading(false);
+                        return;
+                    }
+                    const matchingUsers = await fetchQuery(searchQuery, user.id);
 
-            // Filter conversations
-            const matchingConversations = mockConversations.filter(c =>
-                c.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-                c.participants.includes(user.userId)
-            ).map(c => ({
-                ...c,
-                type: 'conversation'
-            }));
+                    // Format results
+                    const userResults = matchingUsers.map(u => ({
+                        username: u.username,
+                        profile_pic: u.profile_pic,
+                        userId: u.id,
+                        conversation: u.conversation,
+                        type: 'user'
+                    }));
 
-            // Sort results - users first, then conversations
-            const results = [...matchingUsers, ...matchingConversations];
-            setResults(results);
-            setLoading(false);
-        }, 500);
-    }, [searchQuery]);
-
-    const handleUserSelect = (userId) => {
-        // Check if conversation exists with this user
-        const existingConversation = mockConversations.find(c =>
-            c.participants.includes(userId) &&
-            c.participants.includes(user.userId)
-        );
-
-        if (existingConversation) {
-            // Navigate to existing conversation
-            router.push({
-                pathname: '/conversation',
-                params: {id: existingConversation.id}
-            });
-        } else {
-            // Create new conversation and navigate to it
-            // In a real app, you would create the conversation via API
-            const newConversationId = 'new-' + Date.now();
-            router.push({
-                pathname: '/conversation',
-                params: {
-                    id: newConversationId,
-                    userId: userId,
-                    isNew: true
+                    setResults(userResults);
+                } catch (error) {
+                    console.error("Error searching users:", error);
+                } finally {
+                    setLoading(false);
                 }
-            });
-        }
-    };
+            };
 
-    const handleConversationSelect = (conversationId) => {
-        router.push({
-            pathname: '/conversation',
-            params: {id: conversationId}
-        });
+            searchUsers();
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery, user]);
+
+    const handleUserSelect = async (item) => {
+        try {
+            if (item.conversation) {
+                // Navigate to existing conversation
+                router.push({
+                    pathname: '/conversation',
+                    params: {id: item.conversation.id}
+                });
+            } else {
+                // Show loading indicator
+                setLoading(true);
+
+                // Create new conversation
+                const participants = [user.id, item.userId];
+                const newConversation = await createConversation(participants);
+
+                // Navigate to the conversation screen
+                router.push({
+                    pathname: '/conversation',
+                    params: {id: newConversation.id}
+                });
+            }
+        } catch (error) {
+            console.error("Error handling user selection:", error);
+            Alert.alert("Error", "Could not open conversation. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const renderItem = ({item}) => {
@@ -131,10 +105,10 @@ export default function Search() {
             return (
                 <TouchableOpacity
                     style={styles.resultItem}
-                    onPress={() => handleUserSelect(item.userId)}
+                    onPress={() => handleUserSelect(item)}
                 >
                     <Image
-                        source={item.profileUrl}
+                        source={{uri: item.profile_pic}}
                         style={styles.avatar}
                     />
                     <View style={styles.resultDetails}>
@@ -147,7 +121,7 @@ export default function Search() {
             return (
                 <TouchableOpacity
                     style={styles.resultItem}
-                    onPress={() => handleConversationSelect(item.id)}
+                    onPress={() => handleConversationSelect(item)}
                 >
                     <View style={styles.conversationAvatar}>
                         <Ionicons name="chatbubble-outline" size={24} color="#1E90FF"/>
@@ -184,7 +158,7 @@ export default function Search() {
 
                 {loading ? (
                     <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="large" color="#1E90FF"/>
+                        <Loading size={100} />
                     </View>
                 ) : results.length > 0 ? (
                     <FlatList

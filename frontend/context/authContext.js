@@ -18,7 +18,7 @@ export const AuthContextProvider = ({ children }) => {
                 if (firebaseUser) {
                     const userData = await fetchUserData(firebaseUser.uid);
                     const newUser = {
-                        uid: firebaseUser.uid,
+                        id: firebaseUser.uid,
                         email: firebaseUser.email,
                         emailVerified: firebaseUser.emailVerified,
                         username: userData?.username || '',
