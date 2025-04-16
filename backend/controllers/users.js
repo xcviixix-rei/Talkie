@@ -2,7 +2,11 @@ import express from "express";
 import { query, getDocs, where } from "firebase/firestore";
 import { User } from "../models/User.js";
 import { Conversation } from "../models/Conversation.js";
-
+import { StreamChat } from "stream-chat";
+import dotenv from 'dotenv';
+dotenv.config();
+const GETSTREAM_API_KEY = process.env.GETSTREAM_API_KEY;
+const GETSTREAM_SECRET = process.env.GETSTREAM_SECRET;
 
 const router = express.Router();
 
@@ -14,6 +18,19 @@ router.post("/", async (req, res) => {
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ error: "Failed to create user" });
+  }
+});
+
+router.post('/api/get-token', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const serverClient = StreamChat.getInstance(GETSTREAM_API_KEY, GETSTREAM_SECRET);
+    const token = serverClient.createToken(userId);
+    res.json({ token });
+    
+  } catch (error) {
+    console.error('Token generation error:', error);
+    res.status(500).json({ error: 'Token generation failed' });
   }
 });
 
