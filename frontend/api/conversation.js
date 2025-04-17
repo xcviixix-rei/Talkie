@@ -41,16 +41,16 @@ export const fetchConversation = async (conversationId) => {
     }
 };
 
-export const sendMessage = async (conversationId, senderId, content) => {
+export const changeLastMessages = async (conversationId, sender, text) => {
     try {
-        const response = await fetch(`http://10.0.2.2:5000/api/conversations/${conversationId}/messages`, {
-            method: 'POST',
+        const response = await fetch(`http://10.0.2.2:5000/api/conversations/${conversationId}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                senderId,
-                content,
+                sender,
+                text,
                 timestamp: new Date().toISOString()
             }),
         });
