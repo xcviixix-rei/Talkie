@@ -17,10 +17,21 @@ import {
 } from "react-native-responsive-screen";
 import MediaService from "../../services/mediaService";
 import { Ionicons } from "@expo/vector-icons";
-import { db } from "../../config/firebaseConfig";
 import { useAuth } from "../../context/authContext";
-import axios from "axios";
-import { collection, doc, setDoc, addDoc, Timestamp } from "firebase/firestore";
+import { fetchUserData } from "../../api/user";
+import { sendMessage, getMessages } from "../../api/message";
+import { fetchConversation, changeLastMessages } from "../../api/conversation";
+
+import {
+  collection,
+  doc,
+  getDoc,
+  where,
+  onSnapshot,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { db } from "../../config/firebaseConfig";
 
 export default function Conversation() {
   const item = useLocalSearchParams();
@@ -36,10 +47,62 @@ export default function Conversation() {
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const audioControlsRef = useRef(null);
+  const [mockUsers, setMockUsers] = useState([]);
 
-  // Clear timer when component unmounts
+  const fetchUser = async () => {
+    try {
+      const participantsArray = item.participants.split(","); // turns it into an array
+
+      const userPromises = participantsArray.map(async (participantId) => {
+        if (participantId != user.id) {
+          return fetchUserData(participantId);
+        }
+      });
+
+      const usersData = await Promise.all(userPromises);
+
+      setMockUsers(usersData);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+    }
+  };
+
   useEffect(() => {
+    fetchUser();
+
+    const messagesRef = collection(db, "messages");
+    const messagesQuery = query(
+      messagesRef,
+      where("conversation_id", "==", item.id),
+      orderBy("timestamp", "asc")
+    );
+
+    const unsubscribe = onSnapshot(
+      messagesQuery,
+      (snapshot) => {
+        const updatedMessages = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setMessages(updatedMessages);
+        if (updatedMessages.length > 0) {
+          const lastMessage = updatedMessages[updatedMessages.length - 1];
+          changeLastMessages(
+            item.id,
+            user.id,
+            lastMessage.text,
+            lastMessage.timestamp
+          );
+        }
+      },
+      (error) => {
+        console.error("Error listening to messages:", error);
+      }
+    );
+
+    // Clean up the listener when component unmounts
     return () => {
+      unsubscribe();
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
@@ -47,70 +110,18 @@ export default function Conversation() {
     };
   }, []);
 
-  const createConversationIfNotExists = async () => {
-    // call API
-    let conversationId = getConversationId([user, ...item]);
-    await setDoc(doc(db, "conversations", conversationId), {
-      conversationId,
-      createdAt: Timestamp.fromDate(new Date()),
-    });
-  };
-
   const handleSendMessage = async () => {
     let message = textRef.current.trim();
     if (!message) return;
     if (inputRef) inputRef?.current?.clear();
-
-    axios
-      .post(
-        `http://10.0.2.2:5000/api/messages/`,
-        {
-          fields: {
-            conversation_id: { stringValue: item.conversation_id },
-            sender: {
-              mapValue: {
-                fields: {
-                  user_id: { stringValue: message.sender.user_id },
-                  username: { stringValue: message.sender.username },
-                },
-              },
-            },
-            text: { stringValue: message.text },
-            attachments: {
-              arrayValue: {
-                values: message.attachments.map((att) => ({
-                  mapValue: {
-                    fields: {
-                      type: { stringValue: att.type },
-                      URL: { stringValue: att.URL },
-                    },
-                  },
-                })),
-              },
-            },
-            timestamp: { timestampValue: message.timestamp },
-            seen_by: {
-              arrayValue: {
-                values: message.seen_by.map((id) => ({ stringValue: id })),
-              },
-            },
-          },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${ID_TOKEN}`,
-          },
-        }
-      )
-      .then((res) => {
-        console.log("Message sent:", res.data);
-      })
-      .catch((err) => {
-        console.error(
-          "Failed to send message:",
-          err.response?.data || err.message
-        );
-      });
+    sendMessage({
+      conversation_id: item.id,
+      sender: user.id,
+      text: message,
+      attachments: [],
+      timestamp: new Date().toISOString(),
+      seen_by: [user.id],
+    });
   };
 
   const toggleMediaButtons = () => {
@@ -119,10 +130,13 @@ export default function Conversation() {
   };
 
   const handleImagePicker = async () => {
+    console.log("handleImagePicker was called"); // <-- Add this line to confirm the function is triggered
+
     const image = await MediaService.handleImagePicker();
+    console.log("Image from MediaService:", image);
+
     if (image) {
       console.log("Selected image:", image);
-      // Handle image upload and sending
     }
   };
 
@@ -240,7 +254,7 @@ export default function Conversation() {
 
   return (
     <View style={styles.container}>
-      <ConversationHeader item={item} router={router} />
+      <ConversationHeader item={mockUsers} router={router} />
       <View style={styles.header} />
       <View style={styles.main}>
         <View style={styles.messageList}>
