@@ -1,18 +1,19 @@
 import auth from '../config/firebaseConfig';
 
-
 // Get all messages in a conversation
 export const getMessages = async (conversationId) => {
   try {
-    const response = await fetch(`http://10.0.2.2:5000/api/conversations/${conversationId}/messages`);
+    const response = await fetch(
+      `http://10.0.2.2:5000/api/conversations/${conversationId}/messages`
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to fetch messages: ${response.status}`);
     }
-
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('Error fetching messages:', error);
+    console.error("Error fetching messages:", error);
     throw error;
   }
 };
@@ -21,9 +22,9 @@ export const getMessages = async (conversationId) => {
 export const sendMessage = async (message) => {
   try {
     const response = await fetch(`http://10.0.2.2:5000/api/messages`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(message),
     });
@@ -34,7 +35,7 @@ export const sendMessage = async (message) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error sending message:', error);
+    console.error("Error sending message:", error);
     throw error;
   }
 };
@@ -42,13 +43,16 @@ export const sendMessage = async (message) => {
 // Update a message
 export const updateMessage = async (messageId, updates) => {
   try {
-    const response = await fetch(`http://10.0.2.2:5000/api/messages/${messageId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updates),
-    });
+    const response = await fetch(
+      `http://10.0.2.2:5000/api/messages/${messageId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to update message: ${response.status}`);
@@ -56,7 +60,7 @@ export const updateMessage = async (messageId, updates) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error updating message:', error);
+    console.error("Error updating message:", error);
     throw error;
   }
 };
@@ -64,9 +68,12 @@ export const updateMessage = async (messageId, updates) => {
 // Delete a message
 export const deleteMessage = async (messageId) => {
   try {
-    const response = await fetch(`http://10.0.2.2:5000/api/messages/${messageId}`, {
-      method: 'DELETE',
-    });
+    const response = await fetch(
+      `http://10.0.2.2:5000/api/messages/${messageId}`,
+      {
+        method: "DELETE",
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to delete message: ${response.status}`);
@@ -74,7 +81,7 @@ export const deleteMessage = async (messageId) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error deleting message:', error);
+    console.error("Error deleting message:", error);
     throw error;
   }
 };
@@ -83,7 +90,9 @@ export const deleteMessage = async (messageId) => {
 export const searchMessages = async (conversationId, searchQuery) => {
   try {
     const response = await fetch(
-      `http://10.0.2.2:5000/api/conversations/${conversationId}/messages/search?query=${encodeURIComponent(searchQuery)}`
+      `http://10.0.2.2:5000/api/conversations/${conversationId}/messages/search?query=${encodeURIComponent(
+        searchQuery
+      )}`
     );
 
     if (!response.ok) {
@@ -92,7 +101,7 @@ export const searchMessages = async (conversationId, searchQuery) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error searching messages:', error);
+    console.error("Error searching messages:", error);
     throw error;
   }
 };
@@ -102,14 +111,14 @@ export const markMessageAsSeen = async (messageId) => {
   try {
     const currentUser = auth.currentUser;
     if (!currentUser) {
-      throw new Error('User not authenticated');
+      throw new Error("User not authenticated");
     }
 
     const userId = currentUser.uid;
 
     const message = await getMessageById(messageId);
     if (!message) {
-      throw new Error('Message not found');
+      throw new Error("Message not found");
     }
 
     // Add current user to seen_by if not already there
@@ -120,7 +129,7 @@ export const markMessageAsSeen = async (messageId) => {
 
     return true;
   } catch (error) {
-    console.error('Error marking message as seen:', error);
+    console.error("Error marking message as seen:", error);
     throw error;
   }
 };
@@ -128,7 +137,9 @@ export const markMessageAsSeen = async (messageId) => {
 // Get a single message by ID
 export const getMessageById = async (messageId) => {
   try {
-    const response = await fetch(`http://10.0.2.2:5000/api/messages/${messageId}`);
+    const response = await fetch(
+      `http://10.0.2.2:5000/api/messages/${messageId}`
+    );
 
     if (!response.ok) {
       throw new Error(`Failed to get message: ${response.status}`);
@@ -136,7 +147,7 @@ export const getMessageById = async (messageId) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error getting message by ID:', error);
+    console.error("Error getting message by ID:", error);
     throw error;
   }
 };
