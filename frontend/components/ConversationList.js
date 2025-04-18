@@ -16,7 +16,7 @@ export default function ConversationList({ users, currentUser }) {
         showsVerticalScrollIndicator={false}
         renderItem={({ item, index }) => (
           <ConversationItem
-            noBorder={index + 1 == users.length}
+            noBorder={index + 1 === users.length}
             item={item}
             router={router}
             currentUser={currentUser}

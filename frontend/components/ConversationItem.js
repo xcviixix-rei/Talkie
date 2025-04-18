@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { fetchUserData } from "../api/user";
@@ -68,7 +68,7 @@ export default function ConversationItem({
   const fetchUser = async () => {
     try {
       const userPromises = item.participants.map(async (participantId) => {
-        if (participantId != currentUser.id) {
+        if (participantId !== currentUser.id) {
           return fetchUserData(participantId);
         }
       });

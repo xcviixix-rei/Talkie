@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import {Stack} from "expo-router";
 
 export default function AppLayout() {
     return (
@@ -15,7 +15,6 @@ export default function AppLayout() {
                 options={{
                     title: 'Search',
                     headerBackTitle: 'Home',
-                    // This ensures when returning from conversation, it goes back to home
                 }}
             />
             <Stack.Screen

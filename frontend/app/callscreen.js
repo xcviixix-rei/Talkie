@@ -3,7 +3,7 @@ import {SafeAreaView, StyleSheet} from "react-native"
 import {StreamVideo, StreamVideoClient} from "@stream-io/video-react-native-sdk"
 import {ActiveCall} from "./call/activecall"
 import {InactiveCall} from "./call/inactivecall"
-import { GETSTREAM_API_KEY } from "@env"
+import {GETSTREAM_API_KEY} from "@env"
 
 const apiKey = GETSTREAM_API_KEY
 const token =

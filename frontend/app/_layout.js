@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
-import { Slot, useRouter, useSegments } from "expo-router";
-import { AuthContextProvider, useAuth } from "../context/authContext";
+import React, {useEffect} from "react";
+import {Slot, useRouter, useSegments} from "expo-router";
+import {AuthContextProvider, useAuth} from "../context/authContext";
 
 const MainLayout = () => {
     const { isAuthenticated } = useAuth();

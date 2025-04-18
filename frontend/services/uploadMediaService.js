@@ -2,12 +2,15 @@ import { createClient } from "@supabase/supabase-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system"; // for file access
 import mime from "mime"; // helps detect MIME types
-import { SUBABASE_URL, SUBABASE_KEY } from "dotenv";
+
+import {
+    SUBABASE_URL, SUBABASE_KEY
+} from "@env";
 
 // Supabase client
 const supabase = createClient(
-  "https://dhqgxvhppcexbmemrsmh.supabase.co",
-  `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRocWd4dmhwcGNleGJtZW1yc21oIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDgxNzYyMiwiZXhwIjoyMDYwMzkzNjIyfQ.keEdGF2j2f0hWnKtGKKHdifbnK_0RdNpfNwlrftp0tc`,
+  SUBABASE_URL,
+  SUBABASE_KEY,
   {
     auth: {
       storage: AsyncStorage,
