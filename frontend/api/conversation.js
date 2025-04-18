@@ -36,7 +36,6 @@ export const fetchConversation = async (conversationId) => {
     if (!response.ok) {
       throw new Error(`Failed to fetch conversation: ${response.status}`);
     }
-
     return await response.json();
   } catch (error) {
     console.error("Fetch conversation failed:", error);
