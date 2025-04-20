@@ -2,13 +2,16 @@ import express from "express";
 import { query, getDocs, where } from "firebase/firestore";
 import { User } from "../models/User.js";
 import { Conversation } from "../models/Conversation.js";
-import { StreamChat } from "stream-chat";
-import dotenv from 'dotenv';
+import { StreamClient } from "getstream";
+import { getAuth } from "firebase-admin/auth";
+import dotenv from "dotenv";
+
 dotenv.config();
 const GETSTREAM_API_KEY = process.env.GETSTREAM_API_KEY;
 const GETSTREAM_SECRET = process.env.GETSTREAM_SECRET;
 
 const router = express.Router();
+const client = new StreamClient(GETSTREAM_API_KEY, GETSTREAM_SECRET);
 
 // Create a new user
 router.post("/", async (req, res) => {
@@ -21,16 +24,19 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.post('/api/get-token', async (req, res) => {
+router.post("/get-token", async (req, res) => {
+  const idToken = req.headers.authorization?.split('Bearer ')[1];
+  if (!idToken) {
+    return res.status(401).json({ error: "No token provided" });
+  }
   try {
-    const { userId } = req.body;
-    const serverClient = StreamChat.getInstance(GETSTREAM_API_KEY, GETSTREAM_SECRET);
-    const token = serverClient.createToken(userId);
-    res.json({ token });
-    
+    const decodedToken = await getAuth().verifyIdToken(idToken);
+    const userId = decodedToken.uid; // Firebase UID as the GetStream.io user ID
+    const streamToken = client.createUserToken(userId);
+    res.json({ token: streamToken });
   } catch (error) {
-    console.error('Token generation error:', error);
-    res.status(500).json({ error: 'Token generation failed' });
+    console.error("Error verifying token:", error);
+    res.status(401).json({ error: "Invalid token" });
   }
 });
 

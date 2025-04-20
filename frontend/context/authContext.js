@@ -10,6 +10,7 @@ export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
     const [isLoading, setIsLoading] = useState(true);
+    const [streamToken, setStreamToken] = useState(null);
 
     useEffect(() => {
         setIsLoading(true);
@@ -28,9 +29,22 @@ export const AuthContextProvider = ({ children }) => {
                     };
                     setUser(newUser);
                     setIsAuthenticated(true);
+
+                    const idToken = await firebaseUser.getIdToken();
+                    const response = await fetch("http://10.0.2.2:5000/api/users/get-token", {
+                        method: "POST",
+                        headers: {
+                        "Authorization": `Bearer ${idToken}`,
+                        "Content-Type": "application/json",
+                        },
+                    });
+                    console.log("FIREBASE TOKEN:", idToken); // Check logs
+                    const { token } = await response.json();
+                    setStreamToken(token);
                 } else {
                     setIsAuthenticated(false);
                     setUser(null);
+                    setStreamToken(null);
                 }
             } catch (error) {
                 console.error("Auth state change error:", error);
@@ -118,7 +132,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{user, isAuthenticated, handleSignIn, handleSignOut , handleSignUp}}>
+        <AuthContext.Provider value={{user, isAuthenticated, handleSignIn, handleSignOut , handleSignUp, streamToken}}>
             {children}
         </AuthContext.Provider>
     )

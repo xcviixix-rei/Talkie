@@ -1,7 +1,13 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import firebaseAdmin from "firebase-admin";
 import dotenv from "dotenv";
+
 dotenv.config();
+
+firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.applicationDefault(),
+});
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,

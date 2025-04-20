@@ -31,6 +31,13 @@ export default function AppLayout() {
                     presentation: 'modal'
                 }}
             />
+            <Stack.Screen
+                name="callScreen"
+                options={{
+                    headerShown: false,
+                    presentation: 'fullScreenModal',
+                }}
+            />
         </Stack>
     );
 }
