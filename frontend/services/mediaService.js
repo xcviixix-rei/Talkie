@@ -5,8 +5,8 @@ import { Alert, Platform } from "react-native";
 
 // Configuration for image picking and camera
 const imagePickerOptions = {
-  mediaTypes: ImagePicker.MediaTypeOptions.All,
-  allowsEditing: true,
+  allowsEditing: false,
+  allowsMultipleSelection: true,
   aspect: [4, 3],
   quality: 0.8,
 };
@@ -139,6 +139,7 @@ class MediaService {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         ...imagePickerOptions,
+        allowsMultipleSelection: true, // Enable multiple selection
         base64: false,
       });
 
@@ -146,21 +147,27 @@ class MediaService {
         return null;
       }
 
-      const asset = result.assets[0];
-      const fileName = asset.uri.split("/").pop();
-      const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+      // Process all selected assets instead of just the first one
+      const processedImages = await Promise.all(
+        result.assets.map(async (asset) => {
+          const fileName = asset.uri.split("/").pop();
+          const fileInfo = await FileSystem.getInfoAsync(asset.uri);
 
-      return {
-        uri: asset.uri,
-        name: fileName,
-        type: `image/${fileName.split(".").pop()}`,
-        size: fileInfo.size,
-        width: asset.width,
-        height: asset.height,
-      };
+          return {
+            uri: asset.uri,
+            name: fileName,
+            type: `image/${fileName.split(".").pop()}`,
+            size: fileInfo.size,
+            width: asset.width,
+            height: asset.height,
+          };
+        })
+      );
+
+      return processedImages; // This will return an array of image objects
     } catch (error) {
-      console.error("Error picking image:", error);
-      Alert.alert("Error", "Failed to select image. Please try again.");
+      console.error("Error picking images:", error);
+      Alert.alert("Error", "Failed to select images. Please try again.");
       return null;
     }
   }
@@ -229,7 +236,8 @@ class MediaService {
       });
 
       if (this.recording) {
-        console.log(this.recording);
+        //
+        // console.log(this.recording);
         await this.stopRecording();
       }
       const recording = new Audio.Recording();

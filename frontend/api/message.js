@@ -1,4 +1,4 @@
-import auth from '../config/firebaseConfig';
+import auth from "../config/firebaseConfig";
 
 // Get all messages in a conversation
 export const getMessages = async (conversationId) => {
@@ -20,6 +20,7 @@ export const getMessages = async (conversationId) => {
 
 // Send a new message
 export const sendMessage = async (message) => {
+  console.log(message.attachments);
   try {
     const response = await fetch(`http://10.0.2.2:5000/api/messages`, {
       method: "POST",
