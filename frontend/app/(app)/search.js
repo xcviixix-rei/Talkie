@@ -88,7 +88,7 @@ export default function Search() {
                 // Navigate to the conversation screen
                 router.push({
                     pathname: '/conversation',
-                    params: {id: newConversation.id}
+                    params: newConversation
                 });
             }
         } catch (error) {

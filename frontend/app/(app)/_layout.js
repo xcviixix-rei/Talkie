@@ -4,9 +4,10 @@ export default function AppLayout() {
     return (
         <Stack>
             <Stack.Screen
-                name="home"
+                name="(tabs)"
                 options={{headerShown: false}}
             />
+
             <Stack.Screen
                 name="conversation"
             />
@@ -17,13 +18,7 @@ export default function AppLayout() {
                     headerBackTitle: 'Home',
                 }}
             />
-            <Stack.Screen
-                name="menu"
-                options={{
-                    title: 'Menu',
-                    presentation: 'modal'
-                }}
-            />
+
             <Stack.Screen
                 name="profile"
                 options={{

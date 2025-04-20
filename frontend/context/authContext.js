@@ -38,7 +38,6 @@ export const AuthContextProvider = ({ children }) => {
                         "Content-Type": "application/json",
                         },
                     });
-                    console.log("FIREBASE TOKEN:", idToken); // Check logs
                     const { token } = await response.json();
                     setStreamToken(token);
                 } else {

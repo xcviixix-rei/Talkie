@@ -19,7 +19,6 @@ export class User {
 
   static async create(data) {
     const { id, ...rest } = data;
-    console.log(data);
     
     // Check if a user with the same username already exists
     const q = query(User.collectionRef(), where("username", "==", rest.username));

@@ -1,19 +1,37 @@
-import {Alert, StyleSheet, Text, TextInput, TouchableOpacity, View,} from "react-native";
-import React, {useEffect, useRef, useState} from "react";
-import {useLocalSearchParams, useRouter} from "expo-router";
+import {
+  Alert,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ActivityIndicator,
+  Text,
+} from "react-native";
+import React, { useRef, useState, useEffect } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import ConversationHeader from "../../components/ConversationHeader";
 import MessageList from "../../components/MessageList";
-import {heightPercentageToDP as hp, widthPercentageToDP as wp,} from "react-native-responsive-screen";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
 import MediaService from "../../services/mediaService";
-import {Ionicons} from "@expo/vector-icons";
-import {useAuth} from "../../context/authContext";
-import {fetchUserData} from "../../api/user";
-import {sendMessage} from "../../api/message";
-import {changeLastMessages} from "../../api/conversation";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../../context/authContext";
+import { fetchUserData } from "../../api/user";
+import { sendMessage, getMessages } from "../../api/message";
+import { fetchConversation, changeLastMessages } from "../../api/conversation";
 
-import {collection, onSnapshot, orderBy, query, where,} from "firebase/firestore";
-import { useCall } from "./call/useCall";
-import {db} from "../../config/firebaseConfig";
+import {
+  collection,
+  doc,
+  getDoc,
+  where,
+  onSnapshot,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { db } from "../../config/firebaseConfig";
 
 export default function Conversation() {
   const item = useLocalSearchParams();
@@ -29,9 +47,6 @@ export default function Conversation() {
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const audioControlsRef = useRef(null);
-
-  // Use the custom hook for call functionality
-  const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId);
   const [mockUsers, setMockUsers] = useState([]);
 
   const fetchUser = async () => {
@@ -39,7 +54,7 @@ export default function Conversation() {
       const participantsArray = item.participants.split(","); // turns it into an array
 
       const userPromises = participantsArray.map(async (participantId) => {
-        if (participantId !== user.id) {
+        if (participantId != user.id) {
           return fetchUserData(participantId);
         }
       });
@@ -99,7 +114,7 @@ export default function Conversation() {
     let message = textRef.current.trim();
     if (!message) return;
     if (inputRef) inputRef?.current?.clear();
-    await sendMessage({
+    sendMessage({
       conversation_id: item.id,
       sender: user.id,
       text: message,
@@ -185,7 +200,7 @@ export default function Conversation() {
       if (recordingResult && recordingDuration >= 1) {
         setRecordingInfo(recordingResult);
         // Auto-play the recording
-        await playRecording(recordingResult.uri);
+        playRecording(recordingResult.uri);
       } else {
         // Recording was too short, discard it
         setRecordingInfo(null);
