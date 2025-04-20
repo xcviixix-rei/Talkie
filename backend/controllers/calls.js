@@ -1,5 +1,4 @@
 import express from "express";
-import { query, getDocs, where } from "firebase/firestore";
 import { Call } from "../models/Call.js";
 
 const router = express.Router();

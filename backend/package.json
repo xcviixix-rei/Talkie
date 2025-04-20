@@ -19,6 +19,7 @@
     "firebase": "^11.4.0",
     "firebase-admin": "^13.2.0",
     "getstream": "^8.8.0",
-    "mongoose": "^8.11.0"
+    "mongoose": "^8.11.0",
+    "stream-chat": "^8.59.0"
   }
 }

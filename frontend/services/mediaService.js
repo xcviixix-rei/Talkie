@@ -11,16 +11,31 @@ const imagePickerOptions = {
   quality: 0.8,
 };
 
-// Audio recording configuration
-const RECORDING_OPTIONS = {
-  android: {
+// Create platform-specific recording options
+const createRecordingOptions = () => {
+  // For Android-only use case
+  const androidOptions = {
     extension: ".m4a",
     outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
     audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
     sampleRate: 44100,
     numberOfChannels: 2,
     bitRate: 128000,
-  },
+  };
+
+  // To satisfy the API requirement, we'll include a minimal iOS config
+  // even though it won't be used on Android devices
+  return {
+    android: androidOptions,
+    ios: {
+      extension: ".m4a",
+      outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC,
+      audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_MEDIUM,
+      sampleRate: 44100,
+      numberOfChannels: 2,
+      bitRate: 128000,
+    },
+  };
 };
 
 class MediaService {
@@ -28,6 +43,11 @@ class MediaService {
     this.recording = null;
     this.sound = null;
     this.recordingUri = null;
+    this.isAndroid = Platform.OS === "android";
+    // Skip this class entirely on iOS if it's Android-only
+    if (!this.isAndroid) {
+      console.warn("MediaService is configured for Android only");
+    }
   }
 
   /**
@@ -62,7 +82,6 @@ class MediaService {
     try {
       const cameraPermission =
         await ImagePicker.requestCameraPermissionsAsync();
-
       if (!cameraPermission.granted) {
         Alert.alert(
           "Permission Required",
@@ -83,6 +102,11 @@ class MediaService {
    * @returns {Promise<boolean>} Whether permission was granted
    */
   async requestAudioPermission() {
+    if (!this.isAndroid) {
+      console.warn("Audio recording is configured for Android only");
+      return false;
+    }
+
     try {
       const audioPermission = await Audio.requestPermissionsAsync();
 
@@ -186,22 +210,30 @@ class MediaService {
    * @returns {Promise<boolean>} Success status
    */
   async startRecording() {
-    const permissionGranted = await this.requestAudioPermission();
+    if (!this.isAndroid) {
+      console.warn("Audio recording is configured for Android only");
+      return false;
+    }
     try {
+      const permissionGranted = await this.requestAudioPermission();
+      if (!permissionGranted) {
+        return false;
+      }
+
       await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
+        allowsRecordingIOS: false, // Since we're Android-only
+        playsInSilentModeIOS: false, // Since we're Android-only
         shouldDuckAndroid: true,
         playThroughEarpieceAndroid: false,
         staysActiveInBackground: false,
       });
 
       if (this.recording) {
+        console.log(this.recording);
         await this.stopRecording();
       }
-
       const recording = new Audio.Recording();
-      await recording.prepareToRecordAsync(RECORDING_OPTIONS);
+      await recording.prepareToRecordAsync(createRecordingOptions());
       await recording.startAsync();
       this.recording = recording;
 
@@ -218,6 +250,10 @@ class MediaService {
    * @returns {Promise<Object|null>} Recording information or null if error
    */
   async stopRecording() {
+    if (!this.isAndroid) {
+      return null;
+    }
+
     try {
       if (!this.recording) {
         return null;
@@ -229,12 +265,6 @@ class MediaService {
 
       const fileInfo = await FileSystem.getInfoAsync(uri);
       const fileName = `audio_${Date.now()}.m4a`;
-
-      // Reset audio mode
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        playsInSilentModeIOS: true,
-      });
 
       const result = {
         uri: uri,
@@ -296,6 +326,14 @@ class MediaService {
    * @returns {Promise<Object>} Object with methods to control recording
    */
   async handleMic() {
+    if (!this.isAndroid) {
+      Alert.alert(
+        "Not Available",
+        "Audio recording is only available on Android devices"
+      );
+      return null;
+    }
+
     // Request permission only when needed
     const permissionGranted = await this.requestAudioPermission();
     if (!permissionGranted) {

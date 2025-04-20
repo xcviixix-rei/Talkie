@@ -26,7 +26,6 @@ const app = initializeApp(firebaseConfig);
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
-console.log(auth);
 
 export const db = getFirestore(app);
 

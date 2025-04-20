@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
-    ActivityIndicator,
+    Alert,
     FlatList,
     Image,
     KeyboardAvoidingView,
@@ -17,7 +17,6 @@ import {router} from 'expo-router';
 import {useAuth} from '../../context/authContext';
 import {fetchQuery} from "../../api/search";
 import {createConversation} from "../../api/conversation";
-import {Alert} from "react-native";
 import Loading from '../../components/Loading';
 
 export default function Search() {
