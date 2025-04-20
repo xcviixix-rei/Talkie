@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { CallScreen } from "./call/callScreen";
 
 export default function AppLayout() {
     return (
@@ -30,6 +31,13 @@ export default function AppLayout() {
                 options={{
                     title: 'Your Profile',
                     presentation: 'modal'
+                }}
+            />
+            <Stack.Screen
+                name="callScreen"
+                options={{
+                    headerShown: false,
+                    presentation: 'fullScreenModal',
                 }}
             />
         </Stack>

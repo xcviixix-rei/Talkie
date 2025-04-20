@@ -4,7 +4,7 @@ import {Stack} from "expo-router";
 import {Entypo, Foundation, Ionicons} from "@expo/vector-icons";
 import {heightPercentageToDP as hp,} from "react-native-responsive-screen";
 
-export default function ConversationHeader({item, router}) {
+export default function ConversationHeader({item, router, onVoiceCall, onVideoCall}) {
     return (
         <Stack.Screen
             options={{
@@ -24,8 +24,12 @@ export default function ConversationHeader({item, router}) {
                 ),
                 headerRight: () => (
                     <View style={styles.iconContainer}>
-                        <Ionicons name="call" size={hp(2.8)} color="#737373"/>
-                        <Foundation name="video" size={hp(3.8)} color="#737373"/>
+                        <TouchableOpacity onPress={onVoiceCall}>
+                            <Ionicons name="call" size={hp(2.8)} color="#737373" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={onVideoCall}>
+                            <Foundation name="video" size={hp(3.8)} color="#737373" />
+                        </TouchableOpacity>
                     </View>
                 ),
             }}

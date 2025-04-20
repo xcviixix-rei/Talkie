@@ -21,6 +21,7 @@ import { db } from "../../config/firebaseConfig";
 import { useAuth } from "../../context/authContext";
 import axios from "axios";
 import { collection, doc, setDoc, addDoc, Timestamp } from "firebase/firestore";
+import { useCall } from "./call/useCall";
 
 export default function Conversation() {
   const item = useLocalSearchParams();
@@ -36,6 +37,9 @@ export default function Conversation() {
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const audioControlsRef = useRef(null);
+
+  // Use the custom hook for call functionality
+  const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId);
 
   // Clear timer when component unmounts
   useEffect(() => {
