@@ -30,7 +30,6 @@ import {
 } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
 
-
 export default function Conversation() {
   const item = useLocalSearchParams();
   const router = useRouter();
@@ -47,9 +46,8 @@ export default function Conversation() {
   const audioControlsRef = useRef(null);
   const [attachments, setAttachments] = useState(null);
 
-
   // Use the custom hook for call functionality
-  const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId);
+  // const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId);
   const [mockUsers, setMockUsers] = useState([]);
 
   const fetchUser = async () => {
@@ -94,7 +92,8 @@ export default function Conversation() {
             item.id,
             user.id,
             lastMessage.text,
-            lastMessage.timestamp
+            lastMessage.timestamp,
+            lastMessage.attachments
           );
         }
       },

@@ -65,6 +65,90 @@ export default function ConversationItem({
       .slice(2)}`;
   };
 
+  // Function to determine if an attachment is an image or voice by examining its URL or file extension
+  const getAttachmentType = (attachment) => {
+    if (!attachment || (!attachment.url && !attachment.uri)) return "unknown";
+
+    const url = attachment.url || attachment.uri;
+
+    // Check for voice/audio file extensions or formats
+    if (
+      url.match(/\.(mp3|wav|ogg|m4a|aac)$/i) ||
+      url.includes("voice") ||
+      url.includes("audio") ||
+      attachment.type === "voice" ||
+      attachment.type === "audio"
+    ) {
+      return "voice";
+    }
+
+    // Check for image file extensions or formats
+    if (
+      url.match(/\.(jpg|jpeg|png|gif|bmp|webp|heic)$/i) ||
+      url.includes("image") ||
+      attachment.type === "image" ||
+      attachment.type === "photo"
+    ) {
+      return "image";
+    }
+
+    return "file"; // Default to generic file
+  };
+
+  const getMessagePreview = (message) => {
+    if (!message) return "";
+
+    const senderName =
+      message.sender === currentUser.id
+        ? "You"
+        : mockUsers
+            .filter((user) => user !== undefined)
+            .map((user) => user.full_name)
+            .join(", ");
+
+    // Check for voice message
+    if (message?.voice_message) {
+      return `${senderName}: Voice message`;
+    }
+    // Check for image attachments
+    if (message.attachments && message.attachments.length > 0) {
+      // Group attachments by type
+      const attachmentTypes = message.attachments.map(getAttachmentType);
+
+      const imageCount = attachmentTypes.filter(
+        (type) => type === "image"
+      ).length;
+      const voiceCount = attachmentTypes.filter(
+        (type) => type === "voice"
+      ).length;
+      const fileCount = attachmentTypes.filter(
+        (type) => type === "file"
+      ).length;
+
+      // Prioritize voice messages
+      if (voiceCount > 0) {
+        return `${senderName}: sent a voice message`;
+      }
+
+      // Then check for images
+      if (imageCount > 0) {
+        return `${senderName}: sent ${
+          imageCount > 1 ? `${imageCount} photos` : "a photo"
+        }`;
+      }
+
+      // Generic files as fallback
+      if (fileCount > 0) {
+        return `${senderName}: sent ${
+          fileCount > 1 ? `${fileCount} files` : "a file"
+        }`;
+      }
+    }
+
+    // Regular text message
+    return `${senderName}: ${message.text || ""}`;
+  };
+
   const fetchUser = async () => {
     try {
       const userPromises = item.participants.map(async (participantId) => {
@@ -94,8 +178,8 @@ export default function ConversationItem({
                   .filter((user) => user !== undefined)
                   .map((user) => user.full_name)
                   .join(", ");
-          setLastMessage(`${senderText}: ${item?.last_message?.text || ""}`);
 
+          setLastMessage(getMessagePreview(item?.last_message));
           // Set formatted time
           if (item?.last_message?.timestamp) {
             setFormattedTime(formatMessageTime(item.last_message.timestamp));
@@ -115,7 +199,7 @@ export default function ConversationItem({
       }, 60000); // Update every minute
 
       return () => clearInterval(timeInterval);
-    }, [item.last_message, mockUsers])
+    }, [item?.last_message])
   );
 
   return (

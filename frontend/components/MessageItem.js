@@ -5,7 +5,6 @@ import {
   Text,
   View,
   Image,
-  ScrollView,
   TouchableOpacity,
   Modal,
   Pressable,
@@ -29,66 +28,77 @@ const MessageItem = ({ message, currentUser }) => {
     <View
       style={[
         styles.container,
-        { justifyContent: isMyMessage ? "flex-end" : "flex-start" },
+        { alignItems: isMyMessage ? "flex-end" : "flex-start" },
       ]}
     >
-      <View
-        style={[
-          styles.messageBubble,
-          isMyMessage ? styles.myMessage : styles.otherMessage,
-          message?.attachments?.length > 0 &&
-            styles.messageBubbleWithAttachments,
-        ]}
-      >
-        {message?.text ? <Text style={styles.text}>{message.text}</Text> : null}
+      {/* Text Message */}
+      {message?.text ? (
+        <View
+          style={[
+            styles.messageBubble,
+            isMyMessage ? styles.myMessage : styles.otherMessage,
+          ]}
+        >
+          <Text
+            style={[
+              styles.text,
+              isMyMessage ? styles.myMessageText : styles.otherMessageText,
+            ]}
+          >
+            {message.text}
+          </Text>
+        </View>
+      ) : null}
 
-        {Array.isArray(message.attachments) &&
-          message.attachments.length > 0 && (
-            <View style={styles.attachmentsContainer}>
-              {message.attachments.length === 1 ? (
-                // Single image - larger display
+      {/* Attachments */}
+      {Array.isArray(message.attachments) && message.attachments.length > 0 && (
+        <View
+          style={[
+            styles.attachmentsContainer,
+            { alignSelf: isMyMessage ? "flex-end" : "flex-start" },
+          ]}
+        >
+          {message.attachments.length === 1 ? (
+            // Single image - larger display
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() =>
+                handleImagePress(
+                  message.attachments[0].url || message.attachments[0].uri
+                )
+              }
+            >
+              <Image
+                source={{
+                  uri: message.attachments[0].url || message.attachments[0].uri,
+                }}
+                style={styles.singleAttachmentImage}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          ) : (
+            // Multiple images - grid layout
+            <View style={styles.multipleAttachmentsContainer}>
+              {message.attachments.map((attachment, index) => (
                 <TouchableOpacity
+                  key={index}
                   activeOpacity={0.9}
                   onPress={() =>
-                    handleImagePress(
-                      message.attachments[0].url || message.attachments[0].uri
-                    )
+                    handleImagePress(attachment.url || attachment.uri)
                   }
+                  style={styles.multipleImageWrapper}
                 >
                   <Image
-                    source={{
-                      uri:
-                        message.attachments[0].url ||
-                        message.attachments[0].uri,
-                    }}
-                    style={styles.singleAttachmentImage}
+                    source={{ uri: attachment.url || attachment.uri }}
+                    style={styles.multipleAttachmentImage}
                     resizeMode="cover"
                   />
                 </TouchableOpacity>
-              ) : (
-                // Multiple images - grid layout
-                <View style={styles.multipleAttachmentsContainer}>
-                  {message.attachments.map((attachment, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      activeOpacity={0.9}
-                      onPress={() =>
-                        handleImagePress(attachment.url || attachment.uri)
-                      }
-                      style={styles.multipleImageWrapper}
-                    >
-                      <Image
-                        source={{ uri: attachment.url || attachment.uri }}
-                        style={styles.multipleAttachmentImage}
-                        resizeMode="cover"
-                      />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
+              ))}
             </View>
           )}
-      </View>
+        </View>
+      )}
 
       {/* Image Viewer Modal */}
       <Modal
@@ -115,7 +125,7 @@ const MessageItem = ({ message, currentUser }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
+    flexDirection: "column",
     marginBottom: 8,
     width: width * 0.98,
     alignSelf: "center",
@@ -124,10 +134,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 18,
     maxWidth: width * 0.75,
-  },
-  messageBubbleWithAttachments: {
-    padding: 8,
-    paddingBottom: 8,
+    marginBottom: 4,
   },
   myMessage: {
     backgroundColor: "#0084FF",
@@ -139,34 +146,41 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    marginBottom: 6,
-    color: "#FFFFFF",
     lineHeight: 20,
   },
+  myMessageText: {
+    color: "#FFFFFF",
+  },
+  otherMessageText: {
+    color: "#000000",
+  },
   attachmentsContainer: {
+    maxWidth: width * 0.75,
+    marginTop: 2,
+    borderRadius: 12,
     overflow: "hidden",
   },
   singleAttachmentImage: {
     width: width * 0.6,
     height: width * 0.6,
     borderRadius: 12,
-    marginTop: 4,
   },
   multipleAttachmentsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "flex-start",
-    marginTop: 4,
+    justifyContent: "space-between",
+    borderRadius: 12,
+    overflow: "hidden",
+    width: width * 0.6,
   },
   multipleImageWrapper: {
-    width: "48%",
-    marginRight: "2%",
-    marginBottom: "2%",
+    width: "49%",
+    marginBottom: 4,
   },
   multipleAttachmentImage: {
     width: "100%",
-    height: width * 0.3,
-    borderRadius: 12,
+    aspectRatio: 1,
+    borderRadius: 8,
   },
   modalContainer: {
     flex: 1,

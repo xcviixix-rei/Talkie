@@ -47,7 +47,8 @@ export const changeLastMessages = async (
   conversationId,
   sender,
   text,
-  timestamp
+  timestamp,
+  attachments
 ) => {
   try {
     const response = await fetch(
@@ -58,7 +59,7 @@ export const changeLastMessages = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          last_message: { sender, text, timestamp },
+          last_message: { sender, text, timestamp, attachments },
         }),
       }
     );
