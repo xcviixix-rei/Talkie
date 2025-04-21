@@ -1,13 +1,12 @@
 import {
   Alert,
   StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
-  Text,
 } from "react-native";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import ConversationHeader from "../../components/ConversationHeader";
 import MessageList from "../../components/MessageList";
@@ -19,19 +18,18 @@ import MediaService from "../../services/mediaService";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/authContext";
 import { fetchUserData } from "../../api/user";
-import { sendMessage, getMessages } from "../../api/message";
-import { fetchConversation, changeLastMessages } from "../../api/conversation";
-
+import { sendMessage } from "../../api/message";
+import { changeLastMessages } from "../../api/conversation";
+import uploadMediaService from "../../services/uploadMediaService";
 import {
   collection,
-  doc,
-  getDoc,
-  where,
   onSnapshot,
-  query,
   orderBy,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
+
 
 export default function Conversation() {
   const item = useLocalSearchParams();
@@ -47,6 +45,11 @@ export default function Conversation() {
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const audioControlsRef = useRef(null);
+  const [attachments, setAttachments] = useState(null);
+
+
+  // Use the custom hook for call functionality
+  const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId);
   const [mockUsers, setMockUsers] = useState([]);
 
   const fetchUser = async () => {
@@ -112,32 +115,96 @@ export default function Conversation() {
 
   const handleSendMessage = async () => {
     let message = textRef.current.trim();
-    if (!message) return;
+    if (!message && !attachments) return; // Don't send empty messages with no attachments
+
     if (inputRef) inputRef?.current?.clear();
-    sendMessage({
+
+    let attachmentData = null;
+
+    // Upload attachment if exists
+    if (attachments) {
+      // If it's a single attachment (object), convert it to an array for consistent processing
+      const attachmentsArray = Array.isArray(attachments)
+        ? attachments
+        : [attachments];
+
+      // Upload all attachments in parallel
+      const uploadResults = await Promise.all(
+        attachmentsArray.map(async (attachment) => {
+          const path = `${user.id}/images/${attachment.name}`;
+          try {
+            const uploadResult = await uploadMediaService.uploadFile(
+              attachment.uri,
+              path,
+              attachment.type
+            );
+
+            if (uploadResult.success) {
+              return {
+                url: uploadResult.publicUrl,
+                success: true,
+              };
+            } else {
+              console.error("Failed to upload attachment:", uploadResult.error);
+              return {
+                error: uploadResult.error,
+                success: false,
+              };
+            }
+          } catch (error) {
+            console.error("Error uploading attachment:", error);
+            return {
+              error: error.message,
+              success: false,
+            };
+          }
+        })
+      );
+
+      // Separate successful and failed uploads
+      const successfulUploads = uploadResults.filter(
+        (result) => result.success
+      );
+      const failedUploads = uploadResults.filter((result) => !result.success);
+
+      if (successfulUploads.length > 0) {
+        console.log("Successfully uploaded attachments:", successfulUploads);
+        attachmentData = successfulUploads.map((result) => ({
+          url: result.url,
+        }));
+      }
+
+      if (failedUploads.length > 0) {
+        console.error("Failed to upload some attachments:", failedUploads);
+        // Consider showing an error message to the user for failed uploads
+      }
+    }
+
+    // Send the message with attachment data
+    await sendMessage({
       conversation_id: item.id,
       sender: user.id,
       text: message,
-      attachments: [],
+      attachments: attachmentData ? attachmentData : [], // Store as an array for multiple attachments later
       timestamp: new Date().toISOString(),
       seen_by: [user.id],
     });
+
+    // Clear the attachment after sending
+    setAttachments(null);
   };
 
   const toggleMediaButtons = () => {
     setShowMediaButtons(!showMediaButtons);
-    console.log(!showMediaButtons);
   };
 
   const handleImagePicker = async () => {
-    console.log("handleImagePicker was called"); // <-- Add this line to confirm the function is triggered
-
     const image = await MediaService.handleImagePicker();
-    console.log("Image from MediaService:", image);
-
-    if (image) {
-      console.log("Selected image:", image);
-    }
+    console.log(image);
+    setAttachments(image);
+    // if (image) {
+    //   console.log("Selected image:", image);
+    // }
   };
 
   const handleCamera = async () => {
