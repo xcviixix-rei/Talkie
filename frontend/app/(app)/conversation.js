@@ -29,6 +29,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
+import {useCall} from "./call/useCall";
 
 
 export default function Conversation() {
@@ -57,7 +58,7 @@ export default function Conversation() {
       const participantsArray = item.participants.split(","); // turns it into an array
 
       const userPromises = participantsArray.map(async (participantId) => {
-        if (participantId != user.id) {
+        if (participantId !== user.id) {
           return fetchUserData(participantId);
         }
       });

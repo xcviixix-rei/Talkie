@@ -1,7 +1,8 @@
-export const createConversation = async (participants) => {
+export const createConversation = async (conversationName,conversationType, participants) => {
   try {
     const conversationData = {
-      type: "direct",
+      name: conversationName,
+      type: conversationType,
       participants: participants,
       created_at: new Date().toISOString(),
     };
@@ -24,6 +25,7 @@ export const createConversation = async (participants) => {
     throw error;
   }
 };
+
 export const fetchConversation = async (conversationId) => {
   try {
     const response = await fetch(
