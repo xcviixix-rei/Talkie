@@ -3,8 +3,9 @@ import { db } from "../firebase.js";
 import { query, where } from "firebase/firestore";
 
 export class Conversation {
-  constructor({ id, type, participants, last_message, created_at }) {
+  constructor({ id, name , type, participants, last_message, created_at }) {
     this.id = id;
+    this.name = name;
     this.type = type;
     this.participants = participants;
     this.last_message = last_message;

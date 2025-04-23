@@ -1,8 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
+import {createContext, useContext, useEffect, useState} from "react";
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification} from "firebase/auth";
 import auth from "../config/firebaseConfig";
 import { onAuthStateChanged, signOut } from "@react-native-firebase/auth";
 import { fetchUserData } from "../api/user";
@@ -33,15 +30,26 @@ export const AuthContextProvider = ({ children }) => {
           setUser(newUser);
           setIsAuthenticated(true);
 
-          const idToken = await firebaseUser.getIdToken();
-          const response = await fetch(
-            "http://10.0.2.2:5000/api/users/get-token",
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${idToken}`,
-                "Content-Type": "application/json",
-              },
+                    const idToken = await firebaseUser.getIdToken();
+                    const response = await fetch("http://10.0.2.2:5000/api/users/get-token", {
+                        method: "POST",
+                        headers: {
+                        "Authorization": `Bearer ${idToken}`,
+                        "Content-Type": "application/json",
+                        },
+                    });
+                    const { token } = await response.json();
+                    setStreamToken(token);
+                } else {
+                    setIsAuthenticated(false);
+                    setUser(null);
+                    setStreamToken(null);
+                }
+            } catch (error) {
+                console.error("Auth state change error:", error);
+                setIsAuthenticated(false);
+            } finally {
+                setIsLoading(false);
             }
           );
           const { token } = await response.json();
@@ -85,12 +93,45 @@ export const AuthContextProvider = ({ children }) => {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      return { success: true, data: "User signed out successfully!" };
-    } catch (e) {
-      return { success: false, data: e.message };
+    const handleSignUp = async (username, email, password) => {
+        try {
+            const response = await createUserWithEmailAndPassword(auth, email, password);
+            const id = response.user.uid;
+            const full_name = username;
+            const userData = {
+                id,
+                username,
+                full_name,
+                profile_pic: "https://www.gravatar.com/avatar/?d=identicon",
+                status: "Active",
+                contacts: [],
+                created_at: new Date().toISOString()
+            };
+            await fetch('http://10.0.2.2:5000/api/users/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            });
+
+            await sendEmailVerification(response.user);
+
+            return {
+                success: true
+            };
+
+            }catch (e){
+            let message = e.message;
+            if (message.includes("(auth/invalid-email)")) {
+                message = "Invalid email";
+            }
+            if (message.includes("(auth/email-already-in-use)")) {
+                message = "Email already in use";
+            }
+            return {success: false, data: message};
+        }
     }
   };
 

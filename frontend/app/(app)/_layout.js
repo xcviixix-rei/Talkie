@@ -1,14 +1,11 @@
-import {Stack} from "expo-router";
+import {Stack, Tabs} from "expo-router";
 
 export default function AppLayout() {
     return (
         <Stack>
             <Stack.Screen
-                name="home"
+                name="(tabs)"
                 options={{headerShown: false}}
-            />
-            <Stack.Screen
-                name="conversation"
             />
             <Stack.Screen
                 name="search"
@@ -17,18 +14,20 @@ export default function AppLayout() {
                     headerBackTitle: 'Home',
                 }}
             />
-            <Stack.Screen
-                name="menu"
+            <Tabs.Screen
+                name="createGroup"
                 options={{
-                    title: 'Menu',
-                    presentation: 'modal'
+                    title: "Create Group",
                 }}
+            />
+            <Stack.Screen
+                name="conversation"
             />
             <Stack.Screen
                 name="profile"
                 options={{
-                    title: 'Your Profile',
-                    presentation: 'modal'
+                    title: 'Profile',
+                    headerBackTitle: 'Back',
                 }}
             />
             <Stack.Screen

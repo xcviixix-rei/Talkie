@@ -29,6 +29,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
+import {useCall} from "./call/useCall";
 
 export default function Conversation() {
   const { rawItem, rawMockUsers } = useLocalSearchParams();
@@ -270,7 +271,7 @@ export default function Conversation() {
       if (recordingResult && recordingDuration >= 1) {
         setRecordingInfo(recordingResult);
         // Auto-play the recording
-        await playRecording(recordingResult.uri);
+        playRecording(recordingResult.uri);
       } else {
         // Recording was too short, discard it
         setRecordingInfo(null);

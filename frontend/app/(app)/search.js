@@ -15,7 +15,7 @@ import {
 import {Ionicons} from '@expo/vector-icons';
 import {router} from 'expo-router';
 import {useAuth} from '../../context/authContext';
-import {fetchQuery} from "../../api/search";
+import {searchAll} from "../../api/search";
 import {createConversation} from "../../api/conversation";
 import Loading from '../../components/Loading';
 
@@ -44,7 +44,7 @@ export default function Search() {
                         setLoading(false);
                         return;
                     }
-                    const matchingUsers = await fetchQuery(searchQuery, user.id);
+                    const matchingUsers = await searchAll(searchQuery, user.id);
 
                     // Format results
                     const userResults = matchingUsers.map(u => ({
@@ -64,7 +64,7 @@ export default function Search() {
             };
 
             searchUsers();
-        }, 1000);
+        }, 700);
 
         return () => clearTimeout(timer);
     }, [searchQuery, user]);
@@ -83,12 +83,12 @@ export default function Search() {
 
                 // Create new conversation
                 const participants = [user.id, item.userId];
-                const newConversation = await createConversation(participants);
+                const newConversation = await createConversation("","private",participants);
 
                 // Navigate to the conversation screen
                 router.push({
                     pathname: '/conversation',
-                    params: {id: newConversation.id}
+                    params: newConversation
                 });
             }
         } catch (error) {
