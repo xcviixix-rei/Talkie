@@ -31,7 +31,10 @@ import {
 import { db } from "../../config/firebaseConfig";
 
 export default function Conversation() {
-  const item = useLocalSearchParams();
+  const { rawItem, rawMockUsers } = useLocalSearchParams();
+  const item = JSON.parse(rawItem);
+  const mockUsers = JSON.parse(rawMockUsers);
+  console.log(item, mockUsers);
   const router = useRouter();
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -48,28 +51,28 @@ export default function Conversation() {
 
   // Use the custom hook for call functionality
   // const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId);
-  const [mockUsers, setMockUsers] = useState([]);
+  // const [mockUsers, setMockUsers] = useState([]);
 
-  const fetchUser = async () => {
-    try {
-      const participantsArray = item.participants.split(","); // turns it into an array
+  // const fetchUser = async () => {
+  //   try {
+  //     const participantsArray = item.participants.split(","); // turns it into an array
 
-      const userPromises = participantsArray.map(async (participantId) => {
-        if (participantId !== user.id) {
-          return fetchUserData(participantId);
-        }
-      });
+  //     const userPromises = participantsArray.map(async (participantId) => {
+  //       if (participantId !== user.id) {
+  //         return fetchUserData(participantId);
+  //       }
+  //     });
 
-      const usersData = await Promise.all(userPromises);
+  //     const usersData = await Promise.all(userPromises);
 
-      setMockUsers(usersData);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    }
-  };
+  //     setMockUsers(usersData);
+  //   } catch (error) {
+  //     console.error("Failed to fetch user data:", error);
+  //   }
+  // };
 
   useEffect(() => {
-    fetchUser();
+    // fetchUser();
 
     const messagesRef = collection(db, "messages");
     const messagesQuery = query(
@@ -321,7 +324,7 @@ export default function Conversation() {
 
   return (
     <View style={styles.container}>
-      <ConversationHeader item={mockUsers} router={router} />
+      <ConversationHeader item={mockUsers} router={router} currentUser={user} />
       <View style={styles.header} />
       <View style={styles.main}>
         <View style={styles.messageList}>

@@ -15,7 +15,13 @@ export default function ConversationItem({
   const [formattedTime, setFormattedTime] = useState("");
 
   const openConversation = () => {
-    router.push({ pathname: "/conversation", params: item });
+    router.push({
+      pathname: "/conversation",
+      params: {
+        rawItem: JSON.stringify(item),
+        rawMockUsers: JSON.stringify(mockUsers),
+      },
+    });
   };
 
   // Format time like Messenger (now, minutes, hours, yesterday, date)
@@ -160,7 +166,6 @@ export default function ConversationItem({
 
           // Update state with the fetched data
           setMockUsers(usersData);
-          console.log(usersData);
           // Set last message text using the freshly fetched user data
           const previewText = getMessagePreview(item?.last_message, usersData);
           setLastMessage(previewText);

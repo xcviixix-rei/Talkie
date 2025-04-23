@@ -1,10 +1,13 @@
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/authContext";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-export default function ConversationInfor() {
+export default function ConversationInfor(router) {
   const { user } = useAuth();
-
+  const { item, mockUsers } = useLocalSearchParams();
+  console.log("item: ", item);
+  console.log("mockUsers: ", mockUsers);
   return (
     <>
       <ScrollView style={styles.container}>

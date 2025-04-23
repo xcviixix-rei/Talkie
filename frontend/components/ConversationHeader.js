@@ -3,9 +3,11 @@ import React from "react";
 import { Stack } from "expo-router";
 import { Entypo, Foundation, Ionicons } from "@expo/vector-icons";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
+
 export default function ConversationHeader({
   item,
   router,
+  currentUser,
   onVoiceCall,
   onVideoCall,
 }) {
@@ -20,7 +22,7 @@ export default function ConversationHeader({
       options={{
         title:
           item
-            .filter((user) => user)
+            .filter((user) => user.id != currentUser.id)
             .map((user) => user.full_name)
             .join(", ") || "yeye",
         headerStyle: { height: hp(8) },
