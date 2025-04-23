@@ -37,8 +37,8 @@ export default function SignUp() {
 
         if (!response.success) {
             Alert.alert("Error", response.data);
-            setLoading(false);
         }
+        setLoading(false);
     }
 
     return (

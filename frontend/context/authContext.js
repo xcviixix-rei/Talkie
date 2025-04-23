@@ -1,5 +1,5 @@
 import {createContext, useContext, useEffect, useState} from "react";
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword,} from "firebase/auth";
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification} from "firebase/auth";
 import auth from "../config/firebaseConfig";
 import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
 import {fetchUserData} from "../api/user";
@@ -113,6 +113,8 @@ export const AuthContextProvider = ({ children }) => {
                 },
                 body: JSON.stringify(userData)
             });
+
+            await sendEmailVerification(response.user);
 
             return {
                 success: true

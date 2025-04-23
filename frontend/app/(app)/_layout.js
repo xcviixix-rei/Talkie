@@ -7,8 +7,6 @@ export default function AppLayout() {
                 name="(tabs)"
                 options={{headerShown: false}}
             />
-
-
             <Stack.Screen
                 name="search"
                 options={{
@@ -22,9 +20,15 @@ export default function AppLayout() {
                     title: "Create Group",
                 }}
             />
-
             <Stack.Screen
                 name="conversation"
+            />
+            <Stack.Screen
+                name="profile"
+                options={{
+                    title: 'Profile',
+                    headerBackTitle: 'Back',
+                }}
             />
             <Stack.Screen
                 name="callScreen"
