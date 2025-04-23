@@ -90,7 +90,7 @@ export default function Conversation() {
           const lastMessage = updatedMessages[updatedMessages.length - 1];
           changeLastMessages(
             item.id,
-            user.id,
+            lastMessage.sender,
             lastMessage.text,
             lastMessage.timestamp,
             lastMessage.attachments
@@ -191,6 +191,7 @@ export default function Conversation() {
 
     // Clear the attachment after sending
     setAttachments(null);
+    sendMessage(null);
   };
 
   const toggleMediaButtons = () => {

@@ -3,7 +3,18 @@ import React from "react";
 import { Stack } from "expo-router";
 import { Entypo, Foundation, Ionicons } from "@expo/vector-icons";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
-export default function ConversationHeader({ item, router, onVoiceCall, onVideoCall }) {
+export default function ConversationHeader({
+  item,
+  router,
+  onVoiceCall,
+  onVideoCall,
+}) {
+  const openConversationInfor = () => {
+    router.push({
+      pathname: "/conversationInfor",
+      params: { item },
+    });
+  };
   return (
     <Stack.Screen
       options={{
@@ -31,12 +42,19 @@ export default function ConversationHeader({ item, router, onVoiceCall, onVideoC
         ),
         headerRight: () => (
           <View style={styles.iconContainer}>
-                        <TouchableOpacity onPress={onVoiceCall}>
-                <Ionicons name="call" size={hp(2.8)} color="#737373"  />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={onVideoCall}>
-                <Foundation name="video" size={hp(3.8)} color="#737373"  />
-                        </TouchableOpacity>
+            <TouchableOpacity onPress={onVoiceCall}>
+              <Ionicons name="call" size={hp(2.8)} color="#737373" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onVideoCall}>
+              <Foundation name="video" size={hp(3.8)} color="#737373" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={openConversationInfor}>
+              <Ionicons
+                name="information-circle"
+                size={hp(2.8)}
+                color="#737373"
+              />
+            </TouchableOpacity>
           </View>
         ),
       }}

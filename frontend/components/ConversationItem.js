@@ -95,16 +95,14 @@ export default function ConversationItem({
     return "file"; // Default to generic file
   };
 
-  const getMessagePreview = (message) => {
+  const getMessagePreview = (message, usersData) => {
     if (!message) return "";
 
     const senderName =
       message.sender === currentUser.id
         ? "You"
-        : mockUsers
-            .filter((user) => user !== undefined)
-            .map((user) => user.full_name)
-            .join(", ");
+        : usersData.find((user) => user?.id === message.sender)?.full_name ||
+          "Unknown";
 
     // Check for voice message
     if (message?.voice_message) {
@@ -149,37 +147,24 @@ export default function ConversationItem({
     return `${senderName}: ${message.text || ""}`;
   };
 
-  const fetchUser = async () => {
-    try {
-      const userPromises = item.participants.map(async (participantId) => {
-        if (participantId !== currentUser.id) {
-          return fetchUserData(participantId);
-        }
-      });
-
-      const usersData = await Promise.all(userPromises);
-      setMockUsers(usersData);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    }
-  };
-
   useFocusEffect(
     useCallback(() => {
       const fetchAndSetData = async () => {
         try {
-          await fetchUser(); // wait until user data is fetched
+          // We need to use the actual user data here, not rely on the state which may not be updated yet
+          const usersData = await Promise.all(
+            item.participants.map(async (participantId) => {
+              return fetchUserData(participantId);
+            })
+          );
 
-          // Set last message text
-          const senderText =
-            item?.last_message?.sender === currentUser.id
-              ? "You"
-              : mockUsers
-                  .filter((user) => user !== undefined)
-                  .map((user) => user.full_name)
-                  .join(", ");
+          // Update state with the fetched data
+          setMockUsers(usersData);
+          console.log(usersData);
+          // Set last message text using the freshly fetched user data
+          const previewText = getMessagePreview(item?.last_message, usersData);
+          setLastMessage(previewText);
 
-          setLastMessage(getMessagePreview(item?.last_message));
           // Set formatted time
           if (item?.last_message?.timestamp) {
             setFormattedTime(formatMessageTime(item.last_message.timestamp));
@@ -219,7 +204,7 @@ export default function ConversationItem({
         <View style={styles.row}>
           <Text style={styles.nameText}>
             {mockUsers
-              .filter((user) => user !== undefined)
+              .filter((user) => user.id !== currentUser.id)
               .map((user) => user.full_name)
               .join(", ")}
           </Text>
