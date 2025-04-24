@@ -19,8 +19,6 @@ export default function Home() {
       );
       const mockUsers = response.data;
       setUsers(mockUsers);
-      //console.log(users);
-      //console.log(mockUsers);
     } catch (error) {
       console.error("Failed to load users:", error);
     } finally {
@@ -31,7 +29,6 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       loadUsers();
-      //console.log(users);
     }, [])
   );
 

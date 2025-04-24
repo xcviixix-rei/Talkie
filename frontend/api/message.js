@@ -20,7 +20,6 @@ export const getMessages = async (conversationId) => {
 
 // Send a new message
 export const sendMessage = async (message) => {
-  console.log(message.attachments);
   try {
     const response = await fetch(`http://10.0.2.2:5000/api/messages`, {
       method: "POST",

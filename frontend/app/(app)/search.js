@@ -22,48 +22,58 @@ import Loading from '../../components/Loading';
 export default function Search() {
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(false);
-    const [results, setResults] = useState([]);
-    const {user} = useAuth();
+    const [userResults, setUserResults] = useState([]);
+    const [groupResults, setGroupResults] = useState([]);
+    const [activeTab, setActiveTab] = useState('users'); // 'users' or 'groups'
+    const { user } = useAuth();
 
-    // In your search.js useEffect
     useEffect(() => {
         if (searchQuery.trim() === '') {
-            setResults([]);
+            setUserResults([]);
+            setGroupResults([]);
             return;
         }
 
         setLoading(true);
 
-        // Set up debounce timer
         const timer = setTimeout(() => {
-            const searchUsers = async () => {
+            const searchUsersAndGroups = async () => {
                 try {
-                    // Get user matches with conversations
                     if (searchQuery.trim() === '') {
-                        setResults([]);
+                        setUserResults([]);
+                        setGroupResults([]);
                         setLoading(false);
                         return;
                     }
-                    const matchingUsers = await searchAll(searchQuery, user.id);
 
-                    // Format results
-                    const userResults = matchingUsers.map(u => ({
+                    // Search for users
+                    const matchingUsers = await searchAll(searchQuery, user.id, 'user');
+                    const formattedUserResults = matchingUsers.map(u => ({
                         username: u.username,
                         profile_pic: u.profile_pic,
                         userId: u.id,
                         conversation: u.conversation,
-                        type: 'user'
+                        type: 'user',
                     }));
+                    setUserResults(formattedUserResults);
 
-                    setResults(userResults);
+                    // Search for group conversations
+                    const matchingGroups = await searchAll(searchQuery, user.id, 'group');
+                    const formattedGroupResults = matchingGroups.map(g => ({
+                        name: g.name,
+                        groupId: g.id,
+                        lastMessage: g.lastMessage,
+                        type: 'group',
+                    }));
+                    setGroupResults(formattedGroupResults);
                 } catch (error) {
-                    console.error("Error searching users:", error);
+                    console.error("Error searching:", error);
                 } finally {
                     setLoading(false);
                 }
             };
 
-            searchUsers();
+            searchUsersAndGroups();
         }, 700);
 
         return () => clearTimeout(timer);
@@ -73,9 +83,23 @@ export default function Search() {
         try {
             if (item.conversation) {
                 // Navigate to existing conversation
+                // Format mockUsers to match ConversationItem structure
+                const mockUsers = [
+                    user,
+                    {
+                        id: item.userId,
+                        username: item.username,
+                        full_name: item.username,
+                        profile_pic: item.profile_pic
+                    }
+                ];
+                
                 router.push({
                     pathname: '/conversation',
-                    params: {id: item.conversation.id}
+                    params: {
+                        rawItem: JSON.stringify(item.conversation),
+                        rawMockUsers: JSON.stringify(mockUsers),
+                    },
                 });
             } else {
                 // Show loading indicator
@@ -83,12 +107,26 @@ export default function Search() {
 
                 // Create new conversation
                 const participants = [user.id, item.userId];
-                const newConversation = await createConversation("","private",participants);
+                const newConversation = await createConversation("", "direct", participants);
 
-                // Navigate to the conversation screen
+                // Add necessary user data to mock users array
+                const mockUsers = [
+                    user,
+                    {
+                        id: item.userId,
+                        username: item.username,
+                        full_name: item.username,
+                        profile_pic: item.profile_pic
+                    }
+                ];
+
+                // Navigate to the conversation screen with consistent parameters
                 router.push({
                     pathname: '/conversation',
-                    params: newConversation
+                    params: {
+                        rawItem: JSON.stringify(newConversation),
+                        rawMockUsers: JSON.stringify(mockUsers),
+                    },
                 });
             }
         } catch (error) {
@@ -99,40 +137,121 @@ export default function Search() {
         }
     };
 
-    const renderItem = ({item}) => {
-        if (item.type === 'user') {
+    const handleGroupSelect = (item) => {
+        // Prepare mock users data for group conversation
+        // For group conversations, we only need the current user in mockUsers
+        const mockUsers = [{
+            id: user.id,
+            username: user.username,
+            full_name: user.username || user.full_name,
+            profile_pic: user.profile_pic
+        }];
+        
+        router.push({
+            pathname: '/conversation',
+            params: {
+                rawItem: JSON.stringify(item),
+                rawMockUsers: JSON.stringify(mockUsers),
+                isGroup: true,
+            },
+        });
+    };
+
+    const renderUserItem = ({ item }) => (
+        <TouchableOpacity
+            style={styles.resultItem}
+            onPress={() => handleUserSelect(item)}
+        >
+            <Image
+                source={{ uri: item.profile_pic }}
+                style={styles.avatar}
+            />
+            <View style={styles.resultDetails}>
+                <Text style={styles.resultName}>{item.username}</Text>
+                <Text style={styles.resultType}>User</Text>
+            </View>
+        </TouchableOpacity>
+    );
+
+    const renderGroupItem = ({ item }) => (
+        <TouchableOpacity
+            style={styles.resultItem}
+            onPress={() => handleGroupSelect(item)}
+        >
+            <View style={styles.conversationAvatar}>
+                <Ionicons name="people-outline" size={24} color="#1E90FF" />
+            </View>
+            <View style={styles.resultDetails}>
+                <Text style={styles.resultName}>{item.name}</Text>
+                <Text style={styles.resultType}>Group</Text>
+                <Text numberOfLines={1} style={styles.lastMessage}>
+                    {item.lastMessage}
+                </Text>
+            </View>
+        </TouchableOpacity>
+    );
+
+    const renderTabButtons = () => (
+        <View style={styles.tabContainer}>
+            <TouchableOpacity 
+                style={[styles.tabButton, activeTab === 'users' && styles.activeTabButton]} 
+                onPress={() => setActiveTab('users')}
+            >
+                <Text style={[styles.tabButtonText, activeTab === 'users' && styles.activeTabText]}>
+                    Users
+                </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+                style={[styles.tabButton, activeTab === 'groups' && styles.activeTabButton]} 
+                onPress={() => setActiveTab('groups')}
+            >
+                <Text style={[styles.tabButtonText, activeTab === 'groups' && styles.activeTabText]}>
+                    Groups
+                </Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const renderContent = () => {
+        if (loading) {
             return (
-                <TouchableOpacity
-                    style={styles.resultItem}
-                    onPress={() => handleUserSelect(item)}
-                >
-                    <Image
-                        source={{uri: item.profile_pic}}
-                        style={styles.avatar}
-                    />
-                    <View style={styles.resultDetails}>
-                        <Text style={styles.resultName}>{item.username}</Text>
-                        <Text style={styles.resultType}>User</Text>
-                    </View>
-                </TouchableOpacity>
+                <View style={styles.loadingContainer}>
+                    <Loading size={100} />
+                </View>
+            );
+        }
+
+        if (activeTab === 'users') {
+            return (
+                <FlatList
+                    data={userResults}
+                    renderItem={renderUserItem}
+                    keyExtractor={(item) => `user-${item.userId}`}
+                    contentContainerStyle={styles.resultsList}
+                    ListEmptyComponent={
+                        searchQuery.trim() !== '' && (
+                            <View style={styles.noResultsContainer}>
+                                <Text style={styles.noResultsText}>No users found</Text>
+                            </View>
+                        )
+                    }
+                />
             );
         } else {
             return (
-                <TouchableOpacity
-                    style={styles.resultItem}
-                    onPress={() => handleConversationSelect(item)}
-                >
-                    <View style={styles.conversationAvatar}>
-                        <Ionicons name="chatbubble-outline" size={24} color="#1E90FF"/>
-                    </View>
-                    <View style={styles.resultDetails}>
-                        <Text style={styles.resultName}>{item.name}</Text>
-                        <Text style={styles.resultType}>Conversation</Text>
-                        <Text numberOfLines={1} style={styles.lastMessage}>
-                            {item.lastMessage}
-                        </Text>
-                    </View>
-                </TouchableOpacity>
+                <FlatList
+                    data={groupResults}
+                    renderItem={renderGroupItem}
+                    keyExtractor={(item) => `group-${item.groupId}`}
+                    contentContainerStyle={styles.resultsList}
+                    ListEmptyComponent={
+                        searchQuery.trim() !== '' && (
+                            <View style={styles.noResultsContainer}>
+                                <Text style={styles.noResultsText}>No groups found</Text>
+                            </View>
+                        )
+                    }
+                />
             );
         }
     };
@@ -144,10 +263,10 @@ export default function Search() {
                 style={styles.container}
             >
                 <View style={styles.searchContainer}>
-                    <Ionicons name="search" size={20} color="#666" style={styles.searchIcon}/>
+                    <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
                     <TextInput
                         style={styles.searchInput}
-                        placeholder="Search users and conversations..."
+                        placeholder="Search users and group conversations..."
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                         autoFocus
@@ -155,24 +274,8 @@ export default function Search() {
                     />
                 </View>
 
-                {loading ? (
-                    <View style={styles.loadingContainer}>
-                        <Loading size={100} />
-                    </View>
-                ) : results.length > 0 ? (
-                    <FlatList
-                        data={results}
-                        renderItem={renderItem}
-                        keyExtractor={(item) =>
-                            item.type === 'user' ? `user-${item.userId}` : `conversation-${item.id}`
-                        }
-                        contentContainerStyle={styles.resultsList}
-                    />
-                ) : searchQuery.trim() !== '' ? (
-                    <View style={styles.noResultsContainer}>
-                        <Text style={styles.noResultsText}>No results found for "{searchQuery}"</Text>
-                    </View>
-                ) : null}
+                {renderTabButtons()}
+                {renderContent()}
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
@@ -198,6 +301,32 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 46,
         fontSize: 16,
+    },
+    tabContainer: {
+        flexDirection: 'row',
+        marginHorizontal: 16,
+        marginBottom: 8,
+        borderRadius: 8,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: '#6366f1',
+    },
+    tabButton: {
+        flex: 1,
+        paddingVertical: 10,
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+    activeTabButton: {
+        backgroundColor: '#6366f1',
+    },
+    tabButtonText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#6366f1',
+    },
+    activeTabText: {
+        color: '#fff',
     },
     loadingContainer: {
         flex: 1,
@@ -249,11 +378,18 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 40,
+        paddingVertical: 30,
     },
     noResultsText: {
         fontSize: 16,
         color: '#666',
         textAlign: 'center',
+    },
+    sectionHeader: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        marginVertical: 8,
+        marginLeft: 16,
     },
 });

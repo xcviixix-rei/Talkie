@@ -1,11 +1,13 @@
 export const createConversation = async (conversationName,conversationType, participants) => {
   try {
     const conversationData = {
-      name: conversationName,
       type: conversationType,
       participants: participants,
       created_at: new Date().toISOString(),
     };
+    if (conversationName && conversationName.trim() !== "") {
+        conversationData.name = conversationName;
+    }
 
     const response = await fetch("http://10.0.2.2:5000/api/conversations", {
       method: "POST",

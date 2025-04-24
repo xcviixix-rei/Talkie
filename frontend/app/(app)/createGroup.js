@@ -4,7 +4,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {Ionicons} from '@expo/vector-icons';
 import {router} from 'expo-router';
 import {heightPercentageToDP as hp} from 'react-native-responsive-screen';
-import {searchUsers} from '../../api/search';
+import {searchAll} from '../../api/search'; // Updated import
 import {createConversation} from '../../api/conversation';
 import {useAuth} from '../../context/authContext';
 
@@ -23,7 +23,7 @@ export default function CreateGroup() {
             if (searchQuery.trim().length > 0) {
                 setIsLoading(true);
                 try {
-                    const results = await searchUsers(searchQuery, currentUser.id);
+                    const results = await searchAll(searchQuery, currentUser.id, "user"); // Updated API call
                     // Filter out current user and already selected users
                     const filteredUsers = results.filter(
                         user =>

@@ -15,6 +15,8 @@ export default function ConversationItem({
   const [formattedTime, setFormattedTime] = useState("");
 
   const openConversation = () => {
+    console.log("item" + item);
+    console.log("mockUsers" + mockUsers);
     router.push({
       pathname: "/conversation",
       params: {

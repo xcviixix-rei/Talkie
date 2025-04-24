@@ -43,7 +43,7 @@ router.get("/users/:searchQuery", async (req , res) => {
     }
 });
 
-router.get("/:searchQuery", async (req, res) => {
+router.get("/groups/:searchQuery", async (req, res) => {
   try {
     const { searchQuery } = req.params;
     const { currentUserId } = req.query;
@@ -52,62 +52,34 @@ router.get("/:searchQuery", async (req, res) => {
       return res.status(400).json({ error: "Search query is required" });
     }
 
-    // Get matching users
-    const userQueryRef = query(User.collectionRef());
-    const querySnapshot = await getDocs(userQueryRef);
+    // Get matching group conversations
+    const conversationQueryRef = query(
+      Conversation.collectionRef(),
+      where("type", "==", "group") // Only get group conversations
+    );
+    const querySnapshot = await getDocs(conversationQueryRef);
 
     const matches = [];
     querySnapshot.forEach((docSnap) => {
-      const userData = docSnap.data();
+      const groupData = docSnap.data();
+
+      // Only include groups with names that match the search query
       if (
-        userData.username &&
-        userData.username.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        docSnap.id !== currentUserId // Exclude current user
+        groupData.name &&
+        groupData.name.toLowerCase().includes(searchQuery.toLowerCase())
       ) {
-        // Add to matches array
         matches.push({
           id: docSnap.id,
-          ...userData
+          ...groupData
         });
       }
     });
 
-    // If there's a current user ID, find conversations between users
-    if (currentUserId) {
-      // Get all conversations that the current user is part of
-      const conversationsQuery = query(
-        Conversation.collectionRef(),
-        where("participants", "array-contains", currentUserId)
-      );
-      const conversationsSnapshot = await getDocs(conversationsQuery);
-
-      // Create a map of userId -> conversation
-      const userConversations = {};
-      conversationsSnapshot.forEach((docSnap) => {
-        const conversationData = docSnap.data();
-
-        // Find the other participant
-        conversationData.participants.forEach(participantId => {
-          if (participantId !== currentUserId) {
-            userConversations[participantId] = {
-              id: docSnap.id,
-              ...conversationData
-            };
-          }
-        });
-      });
-
-      // Add conversation data to each match
-      for (let i = 0; i < matches.length; i++) {
-        matches[i].conversation = userConversations[matches[i].id] || null;
-
-      }
-    }
-
     res.json(matches);
   } catch (error) {
-    console.error("Error searching for users:", error);
-    res.status(500).json({ error: "Failed to search for users" });
+    console.error("Error searching for groups:", error);
+    res.status(500).json({ error: "Failed to search for groups" });
   }
 });
+
 export default router;

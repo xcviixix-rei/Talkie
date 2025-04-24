@@ -6,8 +6,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 export default function ConversationInfor(router) {
   const { user } = useAuth();
   const { item, mockUsers } = useLocalSearchParams();
-  console.log("item: ", item);
-  console.log("mockUsers: ", mockUsers);
   return (
     <>
       <ScrollView style={styles.container}>

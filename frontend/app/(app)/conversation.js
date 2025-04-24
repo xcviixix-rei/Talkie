@@ -35,7 +35,7 @@ export default function Conversation() {
   const { rawItem, rawMockUsers } = useLocalSearchParams();
   const item = JSON.parse(rawItem);
   const mockUsers = JSON.parse(rawMockUsers);
-  console.log(item, mockUsers);
+
   const router = useRouter();
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -171,7 +171,6 @@ export default function Conversation() {
       const failedUploads = uploadResults.filter((result) => !result.success);
 
       if (successfulUploads.length > 0) {
-        console.log("Successfully uploaded attachments:", successfulUploads);
         attachmentData = successfulUploads.map((result) => ({
           url: result.url,
         }));
@@ -204,7 +203,6 @@ export default function Conversation() {
 
   const handleImagePicker = async () => {
     const image = await MediaService.handleImagePicker();
-    console.log(image);
     setAttachments(image);
     // if (image) {
     //   console.log("Selected image:", image);
@@ -214,7 +212,6 @@ export default function Conversation() {
   const handleCamera = async () => {
     const photo = await MediaService.handleCamera();
     if (photo) {
-      console.log("Captured photo:", photo);
       // Handle photo upload and sending
     }
   };
