@@ -64,7 +64,7 @@ export default function Search() {
                     const matchingGroups = await searchAll(searchQuery, user.id, 'group');
                     const formattedGroupResults = matchingGroups.map(g => ({
                         name: g.name,
-                        groupId: g.id,
+                        id: g.id,
                         lastMessage: g.lastMessage,
                         participants: g.participants,
                         type: 'group',
@@ -145,23 +145,66 @@ export default function Search() {
         }
     };
 
-    const handleGroupSelect = (item) => {
+  const handleGroupSelect = async (item) => {
+      try {
+          setLoading(true);
 
-        const mockUsers = [{
-            id: user.id,
-            username: user.username,
-            full_name: user.username || user.full_name,
-            profile_pic: user.profile_pic
-        }];
-        
-        router.push({
-            pathname: '/conversation',
-            params: {
-                rawItem: JSON.stringify(item),
-                rawMockUsers: JSON.stringify(mockUsers),
-            },
-        });
-    };
+          // Get the participants for the group
+          const participants = item.participants || [];
+
+          // Initialize the mockUsers array
+          let mockUsers = [];
+
+          // For each participant ID in the group, fetch their complete user information
+          // or use what's available if they're already complete objects
+          for (const participant of participants) {
+
+              try {
+                  const userId = typeof participant === 'object' ? participant.id : participant;
+                  // You need to implement this API function to fetch user details
+                  const userResponse = await fetch(`http://10.0.2.2:5000/api/users/${userId}`);
+                  console.log(userResponse);
+
+                  if (userResponse.ok) {
+                      const userData = await userResponse.json();
+                      mockUsers.push({
+                          id: userData.id,
+                          username: userData.username,
+                          full_name: userData.full_name || userData.username,
+                          profile_pic: userData.profile_pic
+                      });
+                  }
+              } catch (err) {
+                  console.error(`Failed to fetch user info for ID: ${participant}`, err);
+
+              }
+          }
+
+          // Add current user if not already in participants
+          if (!mockUsers.some(p => p.id === user.id)) {
+              mockUsers.push({
+                  id: user.id,
+                  username: user.username,
+                  full_name: user.full_name || user.username,
+                  profile_pic: user.profile_pic
+              });
+          }
+
+          // Navigate to the conversation screen with group data
+          router.push({
+              pathname: '/conversation',
+              params: {
+                  rawItem: JSON.stringify(item),
+                  rawMockUsers: JSON.stringify(mockUsers),
+              },
+          });
+      } catch (error) {
+          console.error("Error handling group selection:", error);
+          Alert.alert("Error", "Could not open group conversation. Please try again.");
+      } finally {
+          setLoading(false);
+      }
+  };
 
     const renderUserItem = ({ item }) => (
         <TouchableOpacity
