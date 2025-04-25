@@ -52,6 +52,9 @@ export default function Search() {
                         username: u.username,
                         profile_pic: u.profile_pic,
                         userId: u.id,
+                        full_name: u.full_name,
+                        status: u.status,
+                        created_at: u.created_at,
                         conversation: u.conversation,
                         type: 'user',
                     }));
@@ -63,6 +66,7 @@ export default function Search() {
                         name: g.name,
                         groupId: g.id,
                         lastMessage: g.lastMessage,
+                        participants: g.participants,
                         type: 'group',
                     }));
                     setGroupResults(formattedGroupResults);
@@ -90,7 +94,9 @@ export default function Search() {
                         id: item.userId,
                         username: item.username,
                         full_name: item.username,
-                        profile_pic: item.profile_pic
+                        profile_pic: item.profile_pic,
+                        status: item.status,
+                        created_at: item.created_at
                     }
                 ];
                 
@@ -116,7 +122,9 @@ export default function Search() {
                         id: item.userId,
                         username: item.username,
                         full_name: item.username,
-                        profile_pic: item.profile_pic
+                        profile_pic: item.profile_pic,
+                        status: item.status,
+                        created_at: item.created_at
                     }
                 ];
 
@@ -138,8 +146,7 @@ export default function Search() {
     };
 
     const handleGroupSelect = (item) => {
-        // Prepare mock users data for group conversation
-        // For group conversations, we only need the current user in mockUsers
+
         const mockUsers = [{
             id: user.id,
             username: user.username,
@@ -152,7 +159,6 @@ export default function Search() {
             params: {
                 rawItem: JSON.stringify(item),
                 rawMockUsers: JSON.stringify(mockUsers),
-                isGroup: true,
             },
         });
     };
@@ -309,7 +315,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         overflow: 'hidden',
         borderWidth: 1,
-        borderColor: '#6366f1',
+        borderColor: '#1E90FF',
     },
     tabButton: {
         flex: 1,
@@ -318,12 +324,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     activeTabButton: {
-        backgroundColor: '#6366f1',
+        backgroundColor: '#1E90FF',
     },
     tabButtonText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#6366f1',
+        color: '#1E90FF',
     },
     activeTabText: {
         color: '#fff',
