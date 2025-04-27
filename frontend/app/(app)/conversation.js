@@ -120,7 +120,10 @@ export default function Conversation() {
     let message = textRef.current.trim();
     if (!message && !attachments) return; // Don't send empty messages with no attachments
 
-    if (inputRef) inputRef?.current?.clear();
+    if (inputRef) {
+      inputRef?.current?.clear();
+      textRef.current = "";
+    }
 
     let attachmentData = null;
 
@@ -194,7 +197,6 @@ export default function Conversation() {
 
     // Clear the attachment after sending
     setAttachments(null);
-    sendMessage(null);
   };
 
   const toggleMediaButtons = () => {

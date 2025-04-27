@@ -1,5 +1,12 @@
 import {createContext, useContext, useEffect, useState} from "react";
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification} from "firebase/auth";
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendEmailVerification,
+    updatePassword,
+    EmailAuthProvider,
+    reauthenticateWithCredential
+} from "firebase/auth";
 import auth from "../config/firebaseConfig";
 import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
 import {fetchUserData} from "../api/user";
@@ -11,6 +18,7 @@ export const AuthContextProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
     const [isLoading, setIsLoading] = useState(true);
     const [streamToken, setStreamToken] = useState(null);
+    const [currentUserPassword, setCurrentUserPassword] = useState(null);
 
     useEffect(() => {
         setIsLoading(true);
@@ -60,6 +68,7 @@ export const AuthContextProvider = ({ children }) => {
     const handleSignIn = async (email, password) => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
+            setCurrentUserPassword(password);
             return {
                 success: true,
             };
@@ -132,8 +141,37 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
 
+    const handleChangePassword = async (currentPassword, newPassword) => {
+        try {
+            // Create credential with the current email and password
+            const credential = EmailAuthProvider.credential(
+                auth.currentUser.email,
+                currentPassword
+            );
+            console.log(credential);
+
+            // Reauthenticate the user
+            await reauthenticateWithCredential(auth.currentUser, credential);
+
+            // Now update the password
+            await updatePassword(auth.currentUser, newPassword);
+
+            // Update the stored password
+            setCurrentUserPassword(newPassword);
+
+            return {success: true, data: "Password changed successfully!"};
+        } catch (e) {
+            console.log(e);
+            // Handle specific error cases
+            if (e.code === 'auth/wrong-password') {
+                return {success: false, data: "Current password is incorrect"};
+            }
+            return {success: false, data: e.message};
+        }
+    }
+
     return (
-        <AuthContext.Provider value={{user, isAuthenticated, handleSignIn, handleSignOut , handleSignUp, streamToken}}>
+        <AuthContext.Provider value={{user, isAuthenticated, handleSignIn, handleSignOut , handleSignUp, streamToken, currentUserPassword, handleChangePassword}}>
             {children}
         </AuthContext.Provider>
     )

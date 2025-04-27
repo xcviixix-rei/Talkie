@@ -163,7 +163,6 @@ export default function Search() {
                   const userId = typeof participant === 'object' ? participant.id : participant;
                   // You need to implement this API function to fetch user details
                   const userResponse = await fetch(`http://10.0.2.2:5000/api/users/${userId}`);
-                  console.log(userResponse);
 
                   if (userResponse.ok) {
                       const userData = await userResponse.json();
