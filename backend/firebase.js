@@ -2,11 +2,22 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import firebaseAdmin from "firebase-admin";
 import dotenv from "dotenv";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import fs from 'fs';
 
 dotenv.config();
 
+// Get the directory path for the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Import service account json file
+const serviceAccountPath = join(__dirname, './takie-253f6-firebase-adminsdk-fbsvc-1ee74f6535.json');
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+
 firebaseAdmin.initializeApp({
-  credential: firebaseAdmin.credential.applicationDefault(),
+  credential: firebaseAdmin.credential.cert(serviceAccount),
 });
 
 const firebaseConfig = {
@@ -22,4 +33,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export { db };
+export { db, firebaseAdmin };
