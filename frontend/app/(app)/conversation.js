@@ -111,6 +111,11 @@ export default function Conversation() {
       inputRef?.current?.clear();
       textRef.current = "";
     }
+
+    if (inputRef) {
+      inputRef?.current?.clear();
+      textRef.current = "";
+    }
     let attachmentData = null;
 
     // Upload attachment if exists
@@ -183,7 +188,6 @@ export default function Conversation() {
 
     // Clear the attachment after sending
     setAttachments(null);
-    sendMessage(null);
   };
 
   const toggleMediaButtons = () => {
