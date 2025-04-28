@@ -11,6 +11,12 @@ const imagePickerOptions = {
   quality: 0.8,
 };
 
+const sigleImagePickerOptions = {
+  allowsEditing: true,
+  aspect: [4, 3],
+  quality: 0.8,
+};
+
 // Create platform-specific recording options
 const createRecordingOptions = () => {
   // For Android-only use case
@@ -168,6 +174,44 @@ class MediaService {
     } catch (error) {
       console.error("Error picking images:", error);
       Alert.alert("Error", "Failed to select images. Please try again.");
+      return null;
+    }
+  }
+
+  /**
+   * Pick a single image from the device gallery.
+   * @returns {Promise<Object|null>} Selected image info or null if canceled/error.
+   */
+  async handleSingleImagePicker() {
+    try {
+      if (!(await this.requestMediaLibraryPermission())) {
+        return null;
+      }
+
+      const { canceled, assets } = await ImagePicker.launchImageLibraryAsync({
+        ...sigleImagePickerOptions,
+        base64: false,
+      });
+
+      if (canceled || !assets?.length) {
+        return null;
+      }
+
+      const { uri, width, height } = assets[0];
+      const name = uri.split("/").pop();
+      const { size } = await FileSystem.getInfoAsync(uri);
+
+      return {
+        uri,
+        name,
+        type: `image/${name.split(".").pop()}`,
+        size,
+        width,
+        height,
+      };
+    } catch (error) {
+      console.error("Image selection error:", error);
+      Alert.alert("Error", "Failed to select an image. Please try again.");
       return null;
     }
   }

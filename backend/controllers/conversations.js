@@ -53,7 +53,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-
 // Delete a conversation and its messages
 router.delete("/:id", async (req, res) => {
   try {
@@ -82,8 +81,6 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-
-
 // List all messages in a conversation
 router.get("/:conversationId/messages", async (req, res) => {
   try {
@@ -96,7 +93,7 @@ router.get("/:conversationId/messages", async (req, res) => {
     );
     const querySnapshot = await getDocs(messagesQuery);
     const messages = [];
-    
+
     querySnapshot.forEach((docSnap) => {
       messages.push(new Message({ id: docSnap.id, ...docSnap.data() }));
     });
@@ -107,8 +104,6 @@ router.get("/:conversationId/messages", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch messages" });
   }
 });
-
-
 
 // Get messages in a conversation that include specific content in their text
 router.get("/:conversationId/messages/search", async (req, res) => {
@@ -126,7 +121,7 @@ router.get("/:conversationId/messages/search", async (req, res) => {
     );
     const querySnapshot = await getDocs(messagesQuery);
     const messages = [];
-    
+
     // Filter messages locally by checking if text includes the search query
     querySnapshot.forEach((docSnap) => {
       const messageData = docSnap.data();
@@ -141,8 +136,6 @@ router.get("/:conversationId/messages/search", async (req, res) => {
     res.status(500).json({ error: "Failed to search messages" });
   }
 });
-
-
 
 // Get a specific message inside a conversation
 router.get("/:conversationId/messages/:messageId", async (req, res) => {

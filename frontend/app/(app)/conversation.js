@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useCallback, useRef, useState } from "react";
+import { useLocalSearchParams, useFocusEffect, useRouter } from "expo-router";
 import ConversationHeader from "../../components/ConversationHeader";
 import MessageList from "../../components/MessageList";
 import {
@@ -18,6 +18,7 @@ import MediaService from "../../services/mediaService";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/authContext";
 import { fetchUserData } from "../../api/user";
+import { fetchConversation } from "../../api/conversation";
 import { sendMessage } from "../../api/message";
 import { changeLastMessages } from "../../api/conversation";
 import uploadMediaService from "../../services/uploadMediaService";
@@ -29,13 +30,13 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
-import {useCall} from "./call/useCall";
+import { useCall } from "./call/useCall";
 
 export default function Conversation() {
-  const { rawItem, rawMockUsers } = useLocalSearchParams();
-  const item = JSON.parse(rawItem);
+  const { rawItem, rawMockUsers, converName, converPic } =
+    useLocalSearchParams();
+  const [item, setItem] = useState(JSON.parse(rawItem));
   const mockUsers = JSON.parse(rawMockUsers);
-
   const router = useRouter();
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -50,78 +51,66 @@ export default function Conversation() {
   const audioControlsRef = useRef(null);
   const [attachments, setAttachments] = useState(null);
 
-  // Use the custom hook for call functionality
-  // const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId);
-  // const [mockUsers, setMockUsers] = useState([]);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        const tmp = await fetchConversation(item.id);
+        setItem(tmp);
+        console.log(tmp);
+      };
 
-  // const fetchUser = async () => {
-  //   try {
-  //     const participantsArray = item.participants.split(","); // turns it into an array
+      fetchData();
 
-  //     const userPromises = participantsArray.map(async (participantId) => {
-  //       if (participantId !== user.id) {
-  //         return fetchUserData(participantId);
-  //       }
-  //     });
+      const messagesRef = collection(db, "messages");
+      const messagesQuery = query(
+        messagesRef,
+        where("conversation_id", "==", item.id),
+        orderBy("timestamp", "asc")
+      );
 
-  //     const usersData = await Promise.all(userPromises);
-
-  //     setMockUsers(usersData);
-  //   } catch (error) {
-  //     console.error("Failed to fetch user data:", error);
-  //   }
-  // };
-
-  useEffect(() => {
-    // fetchUser();
-
-    const messagesRef = collection(db, "messages");
-    const messagesQuery = query(
-      messagesRef,
-      where("conversation_id", "==", item.id),
-      orderBy("timestamp", "asc")
-    );
-
-    const unsubscribe = onSnapshot(
-      messagesQuery,
-      (snapshot) => {
-        const updatedMessages = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setMessages(updatedMessages);
-        if (updatedMessages.length > 0) {
-          const lastMessage = updatedMessages[updatedMessages.length - 1];
-          changeLastMessages(
-            item.id,
-            lastMessage.sender,
-            lastMessage.text,
-            lastMessage.timestamp,
-            lastMessage.attachments
-          );
+      const unsubscribe = onSnapshot(
+        messagesQuery,
+        (snapshot) => {
+          const updatedMessages = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setMessages(updatedMessages);
+          if (updatedMessages.length > 0) {
+            const lastMessage = updatedMessages[updatedMessages.length - 1];
+            changeLastMessages(
+              item.id,
+              lastMessage.sender,
+              lastMessage.text,
+              lastMessage.timestamp,
+              lastMessage.attachments
+            );
+          }
+        },
+        (error) => {
+          console.error("Error listening to messages:", error);
         }
-      },
-      (error) => {
-        console.error("Error listening to messages:", error);
-      }
-    );
+      );
 
-    // Clean up the listener when component unmounts
-    return () => {
-      unsubscribe();
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      MediaService.cleanup();
-    };
-  }, []);
+      // Clean up the listener when component unmounts
+      return () => {
+        unsubscribe();
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+        MediaService.cleanup();
+      };
+    }, [])
+  );
 
   const handleSendMessage = async () => {
     let message = textRef.current.trim();
     if (!message && !attachments) return; // Don't send empty messages with no attachments
 
-    if (inputRef) inputRef?.current?.clear();
-
+    if (inputRef) {
+      inputRef?.current?.clear();
+      textRef.current = "";
+    }
     let attachmentData = null;
 
     // Upload attachment if exists
@@ -204,9 +193,6 @@ export default function Conversation() {
   const handleImagePicker = async () => {
     const image = await MediaService.handleImagePicker();
     setAttachments(image);
-    // if (image) {
-    //   console.log("Selected image:", image);
-    // }
   };
 
   const handleCamera = async () => {
@@ -322,7 +308,14 @@ export default function Conversation() {
 
   return (
     <View style={styles.container}>
-      <ConversationHeader item={mockUsers} router={router} currentUser={user} />
+      <ConversationHeader
+        item={item}
+        mockUsers={mockUsers}
+        converName={item?.name ? item.name : converName}
+        converPic={item?.name ? item?.conver_pic : converPic}
+        router={router}
+        currentUser={user}
+      />
       <View style={styles.header} />
       <View style={styles.main}>
         <View style={styles.messageList}>

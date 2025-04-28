@@ -13,15 +13,17 @@ export default function ConversationItem({
   const [lastMessage, setLastMessage] = useState(undefined);
   const [mockUsers, setMockUsers] = useState([]);
   const [formattedTime, setFormattedTime] = useState("");
+  const [converName, setConverName] = useState("");
+  const [converPic, setConverPic] = useState("");
 
   const openConversation = () => {
-    console.log("item" + JSON.stringify(item));
-    console.log("mockUsers" + JSON.stringify(mockUsers));
     router.push({
       pathname: "/conversation",
       params: {
         rawItem: JSON.stringify(item),
         rawMockUsers: JSON.stringify(mockUsers),
+        converName,
+        converPic,
       },
     });
   };
@@ -165,9 +167,23 @@ export default function ConversationItem({
               return fetchUserData(participantId);
             })
           );
-
           // Update state with the fetched data
           setMockUsers(usersData);
+          setConverName(
+            item?.name
+              ? item.name
+              : usersData
+                  .filter((user) => user.id !== currentUser.id)
+                  .map((user) => user.full_name)
+                  .join(", ")
+          );
+          setConverPic(
+            item?.conver_pic
+              ? item.conver_pic
+              : usersData?.find((u) => u?.id != currentUser.id)
+              ? usersData.find((u) => u?.profile_pic).profile_pic
+              : "https://www.gravatar.com/avatar/?d=identicon"
+          );
           // Set last message text using the freshly fetched user data
           const previewText = getMessagePreview(item?.last_message, usersData);
           setLastMessage(previewText);
@@ -201,20 +217,15 @@ export default function ConversationItem({
     >
       <Image
         source={
-          mockUsers?.find((u) => u?.profile_pic)
-            ? { uri: mockUsers.find((u) => u?.profile_pic).profile_pic }
-            : require("../assets/images/icon.png")
+          converPic && converPic.trim() !== ""
+            ? { uri: converPic }
+            : "https://www.gravatar.com/avatar/?d=identicon"
         }
         style={styles.image}
       />
       <View style={styles.textContainer}>
         <View style={styles.row}>
-          <Text style={styles.nameText}>
-            {mockUsers
-              .filter((user) => user.id !== currentUser.id)
-              .map((user) => user.full_name)
-              .join(", ")}
-          </Text>
+          <Text style={styles.nameText}>{converName}</Text>
           <Text style={styles.timeText}>{formattedTime}</Text>
         </View>
         <Text style={styles.messageText} numberOfLines={1} ellipsizeMode="tail">

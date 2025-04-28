@@ -1,10 +1,10 @@
 import ConversationList from "../../../components/ConversationList";
 import HomeHeader from "../../../components/HomeHeader";
-import {useCallback, useState} from "react";
-import {useFocusEffect} from "@react-navigation/native";
-import {ActivityIndicator, StatusBar, StyleSheet, View} from "react-native";
-import {useRouter} from "expo-router";
-import {useAuth} from "../../../context/authContext";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { ActivityIndicator, StatusBar, StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useAuth } from "../../../context/authContext";
 import axios from "axios";
 
 export default function Home() {

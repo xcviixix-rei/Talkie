@@ -1,11 +1,29 @@
-import { doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  addDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  collection,
+  getDocs,
+} from "firebase/firestore";
 import { db } from "../firebase.js";
 import { query, where } from "firebase/firestore";
 
 export class Conversation {
-  constructor({ id, name , type, participants, last_message, created_at }) {
+  constructor({
+    id,
+    conver_pic,
+    name,
+    type,
+    participants,
+    last_message,
+    created_at,
+  }) {
     this.id = id;
     this.name = name;
+    this.conver_pic = conver_pic;
     this.type = type;
     this.participants = participants;
     this.last_message = last_message;
@@ -48,7 +66,9 @@ export class Conversation {
     const querySnapshot = await getDocs(Conversation.collectionRef());
     const conversations = [];
     querySnapshot.forEach((docSnap) => {
-      conversations.push(new Conversation({ id: docSnap.id, ...docSnap.data() }));
+      conversations.push(
+        new Conversation({ id: docSnap.id, ...docSnap.data() })
+      );
     });
     return conversations;
   }

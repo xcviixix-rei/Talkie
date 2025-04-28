@@ -1,12 +1,16 @@
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { Stack } from "expo-router";
 import { Entypo, Foundation, Ionicons } from "@expo/vector-icons";
+import { fetchConversation } from "../api/conversation";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 export default function ConversationHeader({
   item,
+  mockUsers,
   router,
+  converName,
+  converPic,
   currentUser,
   onVoiceCall,
   onVideoCall,
@@ -14,17 +18,19 @@ export default function ConversationHeader({
   const openConversationInfor = () => {
     router.push({
       pathname: "/conversationInfor",
-      params: { item },
+      params: {
+        rawItem: JSON.stringify(item),
+        rawMockUsers: JSON.stringify(mockUsers),
+        converName,
+        converPic,
+      },
     });
   };
+
   return (
     <Stack.Screen
       options={{
-        title:
-          item
-            .filter((user) => user.id != currentUser.id)
-            .map((user) => user.full_name)
-            .join(", ") || "yeye",
+        title: converName,
         headerStyle: { height: hp(8) },
         headerShadowVisible: false,
         headerLeft: () => (
@@ -32,14 +38,7 @@ export default function ConversationHeader({
             <TouchableOpacity onPress={() => router.back()}>
               <Entypo name="chevron-left" size={hp(4)} color="#737373" />
             </TouchableOpacity>
-            <Image
-              source={
-                item?.find((u) => u?.profile_pic)
-                  ? { uri: item.find((u) => u?.profile_pic).profile_pic }
-                  : require("../assets/images/icon.png")
-              }
-              style={styles.profileImage}
-            />
+            <Image source={{ uri: converPic }} style={styles.profileImage} />
           </View>
         ),
         headerRight: () => (
