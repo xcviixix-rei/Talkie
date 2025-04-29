@@ -1,18 +1,31 @@
 import { useContext, useEffect, useState } from "react";
 import { StreamContext } from "../../../context/streamContext";
 import { Alert } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { fetchUserData } from "../../../api/user";
 
 const CallHandler = () => {
   const { client } = useContext(StreamContext);
   const [incomingCall, setIncomingCall] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
     if (client) {
-      const handleRing = (event) => {
+      const handleRing = async (event) => {
         setIncomingCall(event.call);
+        let callerUsername = "Unknown Caller";
+        try {
+          const callerId = event.call.state.members.find(member => member.user_id !== client.userId)?.user_id;
+          if (callerId) {
+            const callerData = await fetchUserData(callerId);
+            callerUsername = callerData?.full_name || "Unknown Caller";
+          }
+        } catch (error) {
+          console.error("Error fetching caller data:", error);
+        }
         Alert.alert(
           "Incoming Call",
-          "You have an incoming call. Accept?",
+          `You have an incoming ${event.call.type === "video-call" ? "video" : "voice"} call from ${callerUsername}. Accept?`,
           [
             {
               text: "Reject",
@@ -24,7 +37,12 @@ const CallHandler = () => {
               onPress: async () => {
                 await event.call.join();
                 setIncomingCall(null);
-                // Navigate to call screen or show call UI
+                // Navigate to CallScreen
+                navigation.navigate("CallScreen", {
+                  callId: event.call.id,
+                  type: event.call.type === "video-call" ? "video" : "voice",
+                  calleeUsername: callerUsername,
+                });
               },
             },
           ]

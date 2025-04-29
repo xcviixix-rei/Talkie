@@ -49,6 +49,19 @@ export default function Conversation() {
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const audioControlsRef = useRef(null);
+//  const calleeUsername = mockUsers[0]?.full_name || "Unknown User";
+
+  // Use the custom hook for call functionality
+  const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId, /*calleeUsername*/);
+  const [mockUsers, setMockUsers] = useState([]);
+
+  const fetchUser = async () => {
+    try {
+      const participantsArray = item.participants.split(","); // turns it into an array
+
+      const userPromises = participantsArray.map(async (participantId) => {
+        if (participantId !== user.id) {
+          return fetchUserData(participantId);
   const [attachments, setAttachments] = useState(null);
 
   useFocusEffect(
@@ -103,6 +116,10 @@ export default function Conversation() {
     }, [])
   );
 
+      const usersData = await Promise.all(userPromises);
+      setMockUsers(usersData/*.filter(user => user)*/);
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
   const handleSendMessage = async () => {
     let message = textRef.current.trim();
     if (!message && !attachments) return; // Don't send empty messages with no attachments

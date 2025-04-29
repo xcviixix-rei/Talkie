@@ -3,7 +3,7 @@ import { StreamContext } from "../../../context/streamContext";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigation } from "@react-navigation/native";
 
-export const useCall = (currentUserId, calleeId) => {
+export const useCall = (currentUserId, calleeId, calleeUsername) => {
     const { client } = useContext(StreamContext);
     const navigation = useNavigation();
 
@@ -32,7 +32,7 @@ export const useCall = (currentUserId, calleeId) => {
             }
 
             // Navigate to CallScreen
-            navigation.navigate("CallScreen", { callId, type: isVideoCall ? "video" : "voice" });
+            navigation.navigate("CallScreen", { callId, type: isVideoCall ? "video" : "voice", calleeUsername });
         } catch (error) {
             console.error(`Error initiating ${isVideoCall ? "video" : "voice"} call:`, error);
         }
