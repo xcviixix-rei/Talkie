@@ -1,10 +1,10 @@
-import ConversationList from "../../components/ConversationList";
-import HomeHeader from "../../components/HomeHeader";
-import {useCallback, useState} from "react";
-import {useFocusEffect} from "@react-navigation/native";
-import {ActivityIndicator, StatusBar, StyleSheet, View} from "react-native";
-import {useRouter} from "expo-router";
-import {useAuth} from "../../context/authContext";
+import ConversationList from "../../../components/ConversationList";
+import HomeHeader from "../../../components/HomeHeader";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { ActivityIndicator, StatusBar, StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
+import { useAuth } from "../../../context/authContext";
 import axios from "axios";
 
 export default function Home() {
@@ -19,8 +19,6 @@ export default function Home() {
       );
       const mockUsers = response.data;
       setUsers(mockUsers);
-      //console.log(users);
-      //console.log(mockUsers);
     } catch (error) {
       console.error("Failed to load users:", error);
     } finally {
@@ -31,7 +29,6 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       loadUsers();
-      //console.log(users);
     }, [])
   );
 

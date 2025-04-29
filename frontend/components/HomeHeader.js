@@ -1,19 +1,19 @@
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 import {BalsamiqSans_700Bold, useFonts} from "@expo-google-fonts/balsamiq-sans";
 import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import {Ionicons} from "@expo/vector-icons";
+import {Ionicons, MaterialIcons} from "@expo/vector-icons";
 import {router} from "expo-router";
 
 export default function HomeHeader() {
     const insets = useSafeAreaInsets();
     const [fontsLoaded] = useFonts({BalsamiqSans_700Bold});
 
-    const navigateToMenu = () => {
-        router.push("/menu");
-    };
-
     const navigateToSearch = () => {
         router.push("/search");
+    };
+
+    const navigateToCreateGroup = () => {
+        router.push("/createGroup");
     };
 
     if (!fontsLoaded) {
@@ -36,12 +36,13 @@ export default function HomeHeader() {
                 >
                     <Ionicons name="search-outline" size={28} color="#1E90FF"/>
                 </TouchableOpacity>
+
                 <TouchableOpacity
-                    onPress={navigateToMenu}
+                    onPress={navigateToCreateGroup}
                     style={styles.iconButton}
                     activeOpacity={0.7}
                 >
-                    <Ionicons name="menu-outline" size={32} color="#1E90FF"/>
+                    <MaterialIcons name="group-add" size={32} color="#1E90FF"/>
                 </TouchableOpacity>
             </View>
         </View>

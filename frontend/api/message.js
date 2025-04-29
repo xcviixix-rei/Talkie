@@ -1,4 +1,4 @@
-import auth from '../config/firebaseConfig';
+import auth from "../config/firebaseConfig";
 
 // Get all messages in a conversation
 export const getMessages = async (conversationId) => {

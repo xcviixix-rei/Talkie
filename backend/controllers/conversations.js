@@ -53,19 +53,33 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Delete a conversation
+// Delete a conversation and its messages
 router.delete("/:id", async (req, res) => {
   try {
-    await Conversation.delete(req.params.id);
-    res.json({ message: "Conversation deleted" });
+    const conversationId = req.params.id;
+
+    // Query for all messages in the conversation
+    const messagesQuery = query(
+      Message.collectionRef(),
+      where("conversation_id", "==", conversationId)
+    );
+    const querySnapshot = await getDocs(messagesQuery);
+
+    // Delete each message (assuming Message.delete(id) exists)
+    const deletePromises = [];
+    querySnapshot.forEach((docSnap) => {
+      deletePromises.push(Message.delete(docSnap.id));
+    });
+    await Promise.all(deletePromises);
+
+    // Now delete the conversation
+    await Conversation.delete(conversationId);
+    res.json({ message: "Conversation and its messages deleted" });
   } catch (error) {
     console.error("Error deleting conversation:", error);
     res.status(500).json({ error: "Failed to delete conversation" });
   }
 });
-
-
-
 
 // List all messages in a conversation
 router.get("/:conversationId/messages", async (req, res) => {
@@ -79,7 +93,7 @@ router.get("/:conversationId/messages", async (req, res) => {
     );
     const querySnapshot = await getDocs(messagesQuery);
     const messages = [];
-    
+
     querySnapshot.forEach((docSnap) => {
       messages.push(new Message({ id: docSnap.id, ...docSnap.data() }));
     });
@@ -90,8 +104,6 @@ router.get("/:conversationId/messages", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch messages" });
   }
 });
-
-
 
 // Get messages in a conversation that include specific content in their text
 router.get("/:conversationId/messages/search", async (req, res) => {
@@ -109,7 +121,7 @@ router.get("/:conversationId/messages/search", async (req, res) => {
     );
     const querySnapshot = await getDocs(messagesQuery);
     const messages = [];
-    
+
     // Filter messages locally by checking if text includes the search query
     querySnapshot.forEach((docSnap) => {
       const messageData = docSnap.data();
@@ -124,8 +136,6 @@ router.get("/:conversationId/messages/search", async (req, res) => {
     res.status(500).json({ error: "Failed to search messages" });
   }
 });
-
-
 
 // Get a specific message inside a conversation
 router.get("/:conversationId/messages/:messageId", async (req, res) => {

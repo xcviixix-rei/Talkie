@@ -13,9 +13,19 @@ export default function ConversationItem({
   const [lastMessage, setLastMessage] = useState(undefined);
   const [mockUsers, setMockUsers] = useState([]);
   const [formattedTime, setFormattedTime] = useState("");
+  const [converName, setConverName] = useState("");
+  const [converPic, setConverPic] = useState("");
 
   const openConversation = () => {
-    router.push({ pathname: "/conversation", params: item });
+    router.push({
+      pathname: "/conversation",
+      params: {
+        rawItem: JSON.stringify(item),
+        rawMockUsers: JSON.stringify(mockUsers),
+        converName,
+        converPic,
+      },
+    });
   };
 
   // Format time like Messenger (now, minutes, hours, yesterday, date)
@@ -65,36 +75,118 @@ export default function ConversationItem({
       .slice(2)}`;
   };
 
-  const fetchUser = async () => {
-    try {
-      const userPromises = item.participants.map(async (participantId) => {
-        if (participantId !== currentUser.id) {
-          return fetchUserData(participantId);
-        }
-      });
+  // Function to determine if an attachment is an image or voice by examining its URL or file extension
+  const getAttachmentType = (attachment) => {
+    if (!attachment || (!attachment.url && !attachment.uri)) return "unknown";
 
-      const usersData = await Promise.all(userPromises);
-      setMockUsers(usersData);
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
+    const url = attachment.url || attachment.uri;
+
+    // Check for voice/audio file extensions or formats
+    if (
+      url.match(/\.(mp3|wav|ogg|m4a|aac)$/i) ||
+      url.includes("voice") ||
+      url.includes("audio") ||
+      attachment.type === "voice" ||
+      attachment.type === "audio"
+    ) {
+      return "voice";
     }
+
+    // Check for image file extensions or formats
+    if (
+      url.match(/\.(jpg|jpeg|png|gif|bmp|webp|heic)$/i) ||
+      url.includes("image") ||
+      attachment.type === "image" ||
+      attachment.type === "photo"
+    ) {
+      return "image";
+    }
+
+    return "file"; // Default to generic file
+  };
+
+  const getMessagePreview = (message, usersData) => {
+    if (!message) return "";
+
+    const senderName =
+      message.sender === currentUser.id
+        ? "You"
+        : usersData.find((user) => user?.id === message.sender)?.full_name ||
+          "Unknown";
+
+    // Check for voice message
+    if (message?.voice_message) {
+      return `${senderName}: Voice message`;
+    }
+    // Check for image attachments
+    if (message.attachments && message.attachments.length > 0) {
+      // Group attachments by type
+      const attachmentTypes = message.attachments.map(getAttachmentType);
+
+      const imageCount = attachmentTypes.filter(
+        (type) => type === "image"
+      ).length;
+      const voiceCount = attachmentTypes.filter(
+        (type) => type === "voice"
+      ).length;
+      const fileCount = attachmentTypes.filter(
+        (type) => type === "file"
+      ).length;
+
+      // Prioritize voice messages
+      if (voiceCount > 0) {
+        return `${senderName}: sent a voice message`;
+      }
+
+      // Then check for images
+      if (imageCount > 0) {
+        return `${senderName}: sent ${
+          imageCount > 1 ? `${imageCount} photos` : "a photo"
+        }`;
+      }
+
+      // Generic files as fallback
+      if (fileCount > 0) {
+        return `${senderName}: sent ${
+          fileCount > 1 ? `${fileCount} files` : "a file"
+        }`;
+      }
+    }
+
+    // Regular text message
+    return `${senderName}: ${message.text || ""}`;
   };
 
   useFocusEffect(
     useCallback(() => {
       const fetchAndSetData = async () => {
         try {
-          await fetchUser(); // wait until user data is fetched
-
-          // Set last message text
-          const senderText =
-            item?.last_message?.sender === currentUser.id
-              ? "You"
-              : mockUsers
-                  .filter((user) => user !== undefined)
+          // We need to use the actual user data here, not rely on the state which may not be updated yet
+          const usersData = await Promise.all(
+            item.participants.map(async (participantId) => {
+              return fetchUserData(participantId);
+            })
+          );
+          // Update state with the fetched data
+          setMockUsers(usersData);
+          setConverName(
+            item?.name
+              ? item.name
+              : usersData
+                  .filter((user) => user.id !== currentUser.id)
                   .map((user) => user.full_name)
-                  .join(", ");
-          setLastMessage(`${senderText}: ${item?.last_message?.text || ""}`);
+                  .join(", ")
+          );
+          setConverPic(
+            item?.conver_pic
+              ? item.conver_pic
+              : usersData?.find((u) => u?.id != currentUser.id)
+              ? usersData.find((u) => u?.profile_pic).profile_pic
+              : "https://www.gravatar.com/avatar/?d=identicon"
+          );
+          // Set last message text using the freshly fetched user data
+          const previewText = getMessagePreview(item?.last_message, usersData);
+          setLastMessage(previewText);
 
           // Set formatted time
           if (item?.last_message?.timestamp) {
@@ -115,7 +207,7 @@ export default function ConversationItem({
       }, 60000); // Update every minute
 
       return () => clearInterval(timeInterval);
-    }, [item.last_message, mockUsers])
+    }, [item?.last_message])
   );
 
   return (
@@ -125,20 +217,15 @@ export default function ConversationItem({
     >
       <Image
         source={
-          mockUsers?.find((u) => u?.profile_pic)
-            ? { uri: mockUsers.find((u) => u?.profile_pic).profile_pic }
-            : require("../assets/images/icon.png")
+          converPic && converPic.trim() !== ""
+            ? { uri: converPic }
+            : "https://www.gravatar.com/avatar/?d=identicon"
         }
         style={styles.image}
       />
       <View style={styles.textContainer}>
         <View style={styles.row}>
-          <Text style={styles.nameText}>
-            {mockUsers
-              .filter((user) => user !== undefined)
-              .map((user) => user.full_name)
-              .join(", ")}
-          </Text>
+          <Text style={styles.nameText}>{converName}</Text>
           <Text style={styles.timeText}>{formattedTime}</Text>
         </View>
         <Text style={styles.messageText} numberOfLines={1} ellipsizeMode="tail">

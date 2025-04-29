@@ -1,22 +1,42 @@
-import {Alert, StyleSheet, Text, TextInput, TouchableOpacity, View,} from "react-native";
-import React, {useEffect, useRef, useState} from "react";
-import {useLocalSearchParams, useRouter} from "expo-router";
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React, { useEffect, useCallback, useRef, useState } from "react";
+import { useLocalSearchParams, useFocusEffect, useRouter } from "expo-router";
 import ConversationHeader from "../../components/ConversationHeader";
 import MessageList from "../../components/MessageList";
-import {heightPercentageToDP as hp, widthPercentageToDP as wp,} from "react-native-responsive-screen";
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from "react-native-responsive-screen";
 import MediaService from "../../services/mediaService";
-import {Ionicons} from "@expo/vector-icons";
-import {useAuth} from "../../context/authContext";
-import {fetchUserData} from "../../api/user";
-import {sendMessage} from "../../api/message";
-import {changeLastMessages} from "../../api/conversation";
-
-import {collection, onSnapshot, orderBy, query, where,} from "firebase/firestore";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../../context/authContext";
+import { fetchUserData } from "../../api/user";
+import { fetchConversation } from "../../api/conversation";
+import { sendMessage } from "../../api/message";
+import { changeLastMessages } from "../../api/conversation";
+import uploadMediaService from "../../services/uploadMediaService";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "../../config/firebaseConfig";
 import { useCall } from "./call/useCall";
-import {db} from "../../config/firebaseConfig";
 
 export default function Conversation() {
-  const item = useLocalSearchParams();
+  const { rawItem, rawMockUsers, converName, converPic } =
+    useLocalSearchParams();
+  const [item, setItem] = useState(JSON.parse(rawItem));
+  const mockUsers = JSON.parse(rawMockUsers);
   const router = useRouter();
   const { user } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -42,93 +62,163 @@ export default function Conversation() {
       const userPromises = participantsArray.map(async (participantId) => {
         if (participantId !== user.id) {
           return fetchUserData(participantId);
+  const [attachments, setAttachments] = useState(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchData = async () => {
+        const tmp = await fetchConversation(item.id);
+        setItem(tmp);
+        console.log(tmp);
+      };
+
+      fetchData();
+
+      const messagesRef = collection(db, "messages");
+      const messagesQuery = query(
+        messagesRef,
+        where("conversation_id", "==", item.id),
+        orderBy("timestamp", "asc")
+      );
+
+      const unsubscribe = onSnapshot(
+        messagesQuery,
+        (snapshot) => {
+          const updatedMessages = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setMessages(updatedMessages);
+          if (updatedMessages.length > 0) {
+            const lastMessage = updatedMessages[updatedMessages.length - 1];
+            changeLastMessages(
+              item.id,
+              lastMessage.sender,
+              lastMessage.text,
+              lastMessage.timestamp,
+              lastMessage.attachments
+            );
+          }
+        },
+        (error) => {
+          console.error("Error listening to messages:", error);
         }
-      });
+      );
+
+      // Clean up the listener when component unmounts
+      return () => {
+        unsubscribe();
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+        MediaService.cleanup();
+      };
+    }, [])
+  );
 
       const usersData = await Promise.all(userPromises);
       setMockUsers(usersData/*.filter(user => user)*/);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-
-    const messagesRef = collection(db, "messages");
-    const messagesQuery = query(
-      messagesRef,
-      where("conversation_id", "==", item.id),
-      orderBy("timestamp", "asc")
-    );
-
-    const unsubscribe = onSnapshot(
-      messagesQuery,
-      (snapshot) => {
-        const updatedMessages = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setMessages(updatedMessages);
-        if (updatedMessages.length > 0) {
-          const lastMessage = updatedMessages[updatedMessages.length - 1];
-          changeLastMessages(
-            item.id,
-            user.id,
-            lastMessage.text,
-            lastMessage.timestamp
-          );
-        }
-      },
-      (error) => {
-        console.error("Error listening to messages:", error);
-      }
-    );
-
-    // Clean up the listener when component unmounts
-    return () => {
-      unsubscribe();
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      MediaService.cleanup();
-    };
-  }, []);
-
   const handleSendMessage = async () => {
     let message = textRef.current.trim();
-    if (!message) return;
-    if (inputRef) inputRef?.current?.clear();
+    if (!message && !attachments) return; // Don't send empty messages with no attachments
+
+    if (inputRef) {
+      inputRef?.current?.clear();
+      textRef.current = "";
+    }
+
+    if (inputRef) {
+      inputRef?.current?.clear();
+      textRef.current = "";
+    }
+    let attachmentData = null;
+
+    // Upload attachment if exists
+    if (attachments) {
+      // If it's a single attachment (object), convert it to an array for consistent processing
+      const attachmentsArray = Array.isArray(attachments)
+        ? attachments
+        : [attachments];
+
+      // Upload all attachments in parallel
+      const uploadResults = await Promise.all(
+        attachmentsArray.map(async (attachment) => {
+          const path = `${user.id}/images/${attachment.name}`;
+          try {
+            const uploadResult = await uploadMediaService.uploadFile(
+              attachment.uri,
+              path,
+              attachment.type
+            );
+
+            if (uploadResult.success) {
+              return {
+                url: uploadResult.publicUrl,
+                success: true,
+              };
+            } else {
+              console.error("Failed to upload attachment:", uploadResult.error);
+              return {
+                error: uploadResult.error,
+                success: false,
+              };
+            }
+          } catch (error) {
+            console.error("Error uploading attachment:", error);
+            return {
+              error: error.message,
+              success: false,
+            };
+          }
+        })
+      );
+
+      // Separate successful and failed uploads
+      const successfulUploads = uploadResults.filter(
+        (result) => result.success
+      );
+      const failedUploads = uploadResults.filter((result) => !result.success);
+
+      if (successfulUploads.length > 0) {
+        attachmentData = successfulUploads.map((result) => ({
+          url: result.url,
+        }));
+      }
+
+      if (failedUploads.length > 0) {
+        console.error("Failed to upload some attachments:", failedUploads);
+        // Consider showing an error message to the user for failed uploads
+      }
+    }
+
+    // Send the message with attachment data
     await sendMessage({
       conversation_id: item.id,
       sender: user.id,
       text: message,
-      attachments: [],
+      attachments: attachmentData ? attachmentData : [], // Store as an array for multiple attachments later
       timestamp: new Date().toISOString(),
       seen_by: [user.id],
     });
+
+    // Clear the attachment after sending
+    setAttachments(null);
   };
 
   const toggleMediaButtons = () => {
     setShowMediaButtons(!showMediaButtons);
-    console.log(!showMediaButtons);
   };
 
   const handleImagePicker = async () => {
-    console.log("handleImagePicker was called"); // <-- Add this line to confirm the function is triggered
-
     const image = await MediaService.handleImagePicker();
-    console.log("Image from MediaService:", image);
-
-    if (image) {
-      console.log("Selected image:", image);
-    }
+    setAttachments(image);
   };
 
   const handleCamera = async () => {
     const photo = await MediaService.handleCamera();
     if (photo) {
-      console.log("Captured photo:", photo);
       // Handle photo upload and sending
     }
   };
@@ -185,7 +275,7 @@ export default function Conversation() {
       if (recordingResult && recordingDuration >= 1) {
         setRecordingInfo(recordingResult);
         // Auto-play the recording
-        await playRecording(recordingResult.uri);
+        playRecording(recordingResult.uri);
       } else {
         // Recording was too short, discard it
         setRecordingInfo(null);
@@ -239,7 +329,14 @@ export default function Conversation() {
 
   return (
     <View style={styles.container}>
-      <ConversationHeader item={mockUsers} router={router} /*onVoiceCall={initiateVoiceCall} onVideoCall={initiateVideoCall}*//>
+      <ConversationHeader
+        item={item}
+        mockUsers={mockUsers}
+        converName={item?.name ? item.name : converName}
+        converPic={item?.name ? item?.conver_pic : converPic}
+        router={router}
+        currentUser={user}
+      />
       <View style={styles.header} />
       <View style={styles.main}>
         <View style={styles.messageList}>

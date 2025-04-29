@@ -5,7 +5,13 @@ import { Alert, Platform } from "react-native";
 
 // Configuration for image picking and camera
 const imagePickerOptions = {
-  mediaTypes: ImagePicker.MediaTypeOptions.All,
+  allowsEditing: false,
+  allowsMultipleSelection: true,
+  aspect: [4, 3],
+  quality: 0.8,
+};
+
+const sigleImagePickerOptions = {
   allowsEditing: true,
   aspect: [4, 3],
   quality: 0.8,
@@ -139,6 +145,7 @@ class MediaService {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         ...imagePickerOptions,
+        allowsMultipleSelection: true, // Enable multiple selection
         base64: false,
       });
 
@@ -146,21 +153,65 @@ class MediaService {
         return null;
       }
 
-      const asset = result.assets[0];
-      const fileName = asset.uri.split("/").pop();
-      const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+      // Process all selected assets instead of just the first one
+      const processedImages = await Promise.all(
+        result.assets.map(async (asset) => {
+          const fileName = asset.uri.split("/").pop();
+          const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+
+          return {
+            uri: asset.uri,
+            name: fileName,
+            type: `image/${fileName.split(".").pop()}`,
+            size: fileInfo.size,
+            width: asset.width,
+            height: asset.height,
+          };
+        })
+      );
+
+      return processedImages; // This will return an array of image objects
+    } catch (error) {
+      console.error("Error picking images:", error);
+      Alert.alert("Error", "Failed to select images. Please try again.");
+      return null;
+    }
+  }
+
+  /**
+   * Pick a single image from the device gallery.
+   * @returns {Promise<Object|null>} Selected image info or null if canceled/error.
+   */
+  async handleSingleImagePicker() {
+    try {
+      if (!(await this.requestMediaLibraryPermission())) {
+        return null;
+      }
+
+      const { canceled, assets } = await ImagePicker.launchImageLibraryAsync({
+        ...sigleImagePickerOptions,
+        base64: false,
+      });
+
+      if (canceled || !assets?.length) {
+        return null;
+      }
+
+      const { uri, width, height } = assets[0];
+      const name = uri.split("/").pop();
+      const { size } = await FileSystem.getInfoAsync(uri);
 
       return {
-        uri: asset.uri,
-        name: fileName,
-        type: `image/${fileName.split(".").pop()}`,
-        size: fileInfo.size,
-        width: asset.width,
-        height: asset.height,
+        uri,
+        name,
+        type: `image/${name.split(".").pop()}`,
+        size,
+        width,
+        height,
       };
     } catch (error) {
-      console.error("Error picking image:", error);
-      Alert.alert("Error", "Failed to select image. Please try again.");
+      console.error("Image selection error:", error);
+      Alert.alert("Error", "Failed to select an image. Please try again.");
       return null;
     }
   }
@@ -229,7 +280,8 @@ class MediaService {
       });
 
       if (this.recording) {
-        console.log(this.recording);
+        //
+        // console.log(this.recording);
         await this.stopRecording();
       }
       const recording = new Audio.Recording();

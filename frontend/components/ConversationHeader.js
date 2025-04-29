@@ -1,17 +1,36 @@
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { Stack } from "expo-router";
 import { Entypo, Foundation, Ionicons } from "@expo/vector-icons";
+import { fetchConversation } from "../api/conversation";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
-export default function ConversationHeader({ item, router, onVoiceCall, onVideoCall }) {
+
+export default function ConversationHeader({
+  item,
+  mockUsers,
+  router,
+  converName,
+  converPic,
+  currentUser,
+  onVoiceCall,
+  onVideoCall,
+}) {
+  const openConversationInfor = () => {
+    router.push({
+      pathname: "/conversationInfor",
+      params: {
+        rawItem: JSON.stringify(item),
+        rawMockUsers: JSON.stringify(mockUsers),
+        converName,
+        converPic,
+      },
+    });
+  };
+
   return (
     <Stack.Screen
       options={{
-        title:
-          item
-            .filter((user) => user)
-            .map((user) => user.full_name)
-            .join(", ") || "yeye",
+        title: converName,
         headerStyle: { height: hp(8) },
         headerShadowVisible: false,
         headerLeft: () => (
@@ -19,24 +38,24 @@ export default function ConversationHeader({ item, router, onVoiceCall, onVideoC
             <TouchableOpacity onPress={() => router.back()}>
               <Entypo name="chevron-left" size={hp(4)} color="#737373" />
             </TouchableOpacity>
-            <Image
-              source={
-                item?.find((u) => u?.profile_pic)
-                  ? { uri: item.find((u) => u?.profile_pic).profile_pic }
-                  : require("../assets/images/icon.png")
-              }
-              style={styles.profileImage}
-            />
+            <Image source={{ uri: converPic }} style={styles.profileImage} />
           </View>
         ),
         headerRight: () => (
           <View style={styles.iconContainer}>
-                        <TouchableOpacity onPress={onVoiceCall}>
-                <Ionicons name="call" size={hp(2.8)} color="#737373"  />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={onVideoCall}>
-                <Foundation name="video" size={hp(3.8)} color="#737373"  />
-                        </TouchableOpacity>
+            <TouchableOpacity onPress={onVoiceCall}>
+              <Ionicons name="call" size={hp(2.8)} color="#737373" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onVideoCall}>
+              <Foundation name="video" size={hp(3.8)} color="#737373" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={openConversationInfor}>
+              <Ionicons
+                name="information-circle"
+                size={hp(2.8)}
+                color="#737373"
+              />
+            </TouchableOpacity>
           </View>
         ),
       }}
