@@ -29,6 +29,7 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       loadUsers();
+      const timeInterval = setInterval(loadUsers, 60000);
     }, [])
   );
 

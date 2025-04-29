@@ -1,6 +1,4 @@
 import { Stack, Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { TouchableOpacity } from "react-native";
 
 export default function AppLayout() {
   return (
@@ -34,26 +32,6 @@ export default function AppLayout() {
           presentation: "fullScreenModal",
         }}
       />
-      {/* <Stack.Screen
-        name="conversationInfor"
-        options={({ navigation }) => ({
-          title: "Conversation Info",
-          headerBackTitle: "Back",
-          // This allows us to customize the back button behavior
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() =>
-                navigation.getParent()?.emit({
-                  type: "customBackAction",
-                  target: navigation.getId(),
-                })
-              }
-            >
-              <Ionicons name="chevron-back" size={24} color="#007AFF" />
-            </TouchableOpacity>
-          ),
-        })}
-      /> */}
     </Stack>
   );
 }
