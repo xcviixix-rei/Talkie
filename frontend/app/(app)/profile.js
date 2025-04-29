@@ -1,23 +1,24 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 import {useAuth} from "../../context/authContext";
-import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
-import { updateUserProfile } from "../../api/user";
+import {router} from "expo-router";
+import {updateUserProfile} from "../../api/user";
+import mediaService from "../../services/mediaService";
+import uploadService from "../../services/uploadMediaService";
 
 export default function ProfileScreen() {
-    const {user, handleSignOut, handleChangePassword, currentUserPassword} = useAuth();
+    const {user, handleChangePassword} = useAuth();
     const [loading, setLoading] = useState(false);
 
     // Username state
@@ -30,46 +31,47 @@ export default function ProfileScreen() {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    useEffect(() => {
-        (async () => {
-            const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== "granted") {
-                Alert.alert("Permission needed", "Please grant camera roll permissions to change your profile picture.");
-            }
-        })();
-    }, []);
-
     const handlePickImage = async () => {
         try {
-            const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            setLoading(true);
+
+            // Use mediaService to pick a single image
+            const imageData = await mediaService.handleSingleImagePicker({
                 allowsEditing: true,
-                aspect: [1, 1],
-                quality: 0.7,
+                aspect: [1, 1],  // Square aspect ratio for profile pictures
+                quality: 1.0,
             });
 
-            if (!result.canceled) {
-                setLoading(true);
-
-                try {
-                    // Get the new image URL
-                    const imageUrl = result.assets[0].uri;
-
-                    // Use the updateUserProfile API
-                    await updateUserProfile(user.id, {
-                        profile_pic: imageUrl
-                    });
-
-                    Alert.alert("Success", "Profile picture updated successfully");
-                } catch (error) {
-                    console.error("Error updating profile picture:", error);
-                    Alert.alert("Error", "Failed to update profile picture");
-                } finally {
-                    setLoading(false);
-                }
+            if (!imageData) {
+                setLoading(false);
+                return; // User canceled or error occurred
             }
+
+            // Upload the selected image to storage
+            const path = `${user.id}/images/profile_pic_${user.username}${imageData.name}`;
+
+            const uploadResult = await uploadService.uploadFile(
+                imageData.uri,
+                path,
+                imageData.type
+            );
+
+            if (!uploadResult.success) {
+                throw new Error("Failed to upload image");
+            }
+
+            // Update user profile with the new image URL
+            await updateUserProfile(user.id, {
+                profile_pic: uploadResult.publicUrl
+            });
+            user.profile_pic = uploadResult.publicUrl;
+
+            Alert.alert("Success", "Profile picture updated successfully");
         } catch (error) {
-            Alert.alert("Error", "Failed to select image");
+            console.error("Error updating profile picture:", error);
+            Alert.alert("Error", "Failed to update profile picture");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -82,11 +84,8 @@ export default function ProfileScreen() {
         setLoading(true);
 
         try {
-            // Use the updateUserProfile API
-            await updateUserProfile(user.id, {
-                username: username
-            });
-
+            await updateUserProfile(user.id, {username: username, full_name: username});
+            user.username = username;
             setEditUsername(false);
             Alert.alert("Success", "Username updated successfully");
         } catch (error) {
@@ -116,7 +115,7 @@ export default function ProfileScreen() {
         setLoading(true);
 
         try {
-            // Use the handleChangePassword method from authContext
+            // Pass both current and new password to the handleChangePassword method
             const result = await handleChangePassword(currentPassword, newPassword);
 
             if (result.success) {
@@ -130,25 +129,7 @@ export default function ProfileScreen() {
             }
         } catch (error) {
             console.error("Error changing password:", error);
-            Alert.alert("Error", "Failed to change password");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const logout = async () => {
-        try {
-            setLoading(true);
-            const result = await handleSignOut();
-
-            if (result.success) {
-                router.replace("/login");
-            } else {
-                Alert.alert("Error", result.data || "Failed to logout");
-            }
-        } catch (error) {
-            console.error("Error signing out:", error);
-            Alert.alert("Error", "Failed to logout");
+            Alert.alert("Error", "Failed to change password: " + error.message);
         } finally {
             setLoading(false);
         }
@@ -160,16 +141,16 @@ export default function ProfileScreen() {
                 <TouchableOpacity onPress={handlePickImage} disabled={loading}>
                     {loading ? (
                         <View style={styles.profileImage}>
-                            <ActivityIndicator size="large" color="#FFF" />
+                            <ActivityIndicator size="large" color="#FFF"/>
                         </View>
                     ) : user?.profile_pic ? (
                         <View style={styles.profileImageContainer}>
                             <Image
-                                source={{ uri: user.profile_pic }}
+                                source={{uri: user.profile_pic}}
                                 style={styles.profileImage}
                             />
                             <View style={styles.editIconContainer}>
-                                <Ionicons name="camera" size={20} color="white" />
+                                <Ionicons name="camera" size={20} color="white"/>
                             </View>
                         </View>
                     ) : (
@@ -180,55 +161,59 @@ export default function ProfileScreen() {
                                 </Text>
                             </View>
                             <View style={styles.editIconContainer}>
-                                <Ionicons name="camera" size={20} color="white" />
+                                <Ionicons name="camera" size={20} color="white"/>
                             </View>
                         </View>
                     )}
                 </TouchableOpacity>
 
-                {editUsername ? (
-                    <View style={styles.usernameEditContainer}>
-                        <TextInput
-                            style={styles.usernameInput}
-                            value={username}
-                            onChangeText={setUsername}
-                            placeholder="Enter new username"
-                            autoCapitalize="none"
-                        />
-                        <View style={styles.usernameButtons}>
-                            <TouchableOpacity
-                                style={styles.cancelButton}
-                                onPress={() => {
-                                    setEditUsername(false);
-                                    setUsername(user?.username || "");
-                                }}
-                            >
-                                <Text style={styles.buttonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.saveButton}
-                                onPress={handleUpdateUsername}
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator size="small" color="#FFF" />
-                                ) : (
-                                    <Text style={styles.buttonText}>Save</Text>
-                                )}
-                            </TouchableOpacity>
-                        </View>
+                <View style={styles.nameContainer}>
+                    <View style={styles.nameWrapper}>
+                        {editUsername ? (
+                            <View style={styles.usernameEditContainer}>
+                                <TextInput
+                                    style={styles.usernameInput}
+                                    value={username}
+                                    onChangeText={setUsername}
+                                    placeholder="Enter new username"
+                                    autoCapitalize="none"
+                                />
+                                <View style={styles.usernameButtons}>
+                                    <TouchableOpacity
+                                        style={styles.cancelButton}
+                                        onPress={() => {
+                                            setUsername(user?.username || "");
+                                            setEditUsername(false);
+                                        }}
+                                    >
+                                        <Text style={styles.buttonText}>Cancel</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.saveButton}
+                                        onPress={handleUpdateUsername}
+                                        disabled={loading}
+                                    >
+                                        {loading ? (
+                                            <ActivityIndicator size="small" color="#FFF"/>
+                                        ) : (
+                                            <Text style={styles.buttonText}>Save</Text>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        ) : (
+                            <>
+                                <Text style={styles.name}>{user?.username || "User"}</Text>
+                                <TouchableOpacity
+                                    style={styles.editNameButton}
+                                    onPress={() => setEditUsername(true)}
+                                >
+                                    <Ionicons name="pencil" size={20} color="#1E90FF"/>
+                                </TouchableOpacity>
+                            </>
+                        )}
                     </View>
-                ) : (
-                    <View style={styles.nameContainer}>
-                        <Text style={styles.name}>{user?.username || "User"}</Text>
-                        <TouchableOpacity
-                            style={styles.editNameButton}
-                            onPress={() => setEditUsername(true)}
-                        >
-                            <Ionicons name="pencil" size={20} color="#1E90FF" />
-                        </TouchableOpacity>
-                    </View>
-                )}
+                </View>
                 <Text style={styles.email}>{user?.email}</Text>
             </View>
 
@@ -291,7 +276,7 @@ export default function ProfileScreen() {
                             disabled={loading}
                         >
                             {loading ? (
-                                <ActivityIndicator size="small" color="#FFF" />
+                                <ActivityIndicator size="small" color="#FFF"/>
                             ) : (
                                 <Text style={styles.buttonText}>Change Password</Text>
                             )}
@@ -360,9 +345,14 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
     },
     nameContainer: {
-        flexDirection: "row",
+        width: '100%',
         alignItems: "center",
         marginBottom: 4,
+    },
+    nameWrapper: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
     },
     name: {
         fontSize: 24,
@@ -373,7 +363,7 @@ const styles = StyleSheet.create({
         padding: 5,
     },
     usernameEditContainer: {
-        width: "80%",
+        width: 250,
         marginBottom: 10,
     },
     usernameInput: {
@@ -464,9 +454,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#ff3b30",
         padding: 15,
         borderRadius: 10,
-    },
-    logoutIcon: {
-        marginRight: 8,
     },
     logoutText: {
         color: "#fff",

@@ -182,7 +182,7 @@ class MediaService {
    * Pick a single image from the device gallery.
    * @returns {Promise<Object|null>} Selected image info or null if canceled/error.
    */
-  async handleSingleImagePicker() {
+  async handleSingleImagePicker(customOptions = {}) {
     try {
       if (!(await this.requestMediaLibraryPermission())) {
         return null;
@@ -190,6 +190,7 @@ class MediaService {
 
       const { canceled, assets } = await ImagePicker.launchImageLibraryAsync({
         ...sigleImagePickerOptions,
+        ...customOptions,
         base64: false,
       });
 
