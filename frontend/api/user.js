@@ -44,3 +44,28 @@ const loadUsers = async () => {
     setLoading(false);
   }
 };
+
+// Check if a username is available
+export const checkUsernameAvailability = async (username) => {
+  try {
+    const response = await fetch(
+      `http://10.0.2.2:5000/api/users/check-username?username=${encodeURIComponent(username)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to check username availability");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error checking username availability:", error);
+    throw error;
+  }
+};
