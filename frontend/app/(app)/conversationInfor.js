@@ -18,10 +18,8 @@ import {
   blockUser,
   muteConversation,
 } from "../../api/conversation";
-import { useNavigation } from "@react-navigation/native";
 import mediaService from "../../services/mediaService";
 import uploadMediaService from "../../services/uploadMediaService";
-import * as ImagePicker from "expo-image-picker";
 
 export default function ConversationInfo() {
   const { user } = useAuth();

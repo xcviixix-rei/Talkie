@@ -22,6 +22,7 @@ import { fetchConversation } from "../../api/conversation";
 import { sendMessage } from "../../api/message";
 import { changeLastMessages } from "../../api/conversation";
 import uploadMediaService from "../../services/uploadMediaService";
+import locationService from "../../services/locationService";
 import {
   collection,
   onSnapshot,
@@ -49,7 +50,10 @@ export default function Conversation() {
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const audioControlsRef = useRef(null);
-  const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId, /*calleeUsername*/);
+  const { initiateVoiceCall, initiateVideoCall } = useCall(
+    user.id,
+    item.userId /*calleeUsername*/
+  );
   const [attachments, setAttachments] = useState(null);
 
   useFocusEffect(
@@ -206,11 +210,42 @@ export default function Conversation() {
     }
   };
 
-  const handleLocation = () => {
-    Alert.alert(
-      "Location",
-      "Location sharing functionality will be implemented here."
-    );
+  const handleLocation = async () => {
+    // try {
+    //   // Show loading indicator or similar
+    //   // Get current location
+    //   const location = await locationService.getCurrentLocation();
+    //   if (!location) {
+    //     Alert.alert("Error", "Unable to get your location");
+    //     return;
+    //   }
+    //   // Format location text for message
+    //   const locationText = `📍 Location: ${location.latitude.toFixed(
+    //     6
+    //   )}, ${location.longitude.toFixed(6)}`;
+    //   // Send as a message
+    //   await sendMessage({
+    //     conversation_id: item.id,
+    //     sender: user.id,
+    //     text: locationText,
+    //     attachments: [],
+    //     timestamp: new Date().toISOString(),
+    //     seen_by: [user.id],
+    //   });
+    //   // Optionally: save location to be sent to server
+    //   try {
+    //     await locationService.sendLocationToServer(
+    //       location,
+    //       "YOUR_SERVER_ENDPOINT_HERE" // Replace with your actual endpoint
+    //     );
+    //   } catch (serverError) {
+    //     console.error("Error sending location to server:", serverError);
+    //     // Don't alert here as the message was already sent
+    //   }
+    // } catch (error) {
+    //   console.error("Error handling location:", error);
+    //   Alert.alert("Error", "Failed to share your location");
+    // }
   };
 
   // Start recording when the mic button is pressed
