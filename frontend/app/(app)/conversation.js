@@ -57,7 +57,6 @@ export default function Conversation() {
       const fetchData = async () => {
         const tmp = await fetchConversation(item.id);
         setItem(tmp);
-        console.log(tmp);
       };
 
       fetchData();
