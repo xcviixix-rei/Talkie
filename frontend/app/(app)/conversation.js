@@ -29,9 +29,10 @@ export default function Conversation() {
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const audioControlsRef = useRef(null);
+//  const calleeUsername = mockUsers[0]?.full_name || "Unknown User";
 
   // Use the custom hook for call functionality
-  const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId);
+  const { initiateVoiceCall, initiateVideoCall } = useCall(user.id, item.userId, /*calleeUsername*/);
   const [mockUsers, setMockUsers] = useState([]);
 
   const fetchUser = async () => {
@@ -45,8 +46,7 @@ export default function Conversation() {
       });
 
       const usersData = await Promise.all(userPromises);
-
-      setMockUsers(usersData);
+      setMockUsers(usersData/*.filter(user => user)*/);
     } catch (error) {
       console.error("Failed to fetch user data:", error);
     }
@@ -239,7 +239,7 @@ export default function Conversation() {
 
   return (
     <View style={styles.container}>
-      <ConversationHeader item={mockUsers} router={router} />
+      <ConversationHeader item={mockUsers} router={router} /*onVoiceCall={initiateVoiceCall} onVideoCall={initiateVideoCall}*//>
       <View style={styles.header} />
       <View style={styles.main}>
         <View style={styles.messageList}>
