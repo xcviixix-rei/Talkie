@@ -30,6 +30,18 @@ export default function ConversationInfo() {
     converName: initialConverName,
     converPic: initialConverPic,
   } = useLocalSearchParams();
+  const openSearchMessages = () => {
+    router.push({
+      pathname: "/searchMessages",
+      params: {
+        rawItem: JSON.stringify(item),
+        rawMockUsers: JSON.stringify(mockUsers),
+        converName,
+        converPic,
+      },
+    });
+  };
+
   const item = JSON.parse(rawItem);
   const mockUsers = JSON.parse(rawMockUsers);
   const [isMuted, setIsMuted] = useState(item?.isMuted || false);
@@ -267,7 +279,10 @@ export default function ConversationInfo() {
             <Text style={styles.actionText}>Video</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={openSearchMessages}
+          >
             <Ionicons name="search-outline" size={24} color="#1E90FF" />
             <Text style={styles.actionText}>Search</Text>
           </TouchableOpacity>

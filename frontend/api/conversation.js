@@ -117,3 +117,22 @@ export const editConversation = async (
     throw error;
   }
 };
+
+export const searchMessages = async (conversationId, query) => {
+  try {
+    const response = await fetch(
+      `http://10.0.2.2:5000/api/conversations/${conversationId}/messages/search/?query=${query}`,
+      {
+        method: "GET",
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch conversation: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Fetch conversation failed:", error);
+    throw error;
+  }
+};

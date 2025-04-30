@@ -32,6 +32,12 @@ export default function AppLayout() {
           presentation: "fullScreenModal",
         }}
       />
+      <Stack.Screen
+        name="conversationInfor"
+        options={{
+          title: "Conversation",
+        }}
+      />
     </Stack>
   );
 }
