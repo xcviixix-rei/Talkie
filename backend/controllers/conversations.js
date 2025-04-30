@@ -105,12 +105,68 @@ router.get("/:conversationId/messages", async (req, res) => {
   }
 });
 
+router.get("/:conversationId/attachments", async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    
+    // Verify the conversation exists
+    const conversation = await Conversation.get(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+    
+    // Query messages filtered by conversationId
+    const messagesQuery = query(
+      Message.collectionRef(),
+      where("conversation_id", "==", conversationId)
+    );
+    const querySnapshot = await getDocs(messagesQuery);
+    
+    // Define file extension arrays
+    const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
+    const videoExts = ['mp4', 'avi', 'mov', 'mkv'];
+    const audioExts = ['mp3', 'wav', 'ogg'];
+    
+    const images = [];
+    const videos = [];
+    const audios = [];
+    const files = [];
+    
+    querySnapshot.forEach((docSnap) => {
+      const messageData = docSnap.data();
+      // Check if the message contains attachments
+      if (messageData.attachments && Array.isArray(messageData.attachments)) {
+        messageData.attachments.forEach((attachment) => {
+          // Assume attachment object has a "url" or "filename" property
+          const filename = attachment.url || attachment.filename;
+          if (!filename) return;
+          const ext = filename.split('.').pop().toLowerCase();
+          if (imageExts.includes(ext)) {
+            images.push(attachment);
+          } else if (videoExts.includes(ext)) {
+            videos.push(attachment);
+          } else if (audioExts.includes(ext)) {
+            audios.push(attachment);
+          } else {
+            files.push(attachment);
+          }
+        });
+      }
+    });
+    
+    res.json({ images, videos, audios, files });
+  } catch (error) {
+    console.error("Error fetching attachments for conversation:", error);
+    res.status(500).json({ error: "Failed to fetch attachments" });
+  }
+});
+
 // Get messages in a conversation that include specific content in their text
 router.get("/:conversationId/messages/search", async (req, res) => {
   try {
     const { conversationId } = req.params;
     const { query: searchQuery } = req.query;
-    if (!searchQuery) {
+    if (searchQuery === undefined) {
       return res.status(400).json({ error: "Search query required" });
     }
 
