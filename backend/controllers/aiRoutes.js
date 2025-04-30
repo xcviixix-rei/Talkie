@@ -1,6 +1,6 @@
 import express from "express";
 import { User } from "../models/User.js";
-import { summarizeText } from "../services/aiService.js"; // Import your AI service functions
+import { summarizeText, translateText } from "../services/aiService.js"; // Import your AI service functions
 const router = express.Router();
 
 // Example: AI summary service
@@ -36,17 +36,14 @@ router.post("/summarize", async (req, res) => {
   }
 });
 
-// Example: AI translation service
 router.post("/translate", async (req, res) => {
   try {
-    const { text, targetLanguage } = req.body;
-    if (!text || !targetLanguage) {
-      return res
-        .status(400)
-        .json({ error: "Text and targetLanguage are required" });
+    const { text, fromLanguage, targetLanguage } = req.body;
+    if (!text || !targetLanguage || !fromLanguage) {
+      return res.status(400).json({ error: "Text, fromLanguage and targetLanguage are required" });
     }
-    // Call your AI translation service
-    const translatedText = await translateText(text, targetLanguage); // your function here
+    // Call your AI translation service with all three parameters.
+    const translatedText = await translateText(text, fromLanguage, targetLanguage);
     res.json({ translatedText });
   } catch (error) {
     console.error("Error translating text:", error);
