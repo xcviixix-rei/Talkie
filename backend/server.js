@@ -17,6 +17,7 @@ import readReceiptRoutes from "./controllers/readReceipts.js";
 import callRoutes from "./controllers/calls.js";
 import searchRoutes from "./controllers/search.js";
 import aiRoutes from './controllers/aiRoutes.js';
+import collectionRoutes from "./controllers/collections.js";
 
 
 const app = express();
@@ -39,6 +40,7 @@ app.use("/api/readReceipts", readReceiptRoutes);
 app.use("/api/calls", callRoutes);
 app.use("/api/search", searchRoutes);
 app.use('/api/ai', aiRoutes);
+app.use("/api/collections", collectionRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
