@@ -17,6 +17,7 @@ import {
   editConversation,
   blockUser,
   muteConversation,
+  searchMedia,
 } from "../../api/conversation";
 import mediaService from "../../services/mediaService";
 import uploadMediaService from "../../services/uploadMediaService";
@@ -46,11 +47,7 @@ export default function ConversationInfo() {
   const mockUsers = JSON.parse(rawMockUsers);
   const [isMuted, setIsMuted] = useState(item?.isMuted || false);
   const [isBlocked, setIsBlocked] = useState(item?.isBlocked || false);
-  const [mediaCount, setMediaCount] = useState({
-    photos: 0,
-    videos: 0,
-    files: 0,
-  });
+  const [mediaCount, setMediaCount] = useState(null);
 
   // Editable states
   const [converName, setConverName] = useState(initialConverName || "User");
@@ -61,18 +58,12 @@ export default function ConversationInfo() {
 
   useEffect(() => {
     // Mock function to get media counts
-    const getMediaCounts = () => {
-      // In a real app, this would fetch from your backend
-      setMediaCount({
-        photos: Math.floor(Math.random() * 50),
-        videos: Math.floor(Math.random() * 20),
-        files: Math.floor(Math.random() * 15),
-      });
+    const getMediaCounts = async () => {
+      const tempmedia = await searchMedia(item.id);
+      setMediaCount({ ...tempmedia });
     };
-
     getMediaCounts();
   }, []);
-
   const handleMuteToggle = async () => {
     try {
       await muteConversation(item.id, !isMuted);
@@ -294,19 +285,19 @@ export default function ConversationInfo() {
         <View style={styles.mediaGrid}>
           <TouchableOpacity style={styles.mediaItem}>
             <Ionicons name="image-outline" size={28} color="#1E90FF" />
-            <Text style={styles.mediaCount}>{mediaCount.photos}</Text>
+            <Text style={styles.mediaCount}>{mediaCount?.images.length}</Text>
             <Text style={styles.mediaLabel}>Photos</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.mediaItem}>
             <Ionicons name="videocam-outline" size={28} color="#1E90FF" />
-            <Text style={styles.mediaCount}>{mediaCount.videos}</Text>
+            <Text style={styles.mediaCount}>{mediaCount?.videos.length}</Text>
             <Text style={styles.mediaLabel}>Videos</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.mediaItem}>
             <Ionicons name="document-outline" size={28} color="#1E90FF" />
-            <Text style={styles.mediaCount}>{mediaCount.files}</Text>
+            <Text style={styles.mediaCount}>{mediaCount?.files.length}</Text>
             <Text style={styles.mediaLabel}>Files</Text>
           </TouchableOpacity>
         </View>

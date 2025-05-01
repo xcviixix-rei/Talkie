@@ -287,8 +287,8 @@ export default function ConversationItem({
         try {
           // Fetch user data for all participants
           const usersData = await Promise.all(
-            item.participants.map(async (participantId) => {
-              return fetchUserData(participantId);
+            item.participants.map(async (participant) => {
+              return fetchUserData(participant?.id || participant);
             })
           );
 

@@ -121,7 +121,30 @@ export const editConversation = async (
 export const searchMessages = async (conversationId, query) => {
   try {
     const response = await fetch(
-      `http://10.0.2.2:5000/api/conversations/${conversationId}/messages/search/?query=${query}`,
+      `http://10.0.2.2:5000/api/conversations/ef1Zm7mjJdn0HLn0IrWF/messages/search/?query=a`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: query }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch conversation: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Fetch conversation failed:", error);
+    throw error;
+  }
+};
+
+export const searchMedia = async (conversationId) => {
+  try {
+    const response = await fetch(
+      `http://10.0.2.2:5000/api/conversations/${conversationId}/attachments`,
       {
         method: "GET",
       }
