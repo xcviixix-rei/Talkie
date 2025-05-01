@@ -1,5 +1,6 @@
 import express from "express";
 import { query, where, getDocs } from "firebase/firestore";
+import { User } from "../models/User.js";
 import { Conversation } from "../models/Conversation.js";
 import { Message } from "../models/Message.js";
 
@@ -230,8 +231,6 @@ router.get("/:conversationId/messages/:messageId", async (req, res) => {
   }
 });
 
-export default router;
-
 // Get all messages in a conversation
 router.get("/:conversationId/messages", async (req, res) => {
   try {
@@ -262,3 +261,167 @@ router.get("/:conversationId/messages", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch messages" });
   }
 });
+
+router.get("/:conversationId/participants", async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const conversation = await Conversation.get(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+    const participants = conversation.participants || [];
+    
+    // For each participant, if it's simply a string, treat it as uid; otherwise use the object properties.
+    const detailedParticipants = await Promise.all(
+      participants.map(async (participant) => {
+        let uid, alias, role;
+        if (typeof participant === "string") {
+          uid = participant;
+          role = "Participant";
+          const user = await User.get(uid);
+          alias = user?.username || "";
+          return {
+            uid,
+            username: user?.username || "",
+            alias,
+            role,
+          };
+        } else {
+          uid = participant.user_id;
+          const user = await User.get(uid);
+          alias = participant.alias || user?.username || "";
+          role = participant.role || "Participant";
+          return {
+            uid,
+            username: user?.username || "",
+            alias,
+            role,
+          };
+        }
+      })
+    );
+
+
+    res.json({ participants: detailedParticipants });
+  } catch (error) {
+    console.error("Error fetching participants:", error);
+    res.status(500).json({ error: "Failed to fetch participants" });
+  }
+});
+
+// Update a participant's alias in a conversation
+router.put("/:conversationId/participants/:userId/alias", async (req, res) => {
+  try {
+    const { conversationId, userId } = req.params;
+    const { alias } = req.body;
+    if (!alias) {
+      return res.status(400).json({ error: "Alias is required" });
+    }
+    
+    // Fetch the conversation
+    const conversation = await Conversation.get(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+    
+    // Modify the participant's alias
+    let found = false;
+    const updatedParticipants = conversation.participants.map((participant) => {
+      if (typeof participant === "string") {
+        // Participant is stored as uid
+        if (participant === userId) {
+          found = true;
+          return { user_id: participant, alias, role: "Participant" };
+        }
+        return participant;
+      } else {
+        // Participant is an object
+        if (participant.user_id === userId) {
+          found = true;
+          return { ...participant, alias };
+        }
+        return participant;
+      }
+    });
+    
+    if (!found) {
+      return res.status(404).json({ error: "Participant not found in conversation" });
+    }
+    
+    // Update conversation with the new participants array
+    await Conversation.update(conversationId, { participants: updatedParticipants });
+    
+    res.json({ message: "Participant alias updated", participants: updatedParticipants });
+  } catch (error) {
+    console.error("Error updating participant alias:", error);
+    res.status(500).json({ error: "Failed to update participant alias" });
+  }
+});
+  
+// Update a participant's role in a conversation
+router.put("/:conversationId/participants/:userId/role", async (req, res) => {
+  try {
+    const { conversationId, userId } = req.params;
+    const { role } = req.body;
+    if (!role) {
+      return res.status(400).json({ error: "Role is required" });
+    }
+  
+    // Validate role values
+    const validRoles = ["Admin", "Participant"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: "Invalid role. Valid roles are Admin or Participant." });
+    }
+  
+    // Fetch the conversation
+    const conversation = await Conversation.get(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+  
+    // Modify the participant's role
+    let found = false;
+    const updatedParticipants = conversation.participants.map((participant) => {
+      if (typeof participant === "string") {
+        // Participant is stored as uid
+        if (participant === userId) {
+          found = true;
+          // We default alias as empty string here.
+          return { user_id: participant, alias: "", role };
+        }
+        return participant;
+      } else {
+        // Participant is an object
+        if (participant.user_id === userId) {
+          found = true;
+          return { ...participant, role };
+        }
+        return participant;
+      }
+    });
+  
+    if (!found) {
+      return res.status(404).json({ error: "Participant not found in conversation" });
+    }
+  
+    // Update conversation with the new participants array
+    await Conversation.update(conversationId, { participants: updatedParticipants });
+  
+    res.json({ message: "Participant role updated", participants: updatedParticipants });
+  } catch (error) {
+    console.error("Error updating participant role:", error);
+    res.status(500).json({ error: "Failed to update participant role" });
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+export default router;
