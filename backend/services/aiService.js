@@ -71,3 +71,43 @@ ${conversationText}`;
 }
 
 export { summarizeText };
+
+import fetch from 'node-fetch'; // If using Node 18+, you can remove this import as fetch is global.
+
+async function translateText(text, fromLang, toLang) {
+  const url = "https://translate.googleapis.com/translate_a/single";
+  
+  // Build query parameters
+  const params = new URLSearchParams({
+    client: "gtx",
+    sl: fromLang,
+    tl: toLang,
+    dt: "t",
+    text: text,
+    op: "translate"
+  });
+  
+  const fullUrl = `${url}?${params.toString()}`;
+  
+  try {
+    const response = await fetch(fullUrl);
+    if (!response.ok) {
+      // If response is not OK, simply return the original text.
+      return text;
+    }
+    const jsonRes = await response.json();
+    if (!jsonRes[0]) {
+      return text;
+    }
+    let translatedText = "";
+    for (const segment of jsonRes[0]) {
+      translatedText += segment[0];
+    }
+    return translatedText;
+  } catch (error) {
+    console.error("Error in translation:", error);
+    return text;
+  }
+}
+
+export { translateText };
