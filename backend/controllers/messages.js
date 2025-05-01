@@ -63,4 +63,19 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+router.post("/:messageId/hide", async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { uid } = req.body;
+    if (!uid) {
+      return res.status(400).json({ error: "UID is required to hide a message" });
+    }
+    await Message.hideMessage(messageId, uid);
+    res.json({ message: "Message has been hidden for the user." });
+  } catch (error) {
+    console.error("Error hiding message:", error);
+    res.status(500).json({ error: "Failed to hide message" });
+  }
+});
+
 export default router;

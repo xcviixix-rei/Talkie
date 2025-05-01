@@ -85,18 +85,31 @@ router.delete("/:id", async (req, res) => {
 router.get("/:conversationId/messages", async (req, res) => {
   try {
     const { conversationId } = req.params;
+    const queryUid = req.body.uid; // Optional user id query parameter
+    // Verify that the conversation exists
+    const conversation = await Conversation.get(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
 
     // Query messages filtered by conversationId
     const messagesQuery = query(
       Message.collectionRef(),
       where("conversation_id", "==", conversationId)
     );
-    const querySnapshot = await getDocs(messagesQuery);
-    const messages = [];
 
+    const querySnapshot = await getDocs(messagesQuery);
+    let messages = [];
     querySnapshot.forEach((docSnap) => {
       messages.push(new Message({ id: docSnap.id, ...docSnap.data() }));
     });
+
+    // If a query user id is provided, filter out messages hidden for that user
+    if (queryUid) {
+      messages = messages.filter(
+        (msg) => !(msg.hidden_to && msg.hidden_to.includes(queryUid))
+      );
+    }
 
     res.json(messages);
   } catch (error) {
@@ -165,7 +178,7 @@ router.get("/:conversationId/attachments", async (req, res) => {
 router.get("/:conversationId/messages/search", async (req, res) => {
   try {
     const { conversationId } = req.params;
-    const { query: searchQuery } = req.query;
+    const { query: searchQuery, uid } = req.body; // uid is optional
     if (searchQuery === undefined) {
       return res.status(400).json({ error: "Search query required" });
     }
@@ -176,7 +189,7 @@ router.get("/:conversationId/messages/search", async (req, res) => {
       where("conversation_id", "==", conversationId)
     );
     const querySnapshot = await getDocs(messagesQuery);
-    const messages = [];
+    let messages = [];
 
     // Filter messages locally by checking if text includes the search query
     querySnapshot.forEach((docSnap) => {
@@ -185,6 +198,14 @@ router.get("/:conversationId/messages/search", async (req, res) => {
         messages.push(new Message({ id: docSnap.id, ...messageData }));
       }
     });
+
+
+    // If uid is provided, filter out messages hidden for that user
+    if (uid) {
+      messages = messages.filter(
+        (msg) => !(msg.hidden_to && msg.hidden_to.includes(uid))
+      );
+    }
 
     res.json(messages);
   } catch (error) {
