@@ -7,6 +7,7 @@ import {
   deleteDoc,
   collection,
   getDocs,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "../firebase.js";
 import { query, where } from "firebase/firestore";
@@ -20,6 +21,7 @@ export class Message {
     attachments,
     timestamp,
     seen_by,
+    hidden_to, // new field
   }) {
     this.id = id;
     this.conversation_id = conversation_id;
@@ -28,6 +30,7 @@ export class Message {
     this.attachments = attachments;
     this.timestamp = timestamp;
     this.seen_by = seen_by;
+    this.hidden_to = hidden_to || []; // default to empty array
   }
 
   static collectionRef() {
@@ -37,6 +40,9 @@ export class Message {
   static async create(data) {
     const { id, ...rest } = data;
     const timeoutMs = 5000; // Timeout after 5 seconds
+
+    // Ensure hidden_to is set to an empty array if not provided.
+    if (!rest.hidden_to) rest.hidden_to = [];
 
     const operation = (async () => {
       if (!id) {
@@ -70,6 +76,16 @@ export class Message {
 
   static async delete(id) {
     await deleteDoc(doc(db, "messages", id));
+    return true;
+  }
+
+  /**
+   * Hide a message for a given user.
+   */
+  static async hideMessage(messageId, uid) {
+    await updateDoc(doc(db, "messages", messageId), {
+      hidden_to: arrayUnion(uid)
+    });
     return true;
   }
 
