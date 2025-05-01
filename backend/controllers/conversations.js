@@ -176,7 +176,7 @@ router.get("/:conversationId/attachments", async (req, res) => {
 });
 
 // Get messages in a conversation that include specific content in their text
-router.get("/:conversationId/messages/search", async (req, res) => {
+router.post("/:conversationId/messages/search", async (req, res) => {
   try {
     const { conversationId } = req.params;
     const { query: searchQuery, uid } = req.body; // uid is optional
