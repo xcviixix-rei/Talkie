@@ -75,13 +75,24 @@ export default function Conversation() {
       const unsubscribe = onSnapshot(
         messagesQuery,
         (snapshot) => {
-          const updatedMessages = snapshot.docs.map((doc) => ({
+          // Get all messages from the snapshot
+          const allMessages = snapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
           }));
-          setMessages(updatedMessages);
-          if (updatedMessages.length > 0) {
-            const lastMessage = updatedMessages[updatedMessages.length - 1];
+
+          // Filter out messages that should be hidden from the current user
+          const filteredMessages = allMessages.filter(
+            (message) =>
+              !message.hidden_to || !message.hidden_to.includes(user.id)
+          );
+
+          // Update state with filtered messages
+          setMessages(filteredMessages);
+
+          // Still use all messages for the last message tracking
+          if (filteredMessages.length > 0) {
+            const lastMessage = filteredMessages[filteredMessages.length - 1];
             changeLastMessages(
               item.id,
               lastMessage.sender,
@@ -89,7 +100,7 @@ export default function Conversation() {
               lastMessage.timestamp,
               lastMessage.attachments
             );
-          }
+          } else changeLastMessages(item.id);
         },
         (error) => {
           console.error("Error listening to messages:", error);

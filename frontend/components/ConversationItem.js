@@ -163,11 +163,12 @@ export default function ConversationItem({
   const getMessagePreview = (message, users) => {
     if (!message) return "";
 
-    const senderName =
-      message.sender === currentUser.id
+    const senderName = message.sender
+      ? message.sender === currentUser.id
         ? "You"
         : users.find((user) => user?.id === message.sender)?.full_name ||
-          "Unknown";
+          "message"
+      : "";
 
     // Check for voice message
     if (message?.voice_message) {
@@ -210,7 +211,7 @@ export default function ConversationItem({
     }
 
     // Regular text message
-    return `${senderName}: ${message.text || ""}`;
+    return senderName != "" ? `${senderName}: ${message.text || ""}` : "";
   };
 
   const openConversation = () => {
