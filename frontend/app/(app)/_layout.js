@@ -38,6 +38,21 @@ export default function AppLayout() {
           title: "Conversation",
         }}
       />
+            <Stack.Screen
+                name="notifications-settings"
+                options={{
+                    headerShown: false,
+                    headerBackTitle: "Back",
+                }
+                }
+            />
+            <Stack.Screen
+                name="settings"
+                options={{
+                    headerShown: false,
+                    headerBackTitle: "Back",
+                }}
+            />
     </Stack>
   );
 }

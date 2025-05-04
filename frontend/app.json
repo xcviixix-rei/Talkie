@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "Talkie",
+    "slug": "Talkie",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -21,7 +21,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.frontend"
+      "package": "com.anonymous.Talkie"
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
@@ -42,6 +42,10 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
+     
+      ],
+      [
+      	"expo-notifications",
       ]
     ]
   }

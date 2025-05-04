@@ -31,7 +31,10 @@ export default function MenuScreen() {
                         <Ionicons name="chevron-forward" size={24} color="#ccc"/>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.menuItem}>
+                    <TouchableOpacity
+                        style={styles.menuItem}
+                        onPress={() => router.push("/settings")}
+                    >
                         <Ionicons name="settings-outline" size={24} color="#333"/>
                         <Text style={styles.menuItemText}>Settings</Text>
                         <Ionicons name="chevron-forward" size={24} color="#ccc"/>
