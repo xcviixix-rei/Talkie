@@ -3,11 +3,41 @@ import {Slot, useRouter, useSegments} from "expo-router";
 import {AuthContextProvider, useAuth} from "../context/authContext";
 import { StreamContextProvider } from "../context/streamContext";
 import CallHandler from "./(app)/call/callHandler";
+import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
+
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+    }),
+});
 
 const MainLayout = () => {
     const { isAuthenticated } = useAuth();
     const segments = useSegments();
     const router = useRouter();
+
+    useEffect(() => {
+        // Set up notification response handler
+        const responseListener = Notifications.addNotificationResponseReceivedListener(
+            response => {
+                const { data } = response.notification.request.content;
+
+                // Handle notification tap
+                if (data.conversationId) {
+                    router.push(`/conversation/${data.conversationId}`);
+                } else if (data.screen) {
+                    router.push(`/${data.screen}`);
+                }
+            }
+        );
+
+        return () => {
+            Notifications.removeNotificationSubscription(responseListener);
+        };
+    }, []);
 
     useEffect(() => {
         if (typeof isAuthenticated === "undefined") return;
