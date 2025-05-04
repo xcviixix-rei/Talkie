@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
@@ -13,6 +13,7 @@ import { Copy, Reply, Trash } from "lucide-react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 //import { Clipboard } from "@react-native-clipboard/clipboard";
 import { deleteMessage } from "../api/message";
+import TranslatedMessage from "./TranlatedMessage";
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP,
@@ -21,7 +22,7 @@ import {
 export default function MessageToolbar({ message, onDismiss, user }) {
   // Animation for the toolbar appearing
   const slideAnim = React.useRef(new Animated.Value(-100)).current;
-
+  const [onTranslate, setOnTranslate] = useState(false);
   const handleCopy = () => {
     try {
       //Clipboard.setString(message.text || message.content || "");
@@ -63,11 +64,16 @@ export default function MessageToolbar({ message, onDismiss, user }) {
 
   // Handle share message
   const handleTranslate = () => {
-    // Implement share functionality
-    onDismiss();
+    setOnTranslate(true);
   };
 
-  return (
+  return onTranslate ? (
+    <TranslatedMessage
+      text={message.text || message.content || ""}
+      from="en"
+      to="vi"
+    />
+  ) : (
     <Animated.View
       style={[
         styles.toolbarContainer,

@@ -330,6 +330,7 @@ export default function MessageList({ messages, currentUser }) {
   const handleDismissToolbar = () => {
     settoolbarVisible(false);
     setSelectedMessageIndex(null);
+    console.log(2);
   };
 
   return !contentFullyLoaded ? (
@@ -355,22 +356,20 @@ export default function MessageList({ messages, currentUser }) {
           }
         }}
       >
-        {messages.map((text, index) => (
+        {messages.map((message, index) => (
           <Pressable
             key={index}
-            onPress={handleDismissToolbar}
             onLongPress={() => handleLongPressMessage(index)}
             delayLongPress={300}
           >
             <MessageItem
-              message={text}
+              message={message}
               currentUser={currentUser}
               isSelected={selectedMessageIndex === index}
             />
           </Pressable>
         ))}
       </ScrollView>
-
       {/* Message Toolbar */}
       {toolbarVisible && selectedMessageIndex !== null && (
         <MessageToolbar
@@ -379,7 +378,12 @@ export default function MessageList({ messages, currentUser }) {
           user={currentUser}
         />
       )}
-
+      {toolbarVisible && selectedMessageIndex !== null && (
+        <Pressable
+          style={StyleSheet.absoluteFill} // Covers the entire screen
+          onPress={handleDismissToolbar}
+        />
+      )}
       {/* Scroll to bottom button */}
       <Animated.View
         style={[
