@@ -3,6 +3,7 @@ import {Slot, useRouter, useSegments} from "expo-router";
 import {AuthContextProvider, useAuth} from "../context/authContext";
 import { StreamContextProvider } from "../context/streamContext";
 import CallHandler from "./(app)/call/callHandler";
+import { useHeartbeat } from "../hook/useHeartBeat";
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 
@@ -18,6 +19,7 @@ const MainLayout = () => {
     const { isAuthenticated } = useAuth();
     const segments = useSegments();
     const router = useRouter();
+    useHeartbeat();
 
     useEffect(() => {
         // Set up notification response handler

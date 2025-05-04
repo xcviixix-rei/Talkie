@@ -25,7 +25,7 @@ export class Conversation {
     this.name = name;
     this.conver_pic = conver_pic;
     this.type = type;
-    this.participants = participants;
+    this.participants = participants || []; // default to empty array
     this.last_message = last_message;
     this.created_at = created_at;
   }

@@ -126,7 +126,7 @@ const MessageItem = ({ message, currentUser }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "column",
-    marginBottom: 8,
+    marginBottom: 3,
     width: width * 0.98,
     alignSelf: "center",
   },

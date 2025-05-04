@@ -65,27 +65,6 @@ export const updateMessage = async (messageId, updates) => {
   }
 };
 
-// Delete a message
-export const deleteMessage = async (messageId) => {
-  try {
-    const response = await fetch(
-      `http://10.0.2.2:5000/api/messages/${messageId}`,
-      {
-        method: "DELETE",
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to delete message: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error deleting message:", error);
-    throw error;
-  }
-};
-
 // Search for messages in a conversation
 export const searchMessages = async (conversationId, searchQuery) => {
   try {
@@ -148,6 +127,37 @@ export const getMessageById = async (messageId) => {
     return await response.json();
   } catch (error) {
     console.error("Error getting message by ID:", error);
+    throw error;
+  }
+};
+
+//hide message
+export const deleteMessage = async (message, user, sender) => {
+  try {
+    let response = null;
+    if (user == sender) {
+      response = await fetch(`http://10.0.2.2:5000/api/messages/${message}`, {
+        method: "DELETE",
+      });
+    } else {
+      response = await fetch(
+        `http://10.0.2.2:5000/api/messages/${message}/hide`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ uid: user }),
+        }
+      );
+    }
+    if (!response.ok) {
+      throw new Error(`Failed to delete message: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error deleting message:", error);
     throw error;
   }
 };

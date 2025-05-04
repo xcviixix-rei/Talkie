@@ -6,7 +6,6 @@ import { useRouter } from "expo-router";
 
 export default function ConversationList({ users, currentUser }) {
   const router = useRouter();
-  //console.log(users);
   return (
     <View style={{ flex: 1 }}>
       <FlatList
