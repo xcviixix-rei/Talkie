@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export const fetchUserData = async (userID) => {
   try {
     const response = await fetch(`http://10.0.2.2:5000/api/users/${userID}`, {
