@@ -12,10 +12,12 @@ import {
 } from "react-native";
 import {Ionicons} from "@expo/vector-icons";
 import {useAuth} from "../../context/authContext";
-import {updateUserProfile} from "../../api/user";
+import {updateUserProfile, checkUsernameAvailability} from "../../api/user";
+
 import mediaService from "../../services/mediaService";
 import uploadService from "../../services/uploadMediaService";
 import {NotificationService} from "../../services/notificationService";
+
 
 export default function ProfileScreen() {
     const {user, handleChangePassword} = useAuth();
@@ -82,6 +84,13 @@ export default function ProfileScreen() {
         }
 
         setLoading(true);
+        const availabilityCheck = await checkUsernameAvailability(username);
+
+        if (!availabilityCheck.available) {
+            setLoading(false);
+            Alert.alert("Error", "This username is already taken. Please choose another one.");
+            return;
+        }
 
         try {
             await updateUserProfile(user.id, {username: username, full_name: username});

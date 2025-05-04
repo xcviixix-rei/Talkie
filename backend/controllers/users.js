@@ -24,6 +24,44 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/check-username", async (req, res) => {
+  try {
+    const { username } = req.query;
+
+    if (!username) {
+      return res.status(400).json({
+        error: "Username query parameter is required"
+      });
+    }
+
+    const userQuery = query(
+        User.collectionRef(),
+        where("username", "==", username.trim())
+    );
+
+    const querySnapshot = await getDocs(userQuery);
+
+    if (querySnapshot.empty) {
+      // Username is available
+      return res.json({
+        available: true,
+        message: "Username is available"
+      });
+    } else {
+      // Username is taken
+      return res.json({
+        available: false,
+        message: "Username is already taken"
+      });
+    }
+  } catch (error) {
+    console.error("Error checking username availability:", error);
+    res.status(500).json({
+      error: "Failed to check username availability"
+    });
+  }
+});
+
 router.post("/get-token", async (req, res) => {
   const idToken = req.headers.authorization?.split('Bearer ')[1];
   if (!idToken) {
@@ -146,6 +184,8 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete user" });
   }
 });
+
+// Check if username is available
 
 
 export default router;
