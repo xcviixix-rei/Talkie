@@ -6,12 +6,13 @@ import {
   Text,
   Animated,
   Alert,
+  ToastAndroid,
   TouchableWithoutFeedback,
 } from "react-native";
 
 import { Copy, Reply, Trash } from "lucide-react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-//import { Clipboard } from "@react-native-clipboard/clipboard";
+import * as Clipboard from "expo-clipboard";
 import { deleteMessage } from "../api/message";
 import TranslatedMessage from "./TranlatedMessage";
 import {
@@ -25,8 +26,8 @@ export default function MessageToolbar({ message, onDismiss, user }) {
   const [onTranslate, setOnTranslate] = useState(false);
   const handleCopy = () => {
     try {
-      //Clipboard.setString(message.text || message.content || "");
-      // You could show a toast notification here
+      Clipboard.setStringAsync(message.text || "");
+      ToastAndroid.show("Copied to clipboard", ToastAndroid.SHORT);
       onDismiss();
     } catch (error) {
       console.error("Failed to copy text: ", error);

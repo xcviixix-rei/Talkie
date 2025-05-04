@@ -330,7 +330,6 @@ export default function MessageList({ messages, currentUser }) {
   const handleDismissToolbar = () => {
     settoolbarVisible(false);
     setSelectedMessageIndex(null);
-    console.log(2);
   };
 
   return !contentFullyLoaded ? (
