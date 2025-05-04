@@ -64,7 +64,7 @@ export default function ConversationHeader({
         headerLeft: () => (
           <View style={styles.headerContainer}>
             <TouchableOpacity onPress={() => router.back()}>
-              <Entypo name="chevron-left" size={hp(4)} color="#737373" />
+              <Entypo name="chevron-left" size={hp(4)} color="#0084ff" />
             </TouchableOpacity>
             <View style={styles.profileContainer}>
               <Image source={{ uri: converPic }} style={styles.profileImage} />
@@ -81,10 +81,10 @@ export default function ConversationHeader({
         headerRight: () => (
           <View style={styles.iconContainer}>
             <TouchableOpacity onPress={onVoiceCall} style={styles.actionButton}>
-              <Ionicons name="call" size={hp(2.8)} color="#737373" />
+              <Ionicons name="call" size={hp(2.8)} color="#0084ff" />
             </TouchableOpacity>
             <TouchableOpacity onPress={onVideoCall} style={styles.actionButton}>
-              <Foundation name="video" size={hp(3.8)} color="#737373" />
+              <Foundation name="video" size={hp(3.8)} color="#0084ff" />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={openConversationInfor}
@@ -93,7 +93,7 @@ export default function ConversationHeader({
               <Ionicons
                 name="information-circle"
                 size={hp(3.2)}
-                color="#737373"
+                color="#0084ff"
               />
             </TouchableOpacity>
           </View>

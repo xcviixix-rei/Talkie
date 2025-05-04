@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
   },
   otherMessage: {
-    backgroundColor: "#F0F0F0",
+    backgroundColor: "#FFFFFF",
     alignSelf: "flex-start",
   },
   text: {
