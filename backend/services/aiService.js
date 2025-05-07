@@ -222,7 +222,7 @@ Always respond with the message text only—no speaker names, quotation marks, o
 
   try {
     const response = await client.chat.completions.create({
-      // model: "Qwen/Qwen2.5-7B-Instruct-Turbo", // nhanh (0.5s) nhưng không sáng tạo.
+      model: "Qwen/Qwen2.5-7B-Instruct-Turbo", // nhanh (0.5s) nhưng không sáng tạo.
       // model: "Qwen/Qwen2.5-72B-Instruct-Turbo", // chậm, đắt.
       // model: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free", // 3.2s, worst là 9s
       // model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", // 14s
