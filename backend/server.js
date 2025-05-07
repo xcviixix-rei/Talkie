@@ -18,6 +18,7 @@ import callRoutes from "./controllers/calls.js";
 import searchRoutes from "./controllers/search.js";
 import aiRoutes from './controllers/aiRoutes.js';
 import collectionRoutes from "./controllers/collections.js";
+import themeRoutes from "./controllers/themes.js";
 
 
 const app = express();
@@ -41,6 +42,7 @@ app.use("/api/calls", callRoutes);
 app.use("/api/search", searchRoutes);
 app.use('/api/ai', aiRoutes);
 app.use("/api/collections", collectionRoutes);
+app.use("/api/themes", themeRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
