@@ -1,10 +1,37 @@
 import express from "express";
 import { User } from "../models/User.js";
-import { summarizeText, translateText } from "../services/aiService.js"; // Import your AI service functions
+import { summarizeText, summarizeTextClarifai, translateText } from "../services/aiService.js"; // Import your AI service functions
 const router = express.Router();
 
 // Example: AI summary service
 router.post("/summarize", async (req, res) => {
+  try {
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "Messages array is required" });
+    }
+
+    const processedMessages = await Promise.all(
+      messages.map(async (msg) => {
+        // Fetch the user details using the sender (userID)
+        const user = await User.get(msg.sender);
+        const username = user?.username || msg.sender;
+        return { sender: username, text: msg.text };
+      })
+    );
+    const summary = await summarizeText(processedMessages); // Your summarization function
+
+    res.json({ summary });
+  } catch (error) {
+    console.error("Error summarizing messages:", error);
+    res.status(500).json({ error: "Failed to summarize messages" });
+  }
+});
+
+
+
+// Example: AI summary service
+router.post("/summarize-old", async (req, res) => {
   try {
     const { messages } = req.body;
     if (!messages || !Array.isArray(messages)) {
@@ -27,7 +54,7 @@ router.post("/summarize", async (req, res) => {
 
     // Call your AI summarization service with the processed messages.
     // For example, you may join the messages in some way or pass the array directly.
-    const summary = await summarizeText(processedMessages); // Your summarization function
+    const summary = await summarizeTextClarifai(processedMessages); // Your summarization function
 
     res.json({ summary });
   } catch (error) {

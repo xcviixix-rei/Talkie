@@ -1,19 +1,72 @@
+import Together from "together-ai";
+
+const client = new Together();
+
 import dotenv from 'dotenv';
 dotenv.config();
 
 async function summarizeText(processedMessages) {
   // Concatenate all message texts into a single string
   const conversationText = processedMessages
-  .map(msg => `${msg.sender} said: ${msg.text}`)
+  .map(msg => `${msg.sender}: ${msg.text}`)
   .join("\n");
 
-  const combinedText = `Hãy tóm tắt cuộc trò chuyện sau đây một cách ngắn gọn và thân thiện. 
-Cuộc trò chuyện bao gồm các tin nhắn từ nhiều người dùng với các chủ đề khác nhau. 
-Hãy tập trung vào việc nắm bắt những ý chính cũng như cảm xúc quan trọng được thể hiện trong cuộc trò chuyện.
-Cuộc trò chuyện:
+  const systemPrompt = `Bạn là một trợ lý tóm tắt cuộc trò chuyện.  
+- Đọc lướt nội dung phía sau.  
+- Nhận diện người nói và lỗi/chủ đề chính được thảo luận.  
+- Viết một đoạn văn ngắn gọn (2-3 câu) tổng hợp ý chính của toàn bộ cuộc trò chuyện, không liệt kê từng lời thoại.  
+- Giữ ngôn ngữ rõ ràng, trung lập và nhất quán về phong cách.  
+
+Bây giờ, tóm tắt cuộc trò chuyện sau:`;
+
+  let messages = [
+    {
+      "role": "system",
+      "content": systemPrompt,
+    },
+    {
+      "role": "user",
+      "content": conversationText,
+    },
+  ]
+
+
+
+  try {
+    const response = await client.chat.completions.create({
+      model: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free", // 3.2s
+      // model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", // 14s
+      // model: "meta-llama/Meta-Llama-3-8B-Instruct-Lite", // 14s
+      messages: messages,
+      max_tokens: 256,
+      temperature: 1e-6,
+      top_k:1,
+    });
+  // console.log("Response:", response.choices[0]);
+    const summary = response?.choices?.[0]?.message?.content;
+    return summary || "No summary available.";
+  } catch (error) {
+    console.error("Error in AI summarization:", error);
+    throw error;
+  }
+}
+
+async function summarizeTextClarifai(processedMessages) {
+  // Concatenate all message texts into a single string
+  const conversationText = processedMessages
+  .map(msg => `${msg.sender}: ${msg.text}`)
+  .join("\n");
+
+  const combinedText = `Bạn là một trợ lý tóm tắt cuộc trò chuyện.  
+- Đọc lướt nội dung phía sau.  
+- Nhận diện người nói và lỗi/chủ đề chính được thảo luận.  
+- Viết một đoạn văn ngắn gọn (2-3 câu) tổng hợp ý chính của toàn bộ cuộc trò chuyện, không liệt kê từng lời thoại.  
+- Giữ ngôn ngữ rõ ràng, trung lập và nhất quán về phong cách.  
+
+Bây giờ, tóm tắt cuộc trò chuyện sau:
 ${conversationText}`;
 
-  // console.log("Prompt:", combinedText);
+  console.log("Prompt:", combinedText);
 
   // Load Clarifai configuration variables from .env
   const PAT = process.env.CLARIFAI_PAT;
@@ -22,7 +75,7 @@ ${conversationText}`;
   const MODEL_ID = process.env.CLARIFAI_MODEL_ID;
   const MODEL_VERSION_ID = process.env.CLARIFAI_MODEL_VERSION_ID;
 
-  // Create the request body – here we provide the combined text to the model
+  // Create the request body - here we provide the combined text to the model
   const raw = JSON.stringify({
     user_app_id: {
       user_id: USER_ID,
@@ -70,9 +123,10 @@ ${conversationText}`;
   }
 }
 
-export { summarizeText };
+export { summarizeText, summarizeTextClarifai };
 
 import fetch from 'node-fetch'; // If using Node 18+, you can remove this import as fetch is global.
+import { response } from "express";
 
 async function translateText(text, fromLang, toLang) {
   const url = "https://translate.googleapis.com/translate_a/single";
