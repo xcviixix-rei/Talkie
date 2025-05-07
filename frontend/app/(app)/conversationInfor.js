@@ -21,6 +21,7 @@ import {
 } from "../../api/conversation";
 import mediaService from "../../services/mediaService";
 import uploadMediaService from "../../services/uploadMediaService";
+// import ImageViewer from "./ImageViewer";
 
 export default function ConversationInfo() {
   const { user } = useAuth();
@@ -42,6 +43,12 @@ export default function ConversationInfo() {
       },
     });
   };
+
+  // const handleopenImageVier = () => {
+  //   router.push({
+  //     mediaCount,
+  //   });
+  // };
 
   const item = JSON.parse(rawItem);
   const mockUsers = JSON.parse(rawMockUsers);
@@ -283,7 +290,10 @@ export default function ConversationInfo() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Media</Text>
         <View style={styles.mediaGrid}>
-          <TouchableOpacity style={styles.mediaItem}>
+          <TouchableOpacity
+            style={styles.mediaItem}
+            //onPress={handleopenImageVier(mediaCount?.images)}
+          >
             <Ionicons name="image-outline" size={28} color="#1E90FF" />
             <Text style={styles.mediaCount}>{mediaCount?.images.length}</Text>
             <Text style={styles.mediaLabel}>Photos</Text>

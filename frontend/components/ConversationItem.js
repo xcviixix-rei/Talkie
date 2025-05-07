@@ -345,7 +345,9 @@ export default function ConversationItem({
           <Text style={styles.nameText} numberOfLines={1} ellipsizeMode="tail">
             {converName}
           </Text>
-          <Text style={styles.timeText}>{formattedTime}</Text>
+          <Text style={styles.activeTimeText} numberOfLines={1}>
+            {lastActiveTime}
+          </Text>
         </View>
         <View style={styles.row}>
           <Text
@@ -355,11 +357,7 @@ export default function ConversationItem({
           >
             {lastMessage}
           </Text>
-          {
-            <Text style={styles.activeTimeText} numberOfLines={1}>
-              {lastActiveTime}
-            </Text>
-          }
+          {<Text style={styles.timeText}>{formattedTime}</Text>}
         </View>
       </View>
     </TouchableOpacity>
