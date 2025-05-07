@@ -10,7 +10,7 @@ import React, { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { searchMessages } from "../../api/conversation";
-
+import { useAuth } from "../../context/authContext";
 const MessageItem = ({ item, mockUsers }) => {
   // Find the user by ID to get their full name
   const sender = mockUsers.find((user) => user.id === item.sender);
@@ -68,6 +68,7 @@ export default function SearchMessages() {
     converName: initialConverName,
     converPic: initialConverPic,
   } = useLocalSearchParams();
+  const { user } = useAuth();
   const item = JSON.parse(rawItem);
   const mockUsers = JSON.parse(rawMockUsers);
   const [searchQuery, setSearchQuery] = useState("");
@@ -78,7 +79,11 @@ export default function SearchMessages() {
     if (searchQuery.trim() === "") {
       setFilteredMessages([]);
     } else {
-      const results = await searchMessages(item.id, searchQuery.toLowerCase());
+      const results = await searchMessages(
+        item.id,
+        user.id,
+        searchQuery.toLowerCase()
+      );
       setFilteredMessages(results);
       setHasSearched(true);
     }
