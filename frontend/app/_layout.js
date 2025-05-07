@@ -5,7 +5,6 @@ import { StreamContextProvider } from "../context/streamContext";
 import CallHandler from "./(app)/call/callHandler";
 import { useHeartbeat } from "../hook/useHeartBeat";
 import * as Notifications from 'expo-notifications';
-import { router } from 'expo-router';
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({

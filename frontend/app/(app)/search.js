@@ -67,6 +67,7 @@ export default function Search() {
             id: g.id,
             lastMessage: g.lastMessage,
             participants: g.participants,
+            conver_pic: g.conver_pic,
             type: "group",
           }));
           setGroupResults(formattedGroupResults);
@@ -314,7 +315,7 @@ export default function Search() {
         <FlatList
           data={groupResults}
           renderItem={renderGroupItem}
-          keyExtractor={(item) => `group-${item.groupId}`}
+          keyExtractor={(item) => `group-${item.id}`}
           contentContainerStyle={styles.resultsList}
           ListEmptyComponent={
             searchQuery.trim() !== "" && (
