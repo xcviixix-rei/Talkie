@@ -20,14 +20,18 @@ export class Conversation {
     participants,
     last_message,
     created_at,
+    conver_theme,
+    hidden_to,
   }) {
     this.id = id;
     this.name = name;
     this.conver_pic = conver_pic;
     this.type = type;
-    this.participants = participants || []; // default to empty array
+    this.participants = participants || [];
     this.last_message = last_message;
     this.created_at = created_at;
+    this.conver_theme = conver_theme || "default";
+    this.hidden_to = hidden_to || [];
   }
 
   static collectionRef() {
@@ -36,6 +40,8 @@ export class Conversation {
 
   static async create(data) {
     const { id, ...rest } = data;
+    if (!rest.conver_theme) rest.conver_theme = "default";
+    if (!rest.hidden_to) rest.hidden_to = [];
     if (!id) {
       const docRef = await addDoc(collection(db, "conversations"), rest);
       return new Conversation({ id: docRef.id, ...rest });
