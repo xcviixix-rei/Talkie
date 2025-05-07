@@ -36,7 +36,7 @@ Bây giờ, tóm tắt cuộc trò chuyện sau:`;
     const response = await client.chat.completions.create({
       model: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free", // 3.2s
       // model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", // 14s
-      // model: "meta-llama/Meta-Llama-3-8B-Instruct-Lite", // 14s
+      // model: "meta-llama/Meta-Llama-3-8B-Instruct-Lite", // > 5s
       messages: messages,
       max_tokens: 256,
       temperature: 1e-6,
