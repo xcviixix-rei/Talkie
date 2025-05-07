@@ -1,6 +1,6 @@
 import express from "express";
 import { User } from "../models/User.js";
-import { summarizeText, summarizeTextClarifai, translateText } from "../services/aiService.js"; // Import your AI service functions
+import { summarizeText, summarizeTextClarifai, translateText, suggestMessages } from "../services/aiService.js"; // Import your AI service functions
 const router = express.Router();
 
 // Example: AI summary service
@@ -78,20 +78,32 @@ router.post("/translate", async (req, res) => {
   }
 });
 
-// Example: AI message suggestion service
+
+// Example: AI suggestion service
 router.post("/suggest", async (req, res) => {
   try {
-    const { conversationContext } = req.body;
-    if (!conversationContext) {
-      return res.status(400).json({ error: "Conversation context required" });
+    const { messages } = req.body;
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "Messages array is required" });
     }
-    // Call your message suggestion service
-    const suggestions = await suggestMessages(conversationContext); // your function here
-    res.json({ suggestions });
+
+    const processedMessages = await Promise.all(
+      messages.map(async (msg) => {
+        // Fetch the user details using the sender (userID)
+        const user = await User.get(msg.sender);
+        const username = user?.username || msg.sender;
+        return { sender: username, text: msg.text };
+      })
+    );
+    const suggestion = await suggestMessages(processedMessages); // Your summarization function
+
+    res.json({ suggestion });
   } catch (error) {
     console.error("Error suggesting messages:", error);
     res.status(500).json({ error: "Failed to suggest messages" });
   }
 });
 
+
 export default router;
+
