@@ -1,9 +1,9 @@
 import Together from "together-ai";
 
-const client = new Together();
 
 import dotenv from 'dotenv';
 dotenv.config();
+const client = new Together({apiKey: process.env.TG_API_KEY});
 
 async function summarizeText(processedMessages) {
   // Concatenate all message texts into a single string
@@ -34,9 +34,10 @@ Bây giờ, tóm tắt cuộc trò chuyện sau:`;
 
   try {
     const response = await client.chat.completions.create({
-      model: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free", // 3.2s
+      model: "Qwen/Qwen2.5-7B-Instruct-Turbo", // nhanh (0.5s) nhưng không sáng tạo.
+      // model: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free", // 3.2s
       // model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", // 14s
-      // model: "meta-llama/Meta-Llama-3-8B-Instruct-Lite", // > 5s
+      // model: "meta-llama/Meta-Llama-3-8B-Instruct-Lite", // Trả lời tiếng Anh ròi :")
       messages: messages,
       max_tokens: 256,
       temperature: 1e-6,
@@ -165,3 +166,82 @@ async function translateText(text, fromLang, toLang) {
 }
 
 export { translateText };
+
+
+function removeOverlap(lastText, suggestion) {
+  let overlap = "";
+  for (let i = 0; i < lastText.length; i++) {
+    let suffix = lastText.slice(i);
+    if (suggestion.startsWith(suffix) && suffix.length > overlap.length) {
+      overlap = suffix;
+    }
+  }
+  if (overlap.length > 0) {
+    return suggestion.slice(overlap.length).trim();
+  }
+  return suggestion;
+}
+
+
+async function suggestMessages(processedMessages) {
+  // Concatenate all message texts into a single string
+  const conversationText = processedMessages
+  .map(msg => `${msg.sender}: ${msg.text}`)
+  .join("\n");
+
+  // If no messages are provided, return a random greeting.
+  if (processedMessages.length === 0) {
+    const greetings = [
+      "Chào bạn! Bạn có khỏe không?",
+      "Xin chào.",
+      "Chào! Hy vọng bạn đang có một ngày tốt lành.",
+      "Hello bạn! Bạn có muốn trò chuyện không?",
+    ];
+    return greetings[Math.floor(Math.random() * greetings.length)];
+  }
+
+  const systemPrompt = `You are given a short chat that may be either empty or end with a truncated message.  
+- If the chat ends with an incomplete sentence, finish that sentence naturally as the next message.  
+- If the chat is empty, propose an appropriate opening greeting to people in Vietnamese.  
+
+Always respond with the message text only—no speaker names, quotation marks, or additional context.
+`;
+
+  let messages = [
+    {
+      "role": "system",
+      "content": systemPrompt,
+    },
+    {
+      "role": "user",
+      "content": conversationText,
+    },
+  ]
+
+
+
+  try {
+    const response = await client.chat.completions.create({
+      // model: "Qwen/Qwen2.5-7B-Instruct-Turbo", // nhanh (0.5s) nhưng không sáng tạo.
+      // model: "Qwen/Qwen2.5-72B-Instruct-Turbo", // chậm, đắt.
+      // model: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free", // 3.2s, worst là 9s
+      // model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", // 14s
+      // model: "meta-llama/Meta-Llama-3-8B-Instruct-Lite", // Trả lời tiếng Anh ròi :")
+      messages: messages,
+      max_tokens: 32,
+      temperature: 0.7,
+      top_k:40,
+    });
+  // console.log("Response:", response.choices[0]);
+    let suggestion = response?.choices?.[0]?.message?.content;
+    const lastMessage = processedMessages[processedMessages.length - 1].text.trim();
+    suggestion = removeOverlap(lastMessage, suggestion);
+
+    return suggestion || "No suggestions available.";
+  } catch (error) {
+    console.error("Error in AI suggestion:", error);
+    throw error;
+  }
+}
+
+export { suggestMessages };
