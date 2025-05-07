@@ -1,5 +1,5 @@
 import express from "express";
-import { query, where, getDocs } from "firebase/firestore";
+import { query, where, getDocs, arrayUnion } from "firebase/firestore";
 import { User } from "../models/User.js";
 import { Conversation } from "../models/Conversation.js";
 import { Message } from "../models/Message.js";
@@ -20,7 +20,29 @@ router.post("/", async (req, res) => {
 // Get all conversations
 router.get("/", async (req, res) => {
   try {
-    const conversations = await Conversation.list();
+    const queryUid = req.body.uid; // Optional user id query parameter
+    let conversations = await Conversation.list();
+
+    if (queryUid) {
+      conversations = conversations.filter((conversation) => {
+        const { participants = [], hidden_to = [] } = conversation;
+
+        // Check if the participant is in the conversation.
+        const isParticipant = participants.some((participant) => {
+          if (typeof participant === "string") {
+            return participant === queryUid;
+          } else if (participant && participant.user_id) {
+            return participant.user_id === queryUid;
+          }
+          return false;
+        });
+
+        // Return the conversation only if the user is a participant
+        // and the conversation is NOT hidden from that user.
+        const isHidden = hidden_to.includes(queryUid);
+        return isParticipant && !isHidden;
+      });
+    }
     res.json(conversations);
   } catch (error) {
     console.error("Error fetching conversations:", error);
@@ -79,6 +101,29 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     console.error("Error deleting conversation:", error);
     res.status(500).json({ error: "Failed to delete conversation" });
+  }
+});
+
+
+// Hide a conversation from a specific user
+router.post("/:conversationId/hide", async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { uid } = req.body;
+    if (!uid) {
+      return res
+        .status(400)
+        .json({ error: "UID is required to hide a conversation" });
+    }
+
+    // Update the conversation's hidden_to field by adding the uid.
+    // Here we use the static update method from Conversation and arrayUnion to avoid duplicates.
+    await Conversation.update(conversationId, { hidden_to: arrayUnion(uid) });
+
+    res.json({ message: "Conversation has been hidden for the user." });
+  } catch (error) {
+    console.error("Error hiding conversation:", error);
+    res.status(500).json({ error: "Failed to hide conversation" });
   }
 });
 
