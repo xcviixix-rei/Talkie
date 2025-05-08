@@ -4,17 +4,16 @@ import {User} from "../models/User.js";
 import {Conversation} from "../models/Conversation.js";
 
 const router = express.Router();
-// Get user matches by username with conversations
 
-// GET /api/users/:searchQuery
+
 // GET /api/users/:searchQuery
 router.get("/users/:searchQuery", async (req, res) => {
     try {
-        const { searchQuery } = req.params;
-        const { currentUserId } = req.query;
+        const {searchQuery} = req.params;
+        const {currentUserId} = req.query;
 
         if (!searchQuery || searchQuery.trim() === '') {
-            return res.status(400).json({ error: "Search query is required" });
+            return res.status(400).json({error: "Search query is required"});
         }
 
         // Get matching users
@@ -78,47 +77,52 @@ router.get("/users/:searchQuery", async (req, res) => {
         res.json(matches);
     } catch (error) {
         console.error("Error searching for users:", error);
-        res.status(500).json({ error: "Failed to search for users" });
+        res.status(500).json({error: "Failed to search for users"});
     }
 });
 
 router.get("/groups/:searchQuery", async (req, res) => {
-  try {
-    const { searchQuery } = req.params;
-    const { currentUserId } = req.query;
+    try {
+        const {searchQuery} = req.params;
+        const {currentUserId} = req.query;
 
-    if (!searchQuery || searchQuery.trim() === '') {
-      return res.status(400).json({ error: "Search query is required" });
-    }
+        if (!searchQuery || searchQuery.trim() === '') {
+            return res.status(400).json({error: "Search query is required"});
+        }
 
-    // Get matching group conversations
-    const conversationQueryRef = query(
-      Conversation.collectionRef(),
-      where("type", "==", "group") // Only get group conversations
-    );
-    const querySnapshot = await getDocs(conversationQueryRef);
+        // Get matching group conversations
+        const conversationQueryRef = query(
+            Conversation.collectionRef(),
+            where("type", "==", "group") // Only get group conversations
+        );
+        const querySnapshot = await getDocs(conversationQueryRef);
 
-    const matches = [];
-    querySnapshot.forEach((docSnap) => {
-      const groupData = docSnap.data();
+        const matches = [];
+        querySnapshot.forEach((docSnap) => {
+            const groupData = docSnap.data();
 
-      // Only include groups with names that match the search query
-      if (
-        groupData.name &&
-        groupData.name.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
-        matches.push({
-          id: docSnap.id,
-          ...groupData
+            // Check if this user is in participants
+            const isParticipant = groupData.participants &&
+                groupData.participants.some(p => p.user_id === currentUserId);
+
+            // Only include groups that match the search query and where user is a participant
+            if (
+                groupData.name &&
+                groupData.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+                isParticipant
+            ) {
+                matches.push({
+                    id: docSnap.id, // This ensures we always have an ID
+                    ...groupData
+                });
+            }
         });
-      }
-    });
 
-    res.json(matches);
-  } catch (error) {
-    console.error("Error searching for groups:", error);
-    res.status(500).json({ error: "Failed to search for groups" });
-  }
+        res.json(matches);
+    } catch (error) {
+        console.error("Error searching for groups:", error);
+        res.status(500).json({error: "Failed to search for groups"});
+    }
 });
 
 export default router;

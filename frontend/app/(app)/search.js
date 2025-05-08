@@ -106,6 +106,8 @@ export default function Search() {
           params: {
             rawItem: JSON.stringify(item.conversation),
             rawMockUsers: JSON.stringify(mockUsers),
+            converName: item.username,
+            converPic: item.profile_pic,
           },
         });
       } else {
@@ -113,7 +115,18 @@ export default function Search() {
         setLoading(true);
 
         // Create new conversation
-        const participants = [user.id, item.userId];
+        const participants = [
+          {
+            alias: "",
+            role: "Admin",
+            user_id: user.id,
+          },
+          {
+            alias: "",
+            role: "Admin",
+            user_id: item.userId,
+          }
+        ];
         const newConversation = await createConversation(
           "",
           "direct",
@@ -139,6 +152,8 @@ export default function Search() {
           params: {
             rawItem: JSON.stringify(newConversation),
             rawMockUsers: JSON.stringify(mockUsers),
+            converName: item.username,
+            converPic: item.profile_pic,
           },
         });
       }
@@ -165,8 +180,8 @@ export default function Search() {
       for (const participant of participants) {
         try {
           const userId =
-            typeof participant === "object" ? participant.id : participant;
-          // You need to implement this API function to fetch user details
+            typeof participant === "object" ? participant.user_id : participant;
+
           const userResponse = await fetch(
             `http://10.0.2.2:5000/api/users/${userId}`
           );
@@ -204,6 +219,8 @@ export default function Search() {
         params: {
           rawItem: JSON.stringify(item),
           rawMockUsers: JSON.stringify(mockUsers),
+          converName: item.name,
+          conver_pic: item.conver_pic,
         },
       });
     } catch (error) {
@@ -235,9 +252,7 @@ export default function Search() {
       style={styles.resultItem}
       onPress={() => handleGroupSelect(item)}
     >
-      <View style={styles.conversationAvatar}>
-        <Ionicons name="people-outline" size={24} color="#1E90FF" />
-      </View>
+      <Image source={{ uri: item.conver_pic}} style={styles.avatar} />
       <View style={styles.resultDetails}>
         <Text style={styles.resultName}>{item.name}</Text>
         <Text style={styles.resultType}>Group</Text>
