@@ -10,7 +10,7 @@ import {
   TextInput,
 } from "react-native";
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../../../context/authContext";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
 import {
@@ -18,9 +18,9 @@ import {
   blockUser,
   muteConversation,
   searchMedia,
-} from "../../api/conversation";
-import mediaService from "../../services/mediaService";
-import uploadMediaService from "../../services/uploadMediaService";
+} from "../../../api/conversation";
+import mediaService from "../../../services/mediaService";
+import uploadMediaService from "../../../services/uploadMediaService";
 // import ImageViewer from "./ImageViewer";
 
 export default function ConversationInfo() {
@@ -34,7 +34,19 @@ export default function ConversationInfo() {
   } = useLocalSearchParams();
   const openSearchMessages = () => {
     router.push({
-      pathname: "/searchMessages",
+      pathname: "converInfor/searchMessages",
+      params: {
+        rawItem: JSON.stringify(item),
+        rawMockUsers: JSON.stringify(mockUsers),
+        converName,
+        converPic,
+      },
+    });
+  };
+
+  const openSummaryMessage = () => {
+    router.push({
+      pathname: "converInfor/summaryMessages",
       params: {
         rawItem: JSON.stringify(item),
         rawMockUsers: JSON.stringify(mockUsers),
@@ -189,7 +201,7 @@ export default function ConversationInfo() {
     }
   };
 
-  const timestamp = "2025-04-28T02:28:48.798Z";
+  const timestamp = item.created_at;
   const date = new Date(timestamp);
 
   const dateOnly = date.toLocaleDateString("en-US", {
@@ -283,6 +295,13 @@ export default function ConversationInfo() {
           >
             <Ionicons name="search-outline" size={24} color="#1E90FF" />
             <Text style={styles.actionText}>Search</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={openSummaryMessage}
+          >
+            <Ionicons name="stats-chart-outline" size={24} color="#1E90FF" />
+            <Text style={styles.actionText}>summaries</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -454,7 +473,7 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: "row",
     justifyContent: "space-around",
-    width: "80%",
+    width: "90%",
   },
   actionButton: {
     alignItems: "center",

@@ -9,8 +9,8 @@ import {
 import React, { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { searchMessages } from "../../api/conversation";
-import { useAuth } from "../../context/authContext";
+import { searchMessages } from "../../../api/conversation";
+import { useAuth } from "../../../context/authContext";
 const MessageItem = ({ item, mockUsers }) => {
   // Find the user by ID to get their full name
   const sender = mockUsers.find((user) => user.id === item.sender);

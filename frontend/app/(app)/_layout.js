@@ -33,26 +33,25 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
-        name="conversationInfor"
+        name="converInfor"
         options={{
-          title: "Conversation",
+          headerShown: false,
         }}
       />
-            <Stack.Screen
-                name="notifications-settings"
-                options={{
-                    headerShown: false,
-                    headerBackTitle: "Back",
-                }
-                }
-            />
-            <Stack.Screen
-                name="settings"
-                options={{
-                    headerShown: false,
-                    headerBackTitle: "Back",
-                }}
-            />
+      <Stack.Screen
+        name="notifications-settings"
+        options={{
+          headerShown: false,
+          headerBackTitle: "Back",
+        }}
+      />
+      <Stack.Screen
+        name="settings"
+        options={{
+          headerShown: false,
+          headerBackTitle: "Back",
+        }}
+      />
     </Stack>
   );
 }

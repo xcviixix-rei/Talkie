@@ -45,7 +45,7 @@ export default function ConversationHeader({
 
   const openConversationInfor = () => {
     router.push({
-      pathname: "/conversationInfor",
+      pathname: "/converInfor/conversationInfor",
       params: {
         rawItem: JSON.stringify(item),
         rawMockUsers: JSON.stringify(mockUsers),
