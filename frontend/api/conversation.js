@@ -7,11 +7,14 @@ export const createConversation = async (
     const conversationData = {
       type: conversationType,
       participants: participants,
+      conver_theme: "default",
       created_at: new Date().toISOString(),
     };
     if (conversationName && conversationName.trim() !== "") {
+      conversationData.conver_pic = "https://www.gravatar.com/avatar/?d=identicon";
       conversationData.name = conversationName;
     }
+
 
     const response = await fetch("http://10.0.2.2:5000/api/conversations", {
       method: "POST",

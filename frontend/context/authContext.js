@@ -38,6 +38,7 @@ export const AuthContextProvider = ({ children }) => {
                     setUser(newUser);
                     setIsAuthenticated(true);
 
+
                     const idToken = await firebaseUser.getIdToken();
                     const response = await fetch("http://10.0.2.2:5000/api/users/get-token", {
                         method: "POST",
@@ -103,6 +104,7 @@ export const AuthContextProvider = ({ children }) => {
     const handleSignUp = async (username, email, password) => {
         try {
             const response = await createUserWithEmailAndPassword(auth, email, password);
+
             const id = response.user.uid;
             const full_name = username;
             const userData = {
@@ -126,7 +128,8 @@ export const AuthContextProvider = ({ children }) => {
             await sendEmailVerification(response.user);
 
             return {
-                success: true
+                success: true,
+                message: "Account created successfully! \nA verification link has been sent to your email. Please verify your email and log in."
             };
 
             }catch (e){
@@ -148,7 +151,6 @@ export const AuthContextProvider = ({ children }) => {
                 auth.currentUser.email,
                 currentPassword
             );
-            console.log(credential);
 
             // Reauthenticate the user
             await reauthenticateWithCredential(auth.currentUser, credential);

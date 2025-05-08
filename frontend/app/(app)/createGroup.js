@@ -71,9 +71,20 @@ export default function CreateGroup() {
 
         try {
             // Add current user to participants
-            const participantIds = [currentUser.id, ...selectedUsers.map(user => user.id)];
+            const participants = [
+                {
+                    alias: currentUser.alias || "",
+                    role: "Admin",
+                    user_id: currentUser.id
+                },
+                ...selectedUsers.map(user => ({
+                    alias: "",
+                    role: "",
+                    user_id: user.id
+                }))
+            ];
 
-            await createConversation(groupName, "group", participantIds);
+            await createConversation(groupName, "group", participants);
 
             router.replace('/home');
         } catch (error) {

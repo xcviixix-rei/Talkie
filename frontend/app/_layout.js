@@ -6,6 +6,8 @@ import CallHandler from "./(app)/call/callHandler";
 import { useHeartbeat } from "../hook/useHeartBeat";
 import * as Notifications from 'expo-notifications';
 
+
+
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
         shouldShowAlert: true,
@@ -15,7 +17,7 @@ Notifications.setNotificationHandler({
 });
 
 const MainLayout = () => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, handleSignOut, user } = useAuth();
     const segments = useSegments();
     const router = useRouter();
     useHeartbeat();
@@ -44,9 +46,14 @@ const MainLayout = () => {
         if (typeof isAuthenticated === "undefined") return;
         const inApp = segments[0] === "(app)";
 
+
         const redirect = () => {
             if (isAuthenticated && !inApp) {
-                router.replace("/home");
+                if (user.username !== "") {
+                    router.replace("/home");
+                } else {
+                    handleSignOut();
+                }
             } else if (!isAuthenticated) {
                 router.replace("/signIn");
             }
