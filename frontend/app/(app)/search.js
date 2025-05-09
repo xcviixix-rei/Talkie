@@ -203,15 +203,6 @@ export default function Search() {
         }
       }
 
-      // Add current user if not already in participants
-      if (!mockUsers.some((p) => p.id === user.id)) {
-        mockUsers.push({
-          id: user.id,
-          username: user.username,
-          full_name: user.full_name || user.username,
-          profile_pic: user.profile_pic,
-        });
-      }
 
       // Navigate to the conversation screen with group data
       router.push({

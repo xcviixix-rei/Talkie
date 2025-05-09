@@ -1,6 +1,7 @@
 import express from "express";
 import { CollectionModel } from "../models/Collection.js";
 import {Conversation} from "../models/Conversation.js";
+import {User} from "../models/User.js";
 
 const router = express.Router();
 
@@ -54,6 +55,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+
 // GET /collections/:id/conversations - Get all conversations in a collection
 router.get("/:id/conversations", async (req, res) => {
   try {
@@ -68,17 +70,51 @@ router.get("/:id/conversations", async (req, res) => {
       return res.json([]);
     }
 
-    // Assuming you have a ConversationModel to fetch conversations
+    // Get all conversations in the collection
     const conversations = await Promise.all(
-      collection.conversations.map(convId =>
-        Conversation.get(convId)
-      )
+      collection.conversations.map(convId => Conversation.get(convId))
     );
 
     // Filter out any null results (in case some conversations were deleted)
     const validConversations = conversations.filter(conv => conv !== null);
 
-    res.json(validConversations);
+    // For direct conversations, find the other participant and include their info
+    const enhancedConversations = await Promise.all(
+      validConversations.map(async (conv) => {
+        if (conv.type === "direct") {
+          // Find the other participant (not the collection owner)
+          const otherParticipant = conv.participants.find(
+            p => p.user_id !== collection.user_id
+          );
+
+          if (otherParticipant) {
+            // Get user information for the other participant
+            try {
+              // Assuming you have a User model import
+              const userData = await User.get(otherParticipant.user_id);
+
+              return {
+                ...conv,
+                otherParticipant: userData ? {
+                  id: userData.id,
+                  username: userData.username,
+                  profile_pic: userData.profile_pic,
+                  status: userData.status,
+                    full_name: userData.full_name,
+
+                } : null
+              };
+            } catch (error) {
+              console.error(`Error fetching user data for conversation ${conv.id}:`, error);
+              return conv; // Return conversation without the user data if there's an error
+            }
+          }
+        }
+        return conv; // Return conversation as is for group chats
+      })
+    );
+
+    res.json(enhancedConversations);
   } catch (error) {
     console.error("Error fetching collection conversations:", error);
     res.status(500).json({ error: "Failed to fetch collection conversations" });

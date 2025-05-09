@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, {useCallback, useState} from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
-import { getUserCollections, deleteCollection } from '../../../api/collection';
+import { getUserCollections } from '../../../api/collection';
 import { useAuth } from '../../../context/authContext';
-import { router } from 'expo-router';
+import {router, useFocusEffect} from 'expo-router';
 
 export default function Collections() {
     const [collections, setCollections] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
 
-    useEffect(() => {
-        fetchCollections();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            fetchCollections();
+        }, [])
+    );
 
     const fetchCollections = async () => {
         try {
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
   collectionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f8f8f8',
     borderRadius: 12,
     padding: hp(2),
     marginBottom: hp(1.5),

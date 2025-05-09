@@ -20,6 +20,8 @@
     "firebase-admin": "^13.3.0",
     "getstream": "^8.8.0",
     "mongoose": "^8.11.0",
-    "stream-chat": "^8.59.0"
+    "node-fetch": "^3.3.2",
+    "stream-chat": "^8.59.0",
+    "together-ai": "^0.16.0"
   }
 }

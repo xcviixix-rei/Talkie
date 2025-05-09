@@ -5,6 +5,7 @@ import {Conversation} from "../models/Conversation.js";
 
 const router = express.Router();
 
+// Query for conversations where current user is a participant
 router.get("/conversations/:searchQuery", async (req, res) => {
     try {
         const {searchQuery} = req.params;
@@ -61,7 +62,7 @@ router.get("/conversations/:searchQuery", async (req, res) => {
                             matches.push({
                                 id: docSnap.id,
                                 ...conversationData,
-                                otherUser: {
+                                otherParticipant: {
                                     id: otherParticipant.user_id,
                                     username: userDoc.username,
                                     full_name: userDoc.full_name,
