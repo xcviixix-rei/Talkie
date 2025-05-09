@@ -121,16 +121,16 @@ export const editConversation = async (
   }
 };
 
-export const searchMessages = async (conversationId, query) => {
+export const searchMessages = async (conversationId, uid, query) => {
   try {
     const response = await fetch(
-      `http://10.0.2.2:5000/api/conversations/ef1Zm7mjJdn0HLn0IrWF/messages/search/?query=a`,
+      `http://10.0.2.2:5000/api/conversations/${conversationId}/messages/search/`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ query: query }),
+        body: JSON.stringify({ query: query, uid: uid }),
       }
     );
 
