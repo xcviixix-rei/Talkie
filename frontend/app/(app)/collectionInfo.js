@@ -1,15 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import {Ionicons, MaterialCommunityIcons} from '@expo/vector-icons';
 import {heightPercentageToDP as hp, widthPercentageToDP as wp} from 'react-native-responsive-screen';
@@ -33,12 +33,12 @@ export default function CollectionInfo() {
 
     // Icons array in 2x3 format
     const icons = [
-        {name: 'folder-outline', label: 'Default'},
-        {name: 'briefcase-outline', label: 'Work'},
-        {name: 'account-outline', label: 'Personal'},
-        {name: 'account-multiple', label: 'Team'},
-        {name: 'book-outline', label: 'Study'},
-        {name: 'star-outline', label: 'Favorite'},
+        {name: 'folder', icon: 'folder-outline', label: 'Default'},
+        {name: 'work', icon: 'briefcase-outline', label: 'Work'},
+        {name: 'personal', icon: 'account-outline', label: 'Personal'},
+        {name: 'team', icon: 'account-multiple', label: 'Team'},
+        {name: 'study', icon: 'book-outline', label: 'Study'},
+        {name: 'favorite', icon: 'star-outline', label: 'Favorite'}
     ];
 
     useEffect(() => {
@@ -62,7 +62,7 @@ export default function CollectionInfo() {
             const collectionData = await getCollection(id);
             setCollection(collectionData);
             setName(collectionData.name || '');
-            setSelectedIcon(collectionData.icon || 'folder-outline');
+            setSelectedIcon(collectionData.icon || 'folder');
         } catch (error) {
             console.error('Error fetching collection details:', error);
             Alert.alert('Error', 'Failed to load collection details');
@@ -251,61 +251,62 @@ export default function CollectionInfo() {
                     />
                 </View>
 
-              <View style={styles.formGroup}>
-                <TouchableOpacity
-                    style={styles.sectionHeader}
-                    onPress={() => setShowIconOptions(!showIconOptions)}
-                >
-                  <Text style={styles.label}>Icon</Text>
-                  <Ionicons
-                      name={showIconOptions ? "chevron-up" : "chevron-down"}
-                      size={hp(2.5)}
-                      color="#666"
-                  />
-                </TouchableOpacity>
+                <View style={styles.formGroup}>
+                    <TouchableOpacity
+                        style={styles.sectionHeader}
+                        onPress={() => setShowIconOptions(!showIconOptions)}
+                    >
+                        <Text style={styles.label}>Icon</Text>
+                        <Ionicons
+                            name={showIconOptions ? "chevron-up" : "chevron-down"}
+                            size={hp(2.5)}
+                            color="#666"
+                        />
+                    </TouchableOpacity>
 
-                {selectedIcon && (
-                    <View style={styles.selectedIconPreview}>
-                      <MaterialCommunityIcons
-                          name={selectedIcon}
-                          size={hp(3.5)}
-                          color="#1E90FF"
-                      />
-                      <Text style={styles.selectedIconName}>
-                        {icons.find(icon => icon.name === selectedIcon)?.label || 'Default'}
-                      </Text>
-                    </View>
-                )}
-
-                {showIconOptions && (
-                    <View style={styles.iconsGrid}>
-                      {icons.map((icon) => (
-                          <TouchableOpacity
-                              key={icon.name}
-                              style={[
-                                styles.iconOption,
-                                selectedIcon === icon.name && styles.selectedIconOption
-                              ]}
-                              onPress={() => setSelectedIcon(icon.name)}
-                          >
+                    {selectedIcon && (
+                        <View style={styles.selectedIconPreview}>
                             <MaterialCommunityIcons
-                                name={icon.name}
+                                name={icons.find(icon => icon.name === selectedIcon)?.icon || 'folder-outline'}
                                 size={hp(3.5)}
-                                color={selectedIcon === icon.name ? 'white' : '#444'}
+                                color="#1E90FF"
                             />
-                            <Text
-                                style={[
-                                  styles.iconLabel,
-                                  selectedIcon === icon.name && styles.selectedIconLabel
-                                ]}
-                            >
-                              {icon.label}
+                            <Text style={styles.selectedIconName}>
+                                {icons.find(icon => icon.name === selectedIcon)?.label || 'Default'}
                             </Text>
-                          </TouchableOpacity>
-                      ))}
-                    </View>
-                )}
-              </View>
+                        </View>
+                    )}
+
+           
+                    {showIconOptions && (
+                        <View style={styles.iconsGrid}>
+                            {icons.map((iconObj) => (
+                                <TouchableOpacity
+                                    key={iconObj.name}
+                                    style={[
+                                        styles.iconOption,
+                                        selectedIcon === iconObj.name && styles.selectedIconOption
+                                    ]}
+                                    onPress={() => setSelectedIcon(iconObj.name)}
+                                >
+                                    <MaterialCommunityIcons
+                                        name={iconObj.icon}
+                                        size={hp(3.5)}
+                                        color={selectedIcon === iconObj.name ? 'white' : '#444'}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.iconLabel,
+                                            selectedIcon === iconObj.name && styles.selectedIconLabel
+                                        ]}
+                                    >
+                                        {iconObj.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
+                </View>
 
                 <View style={styles.formGroup}>
                     <Text style={styles.label}>Search Conversations</Text>
@@ -519,23 +520,23 @@ const styles = StyleSheet.create({
         height: hp(5),
         borderRadius: hp(2.5),
     },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: hp(1.5),
-  },
-  selectedIconPreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: hp(1.5),
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    marginBottom: hp(1.5),
-  },
-  selectedIconName: {
-    fontSize: hp(1.8),
-    marginLeft: wp(2),
-    color: '#333',
-  },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: hp(1.5),
+    },
+    selectedIconPreview: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: hp(1.5),
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
+        marginBottom: hp(1.5),
+    },
+    selectedIconName: {
+        fontSize: hp(1.8),
+        marginLeft: wp(2),
+        color: '#333',
+    },
 });
