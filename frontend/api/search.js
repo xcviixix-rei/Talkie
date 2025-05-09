@@ -39,3 +39,44 @@ export const searchAll = async (searchQuery, currentUserId, type = "user") => {
     return [];
   }
 };
+
+export const searchConversations = async (searchQuery, currentUserId) => {
+  try {
+    if (!searchQuery.trim()) {
+      return [];
+    }
+
+    const endpoint = `http://10.0.2.2:5000/api/search/conversations/${encodeURIComponent(searchQuery)}`;
+
+    const response = await fetch(
+      `${endpoint}?currentUserId=${encodeURIComponent(currentUserId)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Search conversations failed with status: ${response.status}`);
+    }
+
+    // Get the response text first to validate it
+    const responseText = await response.text();
+
+    // Try to parse the response text as JSON
+    try {
+      return responseText ? JSON.parse(responseText) : [];
+    } catch (parseError) {
+      console.error("Failed to parse conversation response as JSON:", parseError);
+      console.log("Invalid conversation response:", responseText);
+      return []; // Return empty array instead of throwing error
+    }
+  } catch (error) {
+    console.error("Search conversations request failed:", error);
+    // Don't throw the error, return empty array instead
+    return [];
+  }
+};
+

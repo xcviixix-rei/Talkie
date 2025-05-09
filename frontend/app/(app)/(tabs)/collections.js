@@ -1,101 +1,133 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { getUserCollections, deleteCollection } from '../../../api/collection';
 import { useAuth } from '../../../context/authContext';
+import { router } from 'expo-router';
 
 export default function Collections() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [collections, setCollections] = useState([]);
+    const [collections, setCollections] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
-  // Mock data - replace with your actual API call
-  const loadCollections = async () => {
-    try {
-      // Simulate API call
-      setTimeout(() => {
-        const mockCollections = [
-          { id: '1', name: 'Family Chat', type: 'personal', members: 5, lastUpdated: '2023-10-15' },
-          { id: '2', name: 'Marketing Team', type: 'work', members: 8, lastUpdated: '2023-10-12' },
-          { id: '3', name: 'Book Club', type: 'interest', members: 4, lastUpdated: '2023-10-10' },
-          { id: '4', name: 'Travel Planning', type: 'interest', members: 6, lastUpdated: '2023-10-05' },
-        ];
-        setCollections(mockCollections);
-        setLoading(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Failed to load collections:", error);
-      setLoading(false);
-    }
-  };
+    useEffect(() => {
+        fetchCollections();
+    }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadCollections();
-    }, [])
-  );
-
-  const renderCollectionItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.collectionItem}
-      onPress={() => console.log(`Collection ${item.id} pressed`)}
-    >
-      <View style={styles.iconContainer}>
-        <MaterialCommunityIcons
-          name={item.type === 'personal' ? 'account-group' : (item.type === 'work' ? 'briefcase-outline' : 'bookmark-outline')}
-          size={hp(3)}
-          color="#1E90FF"
-        />
-      </View>
-      <View style={styles.collectionDetails}>
-        <Text style={styles.collectionName}>{item.name}</Text>
-        <Text style={styles.collectionMembers}>{item.members} members</Text>
-      </View>
-      <Text style={styles.lastUpdated}>Updated {item.lastUpdated}</Text>
-    </TouchableOpacity>
-  );
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Collections</Text>
-        <TouchableOpacity style={styles.createButton}>
-          <Ionicons name="add" size={hp(3)} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.contentContainer}>
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#1E90FF" />
-          </View>
-        ) : (
-          <FlatList
-            data={collections}
-            keyExtractor={(item) => item.id}
-            renderItem={renderCollectionItem}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons name="folder-multiple-outline" size={hp(10)} color="#cccccc" />
-                <Text style={styles.emptyText}>No collections yet</Text>
-                <TouchableOpacity style={styles.createCollectionButton}>
-                  <Text style={styles.createCollectionText}>Create Collection</Text>
-                </TouchableOpacity>
-              </View>
+    const fetchCollections = async () => {
+        try {
+            setLoading(true);
+            if (user?.id) {
+                const data = await getUserCollections(user.id);
+                setCollections(data);
             }
-          />
-        )}
-      </View>
-    </View>
-  );
+        } catch (error) {
+            console.error('Error fetching collections:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+   // In your collections.js file, update the handleCreateCollection function:
+
+   const handleCreateCollection = () => {
+     router.push('/createCollection');
+   };
+    const handleCollectionPress = (collection) => {
+        // Navigate to collection detail screen with collection ID
+        router.push({
+            pathname: '/collection',
+            params: { id: collection._id }
+        });
+    };
+
+
+    const renderCollectionItem = ({ item }) => (
+        <TouchableOpacity
+            style={styles.collectionItem}
+            onPress={() => handleCollectionPress(item)}
+        >
+            <View style={styles.iconContainer}>
+                <MaterialCommunityIcons
+                    name={getIconName(item.icon)}
+                    size={hp(3)}
+                    color="#1E90FF"
+                />
+            </View>
+            <View style={styles.collectionDetails}>
+                <Text style={styles.collectionName}>{item.name}</Text>
+                <Text style={styles.collectionMembers}>
+                    {item.conversations?.length || 0} conversations
+                </Text>
+            </View>
+
+        </TouchableOpacity>
+    );
+
+    const getIconName = (iconType) => {
+        switch (iconType) {
+            case 'work':
+                return 'briefcase-outline';
+            case 'personal':
+                return 'account-outline'
+            case 'team':
+                return 'account-multiple';
+            case 'study':
+                return 'book-outline';
+            case 'favorite':
+                return 'star-outline';
+            default:
+                return 'folder-outline';
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.title}>Collections</Text>
+                <TouchableOpacity style={styles.createButton} onPress={handleCreateCollection}>
+                    <Ionicons name="add" size={hp(3)} color="white"/>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.contentContainer}>
+                {loading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#1E90FF"/>
+                    </View>
+                ) : (
+                    <FlatList
+                        data={collections}
+                        keyExtractor={(item) => item._id || item.id}
+                        renderItem={renderCollectionItem}
+                        contentContainerStyle={styles.listContainer}
+                        showsVerticalScrollIndicator={false}
+                        ListEmptyComponent={
+                            <View style={styles.emptyContainer}>
+                                <MaterialCommunityIcons
+                                    name="folder-multiple-outline"
+                                    size={hp(10)}
+                                    color="#cccccc"
+                                />
+                                <Text style={styles.emptyText}>No collections yet</Text>
+                                <TouchableOpacity
+                                    style={styles.createCollectionButton}
+                                    onPress={handleCreateCollection}
+                                >
+                                    <Text style={styles.createCollectionText}>Create Collection</Text>
+                                </TouchableOpacity>
+                            </View>
+                        }
+                    />
+                )}
+            </View>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: 'white',

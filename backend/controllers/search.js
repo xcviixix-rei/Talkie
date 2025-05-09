@@ -1,9 +1,92 @@
 import express from "express";
-import {getDocs, query, where} from "firebase/firestore";
+import {doc, getDoc, getDocs, query, where} from "firebase/firestore";
 import {User} from "../models/User.js";
 import {Conversation} from "../models/Conversation.js";
 
 const router = express.Router();
+
+router.get("/conversations/:searchQuery", async (req, res) => {
+    try {
+        const {searchQuery} = req.params;
+        const {currentUserId} = req.query;
+
+        if (!searchQuery || searchQuery.trim() === '') {
+            return res.status(400).json({error: "Search query is required"});
+        }
+
+        // Query for conversations where current user is a participant
+        // Need to change the query since participants is an array of objects
+        const conversationQueryRef = query(
+            Conversation.collectionRef()
+        );
+        const querySnapshot = await getDocs(conversationQueryRef);
+
+        const matches = [];
+        const matchPromises = [];
+
+        querySnapshot.forEach((docSnap) => {
+            const conversationData = docSnap.data();
+
+            // Check if current user is a participant
+            const isParticipant = conversationData.participants &&
+                conversationData.participants.some(p => p.user_id === currentUserId);
+
+            if (!isParticipant) return;
+
+            const promise = (async () => {
+                // For group conversations, search by name
+                if (conversationData.type === "group") {
+                    if (conversationData.name &&
+                        conversationData.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+                        matches.push({
+                            id: docSnap.id,
+                            ...conversationData
+                        });
+                    }
+                }
+                // For direct conversations, search by other user's username
+                else if (conversationData.type === "direct") {
+                    // Find the other participant object
+                    const otherParticipant = conversationData.participants.find(p => p.user_id !== currentUserId);
+
+                    if (otherParticipant) {
+                        // Get the other user's data
+                        const userDocRef = doc(User.collectionRef(), otherParticipant.user_id);
+                        const userDocSnap = await getDoc(userDocRef);
+                        const userDoc = userDocSnap.exists() ? userDocSnap.data() : null;
+
+                        if (userDoc && userDoc.username &&
+                            userDoc.username.toLowerCase().includes(searchQuery.toLowerCase())) {
+                            // Add conversation with other user's info
+                            matches.push({
+                                id: docSnap.id,
+                                ...conversationData,
+                                otherUser: {
+                                    id: otherParticipant.user_id,
+                                    username: userDoc.username,
+                                    full_name: userDoc.full_name,
+                                    profile_pic: userDoc.profile_pic,
+                                    role: otherParticipant.role,
+                                    alias: otherParticipant.alias
+                                }
+                            });
+                        }
+                    }
+                }
+            })();
+
+            matchPromises.push(promise);
+        });
+
+        // Wait for all promises to resolve
+        await Promise.all(matchPromises);
+
+        res.json(matches);
+    } catch (error) {
+        console.error("Error searching for conversations:", error);
+        res.status(500).json({error: "Failed to search for conversations"});
+    }
+});
 
 
 // GET /api/users/:searchQuery
@@ -38,7 +121,6 @@ router.get("/users/:searchQuery", async (req, res) => {
                     const conversationQueryRef = query(
                         Conversation.collectionRef(),
                         where("type", "==", "direct"),
-                        where("participants", "array-contains", currentUserId)
                     );
 
                     const convSnapshot = await getDocs(conversationQueryRef);
@@ -46,8 +128,11 @@ router.get("/users/:searchQuery", async (req, res) => {
 
                     convSnapshot.forEach((convDoc) => {
                         const convData = convDoc.data();
-                        // Check if this user is in participants
-                        if (convData.participants.includes(userId)) {
+                        // Check if both users are participants in this direct conversation
+                        const hasCurrentUser = convData.participants.some(p => p.user_id === currentUserId);
+                        const hasOtherUser = convData.participants.some(p => p.user_id === userId);
+
+                        if (hasCurrentUser && hasOtherUser) {
                             existingConversation = {
                                 id: convDoc.id,
                                 ...convData

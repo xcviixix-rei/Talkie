@@ -1,5 +1,6 @@
 import express from "express";
 import { CollectionModel } from "../models/Collection.js";
+import {Conversation} from "../models/Conversation.js";
 
 const router = express.Router();
 
@@ -50,6 +51,37 @@ router.get("/:id", async (req, res) => {
   } catch (error) {
     console.error("Error fetching collection:", error);
     res.status(500).json({ error: "Failed to fetch collection" });
+  }
+});
+
+// GET /collections/:id/conversations - Get all conversations in a collection
+router.get("/:id/conversations", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const collection = await CollectionModel.get(id);
+
+    if (!collection) {
+      return res.status(404).json({ error: "Collection not found" });
+    }
+
+    if (!collection.conversations || collection.conversations.length === 0) {
+      return res.json([]);
+    }
+
+    // Assuming you have a ConversationModel to fetch conversations
+    const conversations = await Promise.all(
+      collection.conversations.map(convId =>
+        Conversation.get(convId)
+      )
+    );
+
+    // Filter out any null results (in case some conversations were deleted)
+    const validConversations = conversations.filter(conv => conv !== null);
+
+    res.json(validConversations);
+  } catch (error) {
+    console.error("Error fetching collection conversations:", error);
+    res.status(500).json({ error: "Failed to fetch collection conversations" });
   }
 });
 
