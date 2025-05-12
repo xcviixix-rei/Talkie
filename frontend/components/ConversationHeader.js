@@ -18,6 +18,7 @@ const callId = 'ZWrgwe0xKW5f';
 
 export default function ConversationHeader({
   item,
+  theme,
   mockUsers,
   router,
   converName,
@@ -73,13 +74,19 @@ export default function ConversationHeader({
   return (
     <Stack.Screen
       options={{
-        title: "",
-        headerStyle: { height: hp(8) },
+        headerStyle: {
+          backgroundColor: theme?.header_color || "#FFFFFF",
+        },
         headerShadowVisible: false,
+        headerTitle: () => null,
         headerLeft: () => (
           <View style={styles.headerContainer}>
             <TouchableOpacity onPress={() => router.back()}>
-              <Entypo name="chevron-left" size={hp(4)} color="#0084ff" />
+              <Entypo
+                name="chevron-left"
+                size={hp(4)}
+                color={theme?.ui_color || "#0084ff"}
+              />
             </TouchableOpacity>
             <View style={styles.profileContainer}>
               <Image source={{ uri: converPic }} style={styles.profileImage} />
@@ -95,8 +102,12 @@ export default function ConversationHeader({
         ),
         headerRight: () => (
           <View style={styles.iconContainer}>
-            <TouchableOpacity style={styles.actionButton}>
-              <Ionicons name="call" size={hp(2.8)} color="#0084ff" />
+            <TouchableOpacity onPress={onVoiceCall} style={styles.actionButton}>
+              <Ionicons
+                name="call"
+                size={hp(2.8)}
+                color={theme?.ui_color || "#0084ff"}
+              />
             </TouchableOpacity>
             <TouchableOpacity onPress={startCall} style={styles.actionButton}>
               <Foundation name="video" size={hp(3.8)} color="#0084ff" />
@@ -108,7 +119,7 @@ export default function ConversationHeader({
               <Ionicons
                 name="information-circle"
                 size={hp(3.2)}
-                color="#0084ff"
+                color={theme?.ui_color || "#0084ff"}
               />
             </TouchableOpacity>
           </View>
@@ -140,7 +151,7 @@ const styles = StyleSheet.create({
     width: hp(1.8),
     height: hp(1.8),
     borderRadius: hp(10),
-    backgroundColor: "#31A24C", // Messenger green
+    backgroundColor: "#31A24C",
     borderWidth: hp(0.2),
     borderColor: "#FFFFFF",
   },

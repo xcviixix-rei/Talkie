@@ -289,7 +289,7 @@ export default function ConversationItem({
           // Fetch user data for all participants
           const usersData = await Promise.all(
             item.participants.map(async (participant) => {
-              return fetchUserData(participant?.id || participant);
+              return fetchUserData(participant?.user_id || participant);
             })
           );
 

@@ -18,9 +18,11 @@ import {
   blockUser,
   muteConversation,
   searchMedia,
+  deleteConversation,
 } from "../../../api/conversation";
 import mediaService from "../../../services/mediaService";
 import uploadMediaService from "../../../services/uploadMediaService";
+
 // import ImageViewer from "./ImageViewer";
 
 export default function ConversationInfo() {
@@ -40,6 +42,15 @@ export default function ConversationInfo() {
         rawMockUsers: JSON.stringify(mockUsers),
         converName,
         converPic,
+      },
+    });
+  };
+
+  const openThemeSelection = () => {
+    router.push({
+      pathname: "converInfor/themeSelection",
+      params: {
+        rawItem: JSON.stringify(item),
       },
     });
   };
@@ -168,8 +179,8 @@ export default function ConversationInfo() {
           text: "Delete",
           style: "destructive",
           onPress: () => {
-            // Handle deletion logic here
-            router.back();
+            deleteConversation(item.id);
+            router.replace("/home");
           },
         },
       ]
@@ -369,6 +380,15 @@ export default function ConversationInfo() {
           >
             {isBlocked ? "Unblock User" : "Block User"}
           </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.settingsItem}
+          onPress={openThemeSelection}
+        >
+          <View style={styles.settingIconContainer}>
+            <Ionicons name="color-palette-outline" size={24} color="#666" />
+          </View>
+          <Text style={styles.settingsItemText}>themes</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.settingsItem}>
