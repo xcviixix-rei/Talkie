@@ -8,6 +8,13 @@ import {
   formatActiveTime,
   getLastActiveUser,
 } from "./ConversationItem";
+//tmp section
+import {
+  StreamVideo,
+  StreamVideoClient,
+} from '@stream-io/video-react-native-sdk';
+
+const callId = 'ZWrgwe0xKW5f';
 
 export default function ConversationHeader({
   item,
@@ -16,8 +23,6 @@ export default function ConversationHeader({
   converName,
   converPic,
   currentUser,
-  onVoiceCall,
-  onVideoCall,
 }) {
   const [isActive, setIsActive] = useState(false);
   const [lastActiveTime, setLastActiveTime] = useState("");
@@ -55,6 +60,16 @@ export default function ConversationHeader({
     });
   };
 
+  const startCall = async () => {
+    router.push({
+      pathname: "/callScreen",
+      params: {
+        callId,
+        converName,
+        converPic,
+      },
+    });
+  };
   return (
     <Stack.Screen
       options={{
@@ -80,10 +95,10 @@ export default function ConversationHeader({
         ),
         headerRight: () => (
           <View style={styles.iconContainer}>
-            <TouchableOpacity onPress={onVoiceCall} style={styles.actionButton}>
+            <TouchableOpacity style={styles.actionButton}>
               <Ionicons name="call" size={hp(2.8)} color="#0084ff" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={onVideoCall} style={styles.actionButton}>
+            <TouchableOpacity onPress={startCall} style={styles.actionButton}>
               <Foundation name="video" size={hp(3.8)} color="#0084ff" />
             </TouchableOpacity>
             <TouchableOpacity

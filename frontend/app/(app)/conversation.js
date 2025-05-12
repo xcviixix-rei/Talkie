@@ -31,7 +31,6 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
-import { useCall } from "./call/useCall";
 
 export default function Conversation() {
   const { rawItem, rawMockUsers, converName, converPic } =
@@ -50,10 +49,6 @@ export default function Conversation() {
   const inputRef = useRef(null);
   const timerRef = useRef(null);
   const audioControlsRef = useRef(null);
-  const { initiateVoiceCall, initiateVideoCall } = useCall(
-    user.id,
-    item.userId /*calleeUsername*/
-  );
   const [attachments, setAttachments] = useState(null);
 
   useFocusEffect(
