@@ -27,13 +27,6 @@ export default function AppLayout() {
           headerBackTitle: "Back",
         }}
       />
-      <Stack.Screen
-        name="callScreen"
-        options={{
-          headerShown: false,
-          presentation: "fullScreenModal",
-        }}
-      />
       {/* <Stack.Screen
         name="conversationInfor"
         options={({ navigation }) => ({

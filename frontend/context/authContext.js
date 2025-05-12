@@ -17,9 +17,8 @@ export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
     const [isLoading, setIsLoading] = useState(true);
-    const [streamToken, setStreamToken] = useState(null);
     const [currentUserPassword, setCurrentUserPassword] = useState(null);
-
+    
     useEffect(() => {
         setIsLoading(true);
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -37,21 +36,9 @@ export const AuthContextProvider = ({ children }) => {
                     };
                     setUser(newUser);
                     setIsAuthenticated(true);
-
-                    const idToken = await firebaseUser.getIdToken();
-                    const response = await fetch("http://10.0.2.2:5000/api/users/get-token", {
-                        method: "POST",
-                        headers: {
-                        "Authorization": `Bearer ${idToken}`,
-                        "Content-Type": "application/json",
-                        },
-                    });
-                    const { token } = await response.json();
-                    setStreamToken(token);
                 } else {
                     setIsAuthenticated(false);
                     setUser(null);
-                    setStreamToken(null);
                 }
             } catch (error) {
                 console.error("Auth state change error:", error);
@@ -67,10 +54,11 @@ export const AuthContextProvider = ({ children }) => {
 
     const handleSignIn = async (email, password) => {
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const credential = await signInWithEmailAndPassword(auth, email, password);
             setCurrentUserPassword(password);
             return {
                 success: true,
+                uid: credential.user.uid,
             };
 
         } catch (e) {
@@ -171,7 +159,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{user, isAuthenticated, handleSignIn, handleSignOut , handleSignUp, streamToken, currentUserPassword, handleChangePassword}}>
+        <AuthContext.Provider value={{user, isAuthenticated, handleSignIn, handleSignOut , handleSignUp, currentUserPassword, handleChangePassword}}>
             {children}
         </AuthContext.Provider>
     )

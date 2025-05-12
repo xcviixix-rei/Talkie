@@ -26,6 +26,18 @@ export default function ConversationHeader({
       },
     });
   };
+  // const initiateCall = async (callType) => {
+  //   router.push({
+  //     pathname: "/callScreen",
+  //     params: {
+  //       callType,
+  //       rawItem: JSON.stringify(item),
+  //       rawMockUsers: JSON.stringify(mockUsers),
+  //       converName,
+  //       converPic,
+  //     },
+  //   });
+  // };
 
   return (
     <Stack.Screen
@@ -43,10 +55,10 @@ export default function ConversationHeader({
         ),
         headerRight: () => (
           <View style={styles.iconContainer}>
-            <TouchableOpacity onPress={onVoiceCall}>
+            <TouchableOpacity /*onPress={initiateCall("voice")}*/>
               <Ionicons name="call" size={hp(2.8)} color="#737373" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={onVideoCall}>
+            <TouchableOpacity /*onPress={initiateCall("video")}*/>
               <Foundation name="video" size={hp(3.8)} color="#737373" />
             </TouchableOpacity>
             <TouchableOpacity onPress={openConversationInfor}>

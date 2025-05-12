@@ -49,6 +49,9 @@ export default function ConversationInfo() {
   const [tempName, setTempName] = useState(initialConverName || "User");
   const [isLoading, setIsLoading] = useState(false);
 
+  console.log("item", item);
+  console.log("mockUsers", mockUsers);
+
   useEffect(() => {
     // Mock function to get media counts
     const getMediaCounts = () => {

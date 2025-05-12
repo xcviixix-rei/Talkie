@@ -17,14 +17,16 @@ export default function ConversationItem({
   const [converPic, setConverPic] = useState("");
 
   const openConversation = () => {
+    const params = {
+      rawItem: JSON.stringify(item),
+      rawMockUsers: JSON.stringify(mockUsers),
+      converName,
+      converPic,
+    };
+
     router.push({
       pathname: "/conversation",
-      params: {
-        rawItem: JSON.stringify(item),
-        rawMockUsers: JSON.stringify(mockUsers),
-        converName,
-        converPic,
-      },
+      params,
     });
   };
 

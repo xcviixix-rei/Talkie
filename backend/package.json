@@ -4,13 +4,15 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@stream-io/node-sdk": "^0.4.24",
     "@stream-io/video-react-native-sdk": "^1.11.3",
     "backend": "file:",
     "cors": "^2.8.5",
@@ -20,6 +22,6 @@
     "firebase-admin": "^13.3.0",
     "getstream": "^8.8.0",
     "mongoose": "^8.11.0",
-    "stream-chat": "^8.59.0"
+    "stream-chat": "^8.60.0"
   }
 }

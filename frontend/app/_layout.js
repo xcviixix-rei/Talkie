@@ -1,8 +1,6 @@
 import React, {useEffect} from "react";
 import {Slot, useRouter, useSegments} from "expo-router";
 import {AuthContextProvider, useAuth} from "../context/authContext";
-import { StreamContextProvider } from "../context/streamContext";
-import CallHandler from "./(app)/call/callHandler";
 
 const MainLayout = () => {
     const { isAuthenticated } = useAuth();
@@ -31,10 +29,7 @@ const MainLayout = () => {
 export default function RootLayout() {
     return (
         <AuthContextProvider>
-            <StreamContextProvider>
-                <CallHandler/>
                 <MainLayout/>
-            </StreamContextProvider>
         </AuthContextProvider>
     );
 }
