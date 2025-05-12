@@ -28,7 +28,7 @@ export default function SignIn() {
 
 
         if (!response.success) {
-            Alert.alert("Error", response.data);
+            Alert.alert("Error", response.error);
             setLoading(false);
         }
     }

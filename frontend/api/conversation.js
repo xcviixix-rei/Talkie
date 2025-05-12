@@ -7,6 +7,9 @@ export const createConversation = async (
     const conversationData = {
       type: conversationType,
       participants: participants,
+      last_message: {
+
+      },
       conver_theme: "default",
       created_at: new Date().toISOString(),
     };
