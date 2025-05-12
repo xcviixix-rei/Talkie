@@ -102,7 +102,7 @@ export default function ConversationHeader({
         ),
         headerRight: () => (
           <View style={styles.iconContainer}>
-            <TouchableOpacity onPress={onVoiceCall} style={styles.actionButton}>
+            <TouchableOpacity style={styles.actionButton}>
               <Ionicons
                 name="call"
                 size={hp(2.8)}
