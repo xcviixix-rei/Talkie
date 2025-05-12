@@ -44,6 +44,15 @@ export default function ConversationInfo() {
     });
   };
 
+  const openThemeSelection = () => {
+    router.push({
+      pathname: "converInfor/themeSelection",
+      params: {
+        rawItem: JSON.stringify(item),
+      },
+    });
+  };
+
   const openSummaryMessage = () => {
     router.push({
       pathname: "converInfor/summaryMessages",
@@ -369,6 +378,15 @@ export default function ConversationInfo() {
           >
             {isBlocked ? "Unblock User" : "Block User"}
           </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.settingsItem}
+          onPress={openThemeSelection}
+        >
+          <View style={styles.settingIconContainer}>
+            <Ionicons name="color-palette-outline" size={24} color="#666" />
+          </View>
+          <Text style={styles.settingsItemText}>themes</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.settingsItem}>

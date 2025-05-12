@@ -12,7 +12,7 @@ import {
 
 const { width, height } = Dimensions.get("window");
 
-const MessageItem = ({ message, currentUser }) => {
+const MessageItem = ({ message, currentUser, theme }) => {
   const isMyMessage = currentUser?.id === message?.sender;
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -36,13 +36,18 @@ const MessageItem = ({ message, currentUser }) => {
         <View
           style={[
             styles.messageBubble,
-            isMyMessage ? styles.myMessage : styles.otherMessage,
+            isMyMessage
+              ? styles.myMessage
+              : [
+                  styles.otherMessage,
+                  { backgroundColor: theme?.other_ui_color || "#0084FF" },
+                ],
           ]}
         >
           <Text
             style={[
               styles.text,
-              isMyMessage ? styles.myMessageText : styles.otherMessageText,
+              isMyMessage ? styles.myMessageText : [styles.otherMessageText],
             ]}
           >
             {message.text}
