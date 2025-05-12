@@ -7,11 +7,27 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   try {
     const themeData = req.body;
+    
+    // If themeData is an array, create multiple themes
+    if (Array.isArray(themeData)) {
+      const newThemes = await Promise.all(
+        themeData.map(async (data) => {
+          if (!data.theme_name) {
+            throw new Error("theme_name is required for each theme");
+          }
+          return await Theme.create(data);
+        })
+      );
+      return res.status(201).json(newThemes);
+    }
+    
+    // Otherwise, create a single theme
     if (!themeData.theme_name) {
       return res.status(400).json({ error: "theme_name is required" });
     }
     const newTheme = await Theme.create(themeData);
     res.status(201).json(newTheme);
+    
   } catch (error) {
     console.error("Error creating theme:", error);
     res.status(500).json({ error: "Failed to create theme" });

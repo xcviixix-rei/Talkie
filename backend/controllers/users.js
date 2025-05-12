@@ -122,25 +122,40 @@ router.get("/search", async (req, res) => {
   }
 });
 
-// Get conversations for a specific user
+
 router.get("/:id/conversations", async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Verify that the user exists.
     const user = await User.get(id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    const userConversationsQuery = query(
-      Conversation.collectionRef(),
 
-      where("participants", "array-contains", id)
-    );
-    const querySnapshot = await getDocs(userConversationsQuery);
-    const conversations = [];
-    querySnapshot.forEach((docSnap) => {
-      conversations.push(new Conversation({ id: docSnap.id, ...docSnap.data() }));
+    // Get all conversations.
+    let conversations = await Conversation.list();
+
+    // Filter conversations so that only those where user is a participant and 
+    // the conversation is not hidden from the user are returned.
+    conversations = conversations.filter((conversation) => {
+      const { participants = [], hidden_to = [] } = conversation;
+
+      // Check if the user is a participant.
+      const isParticipant = participants.some((participant) => {
+        if (typeof participant === "string") {
+          return participant === id;
+        } else if (participant && participant.user_id) {
+          return participant.user_id === id;
+        }
+        return false;
+      });
+
+      // Exclude conversations which are hidden for the user.
+      const isHidden = hidden_to.includes(id);
+      return isParticipant && !isHidden;
     });
+
     res.json(conversations);
   } catch (error) {
     console.error("Error fetching conversations for user:", error);
