@@ -17,7 +17,14 @@ export default function Home() {
       const response = await axios.get(
         `http://10.0.2.2:5000/api/users/${user.id}/conversations`
       );
-      const mockUsers = response.data;
+      const data = response.data;
+      // Sort conversations by last_message timestamp (newest first)
+      const mockUsers = [...data].sort((a, b) => {
+        const timeA = a.last_message?.timestamp || a.created_at;
+        const timeB = b.last_message?.timestamp || b.created_at;
+        return new Date(timeB) - new Date(timeA);
+      });
+
       setUsers(mockUsers);
     } catch (error) {
       console.error("Failed to load users:", error);
@@ -30,6 +37,8 @@ export default function Home() {
     useCallback(() => {
       loadUsers();
       const timeInterval = setInterval(loadUsers, 60000);
+
+      return () => clearInterval(timeInterval);
     }, [])
   );
 
