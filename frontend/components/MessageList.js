@@ -215,7 +215,7 @@ import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { ChevronDown } from "lucide-react-native";
 import MessageToolbar from "./MessageToolbar";
 
-export default function MessageList({ messages, currentUser }) {
+export default function MessageList({ messages, currentUser, theme }) {
   const scrollViewRef = useRef(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -365,6 +365,7 @@ export default function MessageList({ messages, currentUser }) {
               message={message}
               currentUser={currentUser}
               isSelected={selectedMessageIndex === index}
+              theme={theme}
             />
           </Pressable>
         ))}

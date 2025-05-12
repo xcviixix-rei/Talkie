@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ImageBackground,
 } from "react-native";
 import React, { useEffect, useCallback, useRef, useState } from "react";
 import { useLocalSearchParams, useFocusEffect, useRouter } from "expo-router";
@@ -23,6 +24,7 @@ import { sendMessage } from "../../api/message";
 import { changeLastMessages } from "../../api/conversation";
 import uploadMediaService from "../../services/uploadMediaService";
 import locationService from "../../services/locationService";
+import { fetchTheme } from "../../api/theme";
 import {
   collection,
   onSnapshot,
@@ -46,6 +48,7 @@ export default function Conversation() {
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [recordingInfo, setRecordingInfo] = useState(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [theme, setTheme] = useState("default");
   const textRef = useRef("");
   const inputRef = useRef(null);
   const timerRef = useRef(null);
@@ -60,6 +63,9 @@ export default function Conversation() {
     useCallback(() => {
       const fetchData = async () => {
         const tmp = await fetchConversation(item.id);
+        const tmptheme = await fetchTheme();
+        setTheme(tmptheme.find((t) => t.theme_name === tmp?.conver_theme));
+        console.log(tmp);
         setItem(tmp);
       };
 
@@ -217,7 +223,8 @@ export default function Conversation() {
   const handleCamera = async () => {
     const photo = await MediaService.handleCamera();
     if (photo) {
-      // Handle photo upload and sending
+      setAttachments(photo);
+      console.log(photo);
     }
   };
 
@@ -360,41 +367,50 @@ export default function Conversation() {
     <View style={styles.container}>
       <ConversationHeader
         item={item}
+        theme={theme}
         mockUsers={mockUsers}
         converName={item?.name ? item.name : converName}
         converPic={item?.name ? item?.conver_pic : converPic}
         router={router}
         currentUser={user}
       />
-      <View style={styles.header} />
-      <View style={styles.main}>
+      <ImageBackground source={{ uri: theme?.url }} style={styles.main}>
         <View style={styles.messageList}>
-          <MessageList messages={messages} currentUser={user} />
+          <MessageList messages={messages} currentUser={user} theme={theme} />
         </View>
         <View style={styles.inputContainer}>
           {showMediaButtons && (
             <View style={styles.mediaButtonsContainer}>
               <TouchableOpacity
-                style={styles.mediaButton}
+                style={[
+                  styles.mediaButton,
+                  { backgroundColor: theme?.ui_color },
+                ]}
                 onPress={handleImagePicker}
               >
                 <Ionicons name="image" size={hp(2.7)} color="white" />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.mediaButton}
+                style={[
+                  styles.mediaButton,
+                  { backgroundColor: theme?.ui_color },
+                ]}
                 onPress={handleCamera}
               >
                 <Ionicons name="camera" size={hp(2.7)} color="white" />
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.mediaButton}
+                style={[
+                  styles.mediaButton,
+                  { backgroundColor: theme?.ui_color },
+                ]}
                 onPress={handleLocation}
               >
                 <Ionicons name="location" size={hp(2.7)} color="white" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
-                  styles.mediaButton,
+                  [styles.mediaButton, { backgroundColor: theme?.ui_color }],
                   isRecording && styles.recordingButton,
                 ]}
                 onPressIn={handleMicPress}
@@ -453,8 +469,8 @@ export default function Conversation() {
           {!recordingInfo && (
             <View style={styles.inputWrapper}>
               <TouchableOpacity
-                style={styles.plusButton}
                 onPress={toggleMediaButtons}
+                style={[styles.plusButton, { backgroundColor: theme.ui_color }]}
               >
                 <Ionicons name="add" size={hp(2.2)} color="white" />
               </TouchableOpacity>
@@ -466,7 +482,10 @@ export default function Conversation() {
                   style={styles.textInput}
                 />
                 <TouchableOpacity
-                  style={styles.sendButton}
+                  style={[
+                    styles.sendButton,
+                    { backgroundColor: theme.ui_color },
+                  ]}
                   onPress={handleSendMessage}
                 >
                   <Ionicons name="send" size={hp(2.2)} color="white" />
@@ -475,7 +494,7 @@ export default function Conversation() {
             </View>
           )}
         </View>
-      </View>
+      </ImageBackground>
     </View>
   );
 }
@@ -487,11 +506,6 @@ const styles = StyleSheet.create({
   },
   statusBar: {
     backgroundColor: "white",
-  },
-  header: {
-    height: hp(1.5),
-    borderBottomWidth: 1,
-    borderBottomColor: "#d1d5db",
   },
   main: {
     flex: 1,

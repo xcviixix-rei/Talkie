@@ -11,10 +11,10 @@ export const createConversation = async (
       created_at: new Date().toISOString(),
     };
     if (conversationName && conversationName.trim() !== "") {
-      conversationData.conver_pic = "https://www.gravatar.com/avatar/?d=identicon";
+      conversationData.conver_pic =
+        "https://www.gravatar.com/avatar/?d=identicon";
       conversationData.name = conversationName;
     }
-
 
     const response = await fetch("http://10.0.2.2:5000/api/conversations", {
       method: "POST",
@@ -117,6 +117,30 @@ export const editConversation = async (
     return await response.json();
   } catch (error) {
     console.error("Edit conversation failed:", error);
+    throw error;
+  }
+};
+
+export const editTheme = async (conversationId, theme_name) => {
+  try {
+    const response = await fetch(
+      `http://10.0.2.2:5000/api/conversations/${conversationId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ conver_theme: theme_name }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to edit theme: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Edit theme failed:", error);
     throw error;
   }
 };
