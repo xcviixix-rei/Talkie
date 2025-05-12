@@ -53,7 +53,7 @@ const MessageItem = ({ message, currentUser, theme, isGroupChat = false, senderN
               ? styles.myMessage
               : [
                   styles.otherMessage,
-                  { backgroundColor: theme?.other_ui_color || "#0084FF" },
+                  { backgroundColor: theme?.other_ui_color || "#ffffff" },
                 ],
           ]}
         >

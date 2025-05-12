@@ -6,12 +6,11 @@ export const createConversation = async (
     participants
 ) => {
     try {
-
         const conversationData = {
             type: conversationType,
             participants: participants,
             last_message: {
-                text: "Welcome to " + conversationName,
+                text: "Hello World!",
                 sender: participants[0].user_id,
                 timestamp: new Date().toISOString(),
             },
@@ -32,20 +31,23 @@ export const createConversation = async (
             body: JSON.stringify(conversationData),
         });
 
-        const message = {
-            conversation_id: response.json().id,
-            text: "Welcome to " + conversationName,
-            sender: participants[0].user_id,
-            timestamp: new Date().toISOString(),
-        }
-        await sendMessage(message)
-
-
         if (!response.ok) {
             throw new Error(`Failed to create conversation: ${response.status}`);
         }
 
-        return await response.json();
+        const responseData = await response.json();
+        console.log(responseData);
+
+        const message = {
+            conversation_id: responseData.id,
+            text: "Hello World!",
+            sender: participants[0].user_id,
+            timestamp: new Date().toISOString(),
+        }
+        await sendMessage(message);
+
+        return responseData;
+
     } catch (error) {
         console.error("Create conversation failed:", error);
         throw error;
