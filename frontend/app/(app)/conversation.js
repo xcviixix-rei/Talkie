@@ -65,9 +65,9 @@ export default function Conversation() {
         const tmp = await fetchConversation(item.id);
         const tmptheme = await fetchTheme();
         setTheme(tmptheme.find((t) => t.theme_name === tmp?.conver_theme));
-        console.log(tmp);
         setItem(tmp);
       };
+
 
       fetchData();
 
@@ -376,7 +376,7 @@ export default function Conversation() {
       />
       <ImageBackground source={{ uri: theme?.url }} style={styles.main}>
         <View style={styles.messageList}>
-          <MessageList messages={messages} currentUser={user} theme={theme} />
+          <MessageList messages={messages} currentUser={user} theme={theme} isGroupChat={item.type === 'group'} pars={item.participants} usersInfo={mockUsers} />
         </View>
         <View style={styles.inputContainer}>
           {showMediaButtons && (

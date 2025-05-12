@@ -12,7 +12,7 @@ import {
 
 const { width, height } = Dimensions.get("window");
 
-const MessageItem = ({ message, currentUser, theme }) => {
+const MessageItem = ({ message, currentUser, theme, isGroupChat = false, senderName, senderProfilePic }) => {
   const isMyMessage = currentUser?.id === message?.sender;
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -31,6 +31,19 @@ const MessageItem = ({ message, currentUser, theme }) => {
         { alignItems: isMyMessage ? "flex-end" : "flex-start" },
       ]}
     >
+      {/* Username for group chats */}
+      {isGroupChat && !isMyMessage && senderName && (
+        <View style={styles.senderInfoContainer}>
+          {senderProfilePic && (
+            <Image
+              source={{ uri: senderProfilePic }}
+              style={styles.profilePic}
+            />
+          )}
+          <Text style={styles.senderName}>{senderName}</Text>
+        </View>
+      )}
+
       {/* Text Message */}
       {message?.text ? (
         <View
@@ -135,6 +148,25 @@ const styles = StyleSheet.create({
     width: width * 0.98,
     alignSelf: "center",
   },
+  senderInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 12,
+    marginBottom: 2,
+  },
+  profilePic: {
+    width: 26,
+    height: 26,
+    borderRadius: 12,
+    marginRight: 6,
+    marginLeft: -6
+  },
+  senderName: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: "#1683dd",
+    marginBottom: 2,
+  },
   messageBubble: {
     padding: 10,
     borderRadius: 18,
@@ -214,6 +246,8 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
   },
+
+
 });
 
 export default MessageItem;
