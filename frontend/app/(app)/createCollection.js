@@ -139,8 +139,8 @@ export default function CreateCollection() {
 
     const renderConversationItem = ({item}) => {
         const isGroup = item.type === "group";
-        const displayName = isGroup ? item.name : (item.otherUser?.username || "User");
-        const avatar = isGroup ? item.conver_pic : (item.otherUser?.profile_pic);
+        const displayName = isGroup ? item.name : (item.otherParticipant?.username || "User");
+        const avatar = isGroup ? item.conver_pic : (item.otherParticipant?.profile_pic);
         const lastMessage = item.last_message?.text || "No messages yet";
 
         return (
@@ -351,9 +351,9 @@ export default function CreateCollection() {
                                         onPress={() => toggleConversationSelection(item)}
                                     >
                                         {/* Avatar/Icon */}
-                                        {item.conver_pic || (item.otherUser?.profile_pic) ? (
+                                        {item.conver_pic || (item.otherParticipant?.profile_pic) ? (
                                             <Image
-                                                source={{uri: item.type === "group" ? item.conver_pic : item.otherUser?.profile_pic}}
+                                                source={{uri: item.type === "group" ? item.conver_pic : item.otherParticipant?.profile_pic}}
                                                 style={[
                                                     styles.avatarImage,
                                                     isConversationSelected(item.id) && {borderColor: 'white'}
@@ -381,7 +381,7 @@ export default function CreateCollection() {
                                                 ]}
                                                 numberOfLines={1}
                                             >
-                                                {item.type === "group" ? item.name : (item.otherUser?.username || "User")}
+                                                {item.type === "group" ? item.name : (item.otherParticipant?.username || "User")}
                                             </Text>
                                             <Text
                                                 style={[

@@ -73,12 +73,12 @@ export default function CreateGroup() {
             // Add current user to participants
             const participants = [
                 {
-                    alias: currentUser.alias || "",
+                    alias: currentUser.username || "",
                     role: "Admin",
                     user_id: currentUser.id
                 },
                 ...selectedUsers.map(user => ({
-                    alias: "",
+                    alias: user.username,
                     role: "",
                     user_id: user.id
                 }))
