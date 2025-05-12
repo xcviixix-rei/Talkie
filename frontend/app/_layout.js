@@ -1,8 +1,6 @@
 import React, {useEffect} from "react";
 import {Slot, useRouter, useSegments} from "expo-router";
 import {AuthContextProvider, useAuth} from "../context/authContext";
-import { StreamContextProvider } from "../context/streamContext";
-import CallHandler from "./(app)/call/callHandler";
 import { useHeartbeat } from "../hook/useHeartBeat";
 import * as Notifications from 'expo-notifications';
 
@@ -69,10 +67,7 @@ const MainLayout = () => {
 export default function RootLayout() {
     return (
         <AuthContextProvider>
-            <StreamContextProvider>
-                <CallHandler/>
-                <MainLayout/>
-            </StreamContextProvider>
+            <MainLayout/>
         </AuthContextProvider>
     );
 }
