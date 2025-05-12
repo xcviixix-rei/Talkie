@@ -18,9 +18,11 @@ import {
   blockUser,
   muteConversation,
   searchMedia,
+  deleteConversation,
 } from "../../../api/conversation";
 import mediaService from "../../../services/mediaService";
 import uploadMediaService from "../../../services/uploadMediaService";
+
 // import ImageViewer from "./ImageViewer";
 
 export default function ConversationInfo() {
@@ -177,8 +179,8 @@ export default function ConversationInfo() {
           text: "Delete",
           style: "destructive",
           onPress: () => {
-            // Handle deletion logic here
-            router.back();
+            deleteConversation(item.id);
+            router.replace("/home");
           },
         },
       ]

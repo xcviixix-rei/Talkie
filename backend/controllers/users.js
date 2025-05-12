@@ -136,7 +136,7 @@ router.get("/:id/conversations", async (req, res) => {
     // Get all conversations.
     let conversations = await Conversation.list();
 
-    // Filter conversations so that only those where user is a participant and 
+    // Filter conversations so that only those where user is a participant and
     // the conversation is not hidden from the user are returned.
     conversations = conversations.filter((conversation) => {
       const { participants = [], hidden_to = [] } = conversation;
@@ -154,6 +154,13 @@ router.get("/:id/conversations", async (req, res) => {
       // Exclude conversations which are hidden for the user.
       const isHidden = hidden_to.includes(id);
       return isParticipant && !isHidden;
+    });
+
+    // Sort conversations by last_message_time in descending order (newest first)
+    conversations.sort((a, b) => {
+      const timeA = a.last_message.timestamp ? new Date(a.last_message.timestamp).getTime() : 0;
+      const timeB = b.last_message.timestamp ? new Date(b.last_message.timestamp).getTime() : 0;
+      return timeB - timeA; // Descending order (newest on top)
     });
 
     res.json(conversations);
