@@ -369,7 +369,7 @@ export default function Conversation() {
         router={router}
         currentUser={user}
       />
-      <ImageBackground source={{ uri: theme?.url }} style={styles.main}>
+      <ImageBackground source={{ uri: theme?.url || "1"}} style={styles.main}>
         <View style={styles.messageList}>
           <MessageList messages={messages} currentUser={user} theme={theme} isGroupChat={item.type === 'group'} pars={item.participants} usersInfo={mockUsers} />
         </View>

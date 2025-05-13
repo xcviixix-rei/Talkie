@@ -42,7 +42,8 @@ const ThemeSelection = () => {
           onPress: () => {
             // Save the selected theme
             //saveSelectedTheme(themeName, conversationId);
-            // Navigate back to conversatio
+            // Navigate back to conversation
+            editTheme(conversationId, themeName);
             navigation.goBack();
           },
         },
