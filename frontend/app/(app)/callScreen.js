@@ -1,7 +1,8 @@
 import { router, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { heightPercentageToDP as hp } from "react-native-responsive-screen";
-import { SafeAreaView, Button, StyleSheet, Text, View, Image, ActivityIndicator } from 'react-native';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons'; // Import icons
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { SafeAreaView, StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, StatusBar } from 'react-native';
 import {
         StreamVideo,
         StreamVideoClient,
@@ -101,22 +102,50 @@ function CallContentWrapper({ callId, converName, converPic }) {
     };
   }, [client, callId]);
 
+  const defaultAvatar = require('../../assets/images/image.png');
+
   if (!call) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.container}>
-          <Image source={{ uri: converPic }} style={styles.profileImage} />
-          <Text style={styles.text}>Calling {converName}</Text>
+      <SafeAreaView style={styles.safeArea}>
+      {/* Make status bar content light on the dark background */}
+      <StatusBar barStyle="light-content" />
+      <View style={styles.container}>
+        {/* Top Section: Profile Info */}
+        <View style={styles.profileSection}>
+          <Image
+            source={converPic ? { uri: converPic } : defaultAvatar}
+            style={styles.profileImage}
+            resizeMode="cover" // Ensure image covers the area
+          />
+          <Text style={styles.calleeName}>{converName || 'Unknown Contact'}</Text>
+          <Text style={styles.callStatus}>Calling...</Text>
         </View>
-      </SafeAreaView>
+
+        {/* Bottom Section: Controls */}
+        <View style={styles.controlsSection}>
+          <View style={styles.controlsRow}>
+          </View>
+
+          {/* End Call Button */}
+          <TouchableOpacity
+            style={[styles.controlButton, styles.endCallButton]}
+            onPress={() => router.back()}
+          >
+            <MaterialCommunityIcons name="phone-hangup" size={hp(5)} color="white" />
+             {/* Optional: Text label for end call */}
+             {/* <Text style={styles.controlLabel}>End</Text> */}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
     );
   }
 
   return (
     <StreamVideo client={client}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.bigContainer}>
         <StreamCall call={call}>
-          <View style={styles.container}>
+          <View style={styles.bigContainer}>
             <CallContent
               onHangupCallHandler={() => router.back()}
             />
@@ -128,23 +157,75 @@ function CallContentWrapper({ callId, converName, converPic }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  bigContainer: {
     flex: 1,
     justifyContent: 'center',
     backgroundColor: 'white',
   },
-  text: {
-    color: 'black',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#2c3e50', // Dark background common in call screens
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'space-between', // Pushes controls to bottom
+    alignItems: 'center',
+    paddingHorizontal: wp(5),
+    paddingVertical: hp(8), // Adjust padding as needed
+  },
+  profileSection: {
+    alignItems: 'center',
+    marginTop: hp(5), // Space from top
   },
   profileImage: {
+    width: hp(15), // Larger image
+    height: hp(15),
+    borderRadius: hp(7.5), // Make it circular
+    marginBottom: hp(3),
+    backgroundColor: '#bdc3c7', // Placeholder background color
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.5)', // Optional border
+  },
+  calleeName: {
+    fontSize: hp(3.5),
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: hp(1),
+    textAlign: 'center',
+  },
+  callStatus: {
+    fontSize: hp(2.2),
+    color: '#bdc3c7', // Lighter color for status
+    textAlign: 'center',
+  },
+  controlsSection: {
+    width: '100%',
+    alignItems: 'center', // Center the end call button horizontally
+  },
+  controlsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around', // Space out mute/speaker
+    width: '80%', // Don't take full width for the row
+    marginBottom: hp(8), // Space above the end call button
+  },
+  controlButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent background
+    width: hp(9), // Circular buttons
     height: hp(9),
-    width: hp(9),
     borderRadius: hp(4.5),
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+   controlLabel: {
+    color: 'white',
+    fontSize: hp(1.5),
+    marginTop: hp(0.5), // Space between icon and label
+  },
+  endCallButton: {
+    backgroundColor: '#e74c3c', // Red color for ending call
+     width: hp(10), // Slightly larger maybe
+    height: hp(10),
+    borderRadius: hp(5),
   },
 });
 

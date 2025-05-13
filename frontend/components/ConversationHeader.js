@@ -110,7 +110,7 @@ export default function ConversationHeader({
               />
             </TouchableOpacity>
             <TouchableOpacity onPress={startCall} style={styles.actionButton}>
-              <Foundation name="video" size={hp(3.8)} color="#0084ff" />
+              <Foundation name="video" size={hp(2.8)} color={theme?.ui_color || "#0084ff"} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={openConversationInfor}
