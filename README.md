@@ -1,25 +1,106 @@
 # Talkie
 
-A smart messaging platform with real-time chat, voice/video calls, AI-powered replies, message summarization, translation, and collaborative features like whiteboard and workspaces.
+A smart messaging platform that revolutionizes communication through advanced real-time features, AI integration, and collaborative tools. Talkie combines the power of modern technology with intuitive design to deliver a seamless messaging experience across all devices.
+
+Developed as a group project for mobile app development credits
+Contributors:  
+[22028195 - TRAN THE MANH](https://github.com/tranmanh2004)  
+[22028267 - LE MINH DUC](https://github.com/kuduck192)  
+[22028026 - DAM QUANG DAT](https://github.com/quangdatltw)  
+[22028307 - NGUYEN NHAT PHONG](https://github.com/xcviixix-rei)  
+[22028313 - LE VAN THANG](https://github.com/thnglee)
 
 ## Features
 
-- 💬 Real-time messaging
-- 📞 Voice and video calls
-- 🤖 AI-powered smart replies
-- 📝 Message summarization
-- 🌐 Multi-language translation
-- 🎨 Collaborative whiteboard
-- 👥 Shared workspaces
-- 📱 Cross-platform support (Android & iOS)
+### 💬 Real-time Messaging
+- Instant message delivery with typing indicators
+- Read receipts and message status tracking
+- Rich media support (images, videos, documents)
+- Message reactions and emoji support
+- Thread-based conversations
+- Message editing and deletion
+- File sharing up to 100MB
+
+### 📞 Voice and Video Calls
+- HD voice and video calls
+- Group calls supporting up to 8 participants
+- Screen sharing capabilities
+- Background noise suppression
+- Picture-in-picture mode
+- Call recording (with participant consent)
+- Bandwidth optimization for stable connections
+
+### 🤖 AI-powered Smart Replies
+- Context-aware response suggestions
+- Sentiment analysis for appropriate replies
+- Custom response learning based on user patterns
+- Quick action suggestions
+- Smart command recognition
+- Meeting scheduling assistance
+- Auto-categorization of messages
+
+### 📝 Message Summarization
+- TL;DR generation for long conversations
+- Meeting minutes generation
+- Topic-based conversation clustering
+- Key points extraction
+- Action items identification
+- Custom summary length options
+- Export summaries in multiple formats
+
+### 🌐 Multi-language Translation
+- Real-time message translation in 50+ languages
+- Automatic language detection
+- Preserve original message formatting
+- Cultural context awareness
+- Idiom and slang handling
+- Custom dictionary support
+- Translation memory for consistency
+
+### 🎨 Collaborative Whiteboard
+- Real-time drawing and sketching
+- Multiple tools (pen, shapes, text, etc.)
+- Image import and annotation
+- Infinite canvas with zoom capabilities
+- Template library
+- Session recording
+- Export to multiple formats (PNG, PDF, SVG)
+
+### 👥 Shared Workspaces
+- Customizable workspace layouts
+- Role-based access control
+- Document collaboration
+- Task management integration
+- Calendar synchronization
+- Activity tracking
+- Workspace analytics
+
+### 📱 Cross-platform Support
+- Native Android and iOS apps
+- Consistent experience across devices
+- Offline functionality
+- Data synchronization
+- Push notifications
 
 ## Tech Stack
 
 - **Frontend**: React Native/Expo
+  - Tailwind CSS for styling
+  - Custom UI components
+  - Optimized performance
+  - Responsive design
+
 - **Backend**: Node.js
+  - RESTful API architecture
+  - WebSocket integration
+  - Microservices architecture
+  - Scalable infrastructure
+
 - **Real-time**: Firebase
-- **Styling**: Tailwind CSS
-- **Testing**: Appium (Automation Testing)
+  - Real-time database
+  - Cloud Functions
+  - Authentication
+  - Cloud Storage
 
 ## Mobile Development Setup
 
@@ -52,18 +133,6 @@ A smart messaging platform with real-time chat, voice/video calls, AI-powered re
    npm run android
    ```
 
-### iOS Setup (macOS only)
-
-1. Install Xcode from the Mac App Store
-2. Install CocoaPods:
-   ```bash
-   sudo gem install cocoapods
-   ```
-
-3. Run the app on iOS:
-   ```bash
-   npm run ios
-   ```
 
 ## Project Structure
 
@@ -83,6 +152,19 @@ Talkie/
 └── talkie-appium-tests/ # Automated testing suite
 ```
 
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up environment variables (see .env.example)
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
 ## Contributing
 
 1. Fork the repository
@@ -91,10 +173,3 @@ Talkie/
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support, please open an issue in the repository or contact the development team.
