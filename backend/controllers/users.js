@@ -156,12 +156,6 @@ router.get("/:id/conversations", async (req, res) => {
       return isParticipant && !isHidden;
     });
 
-    // Sort conversations by last_message_time in descending order (newest first)
-    conversations.sort((a, b) => {
-      const timeA = a.last_message.timestamp ? new Date(a.last_message.timestamp).getTime() : 0;
-      const timeB = b.last_message.timestamp ? new Date(b.last_message.timestamp).getTime() : 0;
-      return timeB - timeA; // Descending order (newest on top)
-    });
 
     res.json(conversations);
   } catch (error) {
