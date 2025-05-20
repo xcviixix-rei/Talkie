@@ -7,7 +7,8 @@ import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { useAuth } from "../context/authContext";
 import { clearCurrentCall, createAndJoinCall } from "../services/streamService";
 import {v5 as uuidv5} from 'uuid';
-import { UUID_V4 } from "@env";
+
+const UUID_V4 = '70a5e7f6-6360-4560-a7d3-3230afb08140';
 
 export default function ConversationHeader({
   item,
