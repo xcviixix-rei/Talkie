@@ -49,9 +49,10 @@ export const createAndJoinCall = async (streamClient, callId, calleeUids, isVide
     }
 
     const call = streamClient.call('default', callId);
+    console.log('Client', streamClient.streamClient);
     try {
         const members = [
-            { user_id: streamClient.streamClient._user.id },
+            { user_id: streamClient.streamClient._user.id},
             ...calleeUids.map(uid => ({ user_id: uid }))
         ];
 
