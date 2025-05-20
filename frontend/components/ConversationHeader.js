@@ -26,7 +26,7 @@ export default function ConversationHeader({
 }) {
   const [isActive, setIsActive] = useState(false);
   const [lastActiveTime, setLastActiveTime] = useState("");
-  const { user: currentUser, streamClient } = useAuth();
+  const { user: currentStreamUser, streamClient } = useAuth();
 
   const refreshTimeDisplays = () => {
     const latestActiveUser = getLastActiveUser(mockUsers, currentUser);
@@ -63,7 +63,7 @@ export default function ConversationHeader({
 
   const getCalleeId = () => {
     if (item.type === "direct") {
-      return item.participants[0] === currentUser.id
+      return item.participants[0] === currentStreamUser.id
         ? item.participants[1]
         : item.participants[0];
     }
@@ -77,7 +77,7 @@ export default function ConversationHeader({
       return;
     }
 
-    const sortedId = [currentUser.id, calleeId].sort();
+    const sortedId = [currentStreamUser.id, calleeId].sort();
     const pairedId = `${sortedId[0]}-${sortedId[1]}`;
     const callIdBase = uuidv5(
       pairedId,

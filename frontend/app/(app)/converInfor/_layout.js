@@ -10,6 +10,7 @@ export default function AppLayout() {
         name="conversationInfor"
         options={{
           title: "Conversation",
+          headerShown: false,
         }}
       />
       <Stack.Screen name="searchMessages" />
