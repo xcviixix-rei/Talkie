@@ -21,6 +21,11 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
       "package": "com.anonymous.Talkie"
     },
     "web": {
@@ -35,6 +40,20 @@
           "assets": [
             "node_modules/@expo-google-fonts/balsamiq-sans/BalsamiqSans_700Bold.ttf"
           ]
+        }
+      ],
+      "@stream-io/video-react-native-sdk",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera.",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for audio recording."
         }
       ],
       [

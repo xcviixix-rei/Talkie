@@ -15,6 +15,25 @@ router.post("/", async (req, res) => {
   }
 });
 
+// For Firebase push notifications FCM
+router.post('/register-device', async (req, res) => {
+    const { userId, deviceToken, platform } = req.body;
+
+    if (!userId || !deviceToken || !platform) {
+        return res.status(400).send('userId, deviceToken, and platform are required.');
+    }
+
+    try {
+        // For Video, push config is usually done on GetStream dashboard
+        await serverClient.addDevice(deviceToken, platform === 'firebase' ? 'firebase' : 'apn', userId);
+        console.log(`Device ${deviceToken} registered for user ${userId}`);
+        res.status(200).send('Device registered successfully.');
+    } catch (error) {
+        console.error('Error registering device:', error);
+        res.status(500).send('Failed to register device.');
+    }
+});
+
 // Get all notifications
 router.get("/", async (req, res) => {
   try {

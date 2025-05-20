@@ -8,6 +8,8 @@ import {
     reauthenticateWithCredential
 } from "firebase/auth";
 import auth from "../config/firebaseConfig";
+import { initializeStreamClient, disconnectStreamClient } from "../services/streamService";
+import { requestUserPermission } from "../services/pushNotificationService";
 import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
 import {fetchUserData} from "../api/user";
 
@@ -17,9 +19,10 @@ export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
     const [isLoading, setIsLoading] = useState(true);
-    const [streamToken, setStreamToken] = useState(null);
     const [currentUserPassword, setCurrentUserPassword] = useState(null);
-
+    const [streamClient, setStreamClient] = useState(null);
+    const [userIdForStream, setUserIdForStream] = useState(null);
+    
     useEffect(() => {
         setIsLoading(true);
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -37,22 +40,9 @@ export const AuthContextProvider = ({ children }) => {
                     };
                     setUser(newUser);
                     setIsAuthenticated(true);
-
-
-                    const idToken = await firebaseUser.getIdToken();
-                    const response = await fetch("http://10.0.2.2:5000/api/users/get-token", {
-                        method: "POST",
-                        headers: {
-                        "Authorization": `Bearer ${idToken}`,
-                        "Content-Type": "application/json",
-                        },
-                    });
-                    const { token } = await response.json();
-                    setStreamToken(token);
                 } else {
                     setIsAuthenticated(false);
                     setUser(null);
-                    setStreamToken(null);
                 }
             } catch (error) {
                 console.error("Auth state change error:", error);
@@ -65,13 +55,40 @@ export const AuthContextProvider = ({ children }) => {
         return () => unsubscribe();
     }, []);
 
+    useEffect(() => {
+        // Initialize or disconnect Stream client when auth state changes
+        if (isAuthenticated && user && user.id && user.id !== userIdForStream) {
+            console.log("AuthContext: User authenticated, initializing Stream client...");
+            setUserIdForStream(user.id); // Store the ID being used
+            initializeStreamClient(user.id)
+                .then(client => {
+                    setStreamClient(client);
+                    console.log("AuthContext: Stream client set in context.");
+                    // Once client is ready, setup push notifications for this user
+                    requestUserPermission(client); // Pass client if needed by the function
+                })
+                .catch(error => {
+                    console.error("AuthContext: Failed to initialize Stream client:", error);
+                    // Handle initialization failure if needed
+                });
+        } else if (!isAuthenticated && streamClient) {
+            console.log("AuthContext: User logged out, disconnecting Stream client...");
+            disconnectStreamClient().then(() => {
+                 setStreamClient(null);
+                 setUserIdForStream(null);
+                 console.log("AuthContext: Stream client disconnected and cleared from context.");
+            });
+        }
+    }, [isAuthenticated, user, streamClient, userIdForStream]); // Add dependencies
+
 
     const handleSignIn = async (email, password) => {
         try {
-            await signInWithEmailAndPassword(auth, email, password);
+            const credential = await signInWithEmailAndPassword(auth, email, password);
             setCurrentUserPassword(password);
             return {
                 success: true,
+                uid: credential.user.uid,
             };
 
         } catch (e) {
@@ -173,7 +190,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{user, isAuthenticated, handleSignIn, handleSignOut , handleSignUp, streamToken, currentUserPassword, handleChangePassword}}>
+        <AuthContext.Provider value={{user, streamClient, isLoading, isAuthenticated, handleSignIn, handleSignOut , handleSignUp, currentUserPassword, handleChangePassword}}>
             {children}
         </AuthContext.Provider>
     )

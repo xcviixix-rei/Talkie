@@ -83,6 +83,20 @@ export default function ConversationItem({
   const [isActive, setIsActive] = useState(false);
   const [lastActiveTime, setLastActiveTime] = useState("");
 
+  const openConversation = () => {
+    const params = {
+      rawItem: JSON.stringify(item),
+      rawMockUsers: JSON.stringify(mockUsers),
+      converName,
+      converPic,
+    };
+
+    router.push({
+      pathname: "/conversation",
+      params,
+    });
+  };
+
   // Format time like Messenger (now, minutes, hours, yesterday, date)
   const formatMessageTime = (timestamp) => {
     if (!timestamp) return "";

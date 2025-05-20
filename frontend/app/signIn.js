@@ -25,8 +25,6 @@ export default function SignIn() {
         // login process
         setLoading(true);
         let response = await handleSignIn(emailRef.current, passwordRef.current);
-
-
         if (!response.success) {
             Alert.alert("Error", response.error);
             setLoading(false);

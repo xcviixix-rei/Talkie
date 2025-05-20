@@ -18,7 +18,6 @@ import {
 import MediaService from "../../services/mediaService";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/authContext";
-import { fetchUserData } from "../../api/user";
 import { fetchConversation } from "../../api/conversation";
 import { sendMessage } from "../../api/message";
 import { changeLastMessages } from "../../api/conversation";

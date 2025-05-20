@@ -2,16 +2,18 @@ import express from "express";
 import { query, getDocs, where } from "firebase/firestore";
 import { User } from "../models/User.js";
 import { Conversation } from "../models/Conversation.js";
-import { StreamClient } from "getstream";
-import { getAuth } from "firebase-admin/auth";
+import { StreamClient } from "@stream-io/node-sdk";
 import dotenv from "dotenv";
 
+const router = express.Router();
+
 dotenv.config();
+
 const GETSTREAM_API_KEY = process.env.GETSTREAM_API_KEY;
 const GETSTREAM_SECRET = process.env.GETSTREAM_SECRET;
-
-const router = express.Router();
-const client = new StreamClient(GETSTREAM_API_KEY, GETSTREAM_SECRET);
+const ServerClient = new StreamClient(GETSTREAM_API_KEY, GETSTREAM_SECRET);
+const validity = 60 * 60 * 24;
+const clockSkewLeeway = 60;
 
 // Create a new user
 router.post("/", async (req, res) => {
@@ -62,19 +64,29 @@ router.get("/check-username", async (req, res) => {
   }
 });
 
-router.post("/get-token", async (req, res) => {
-  const idToken = req.headers.authorization?.split('Bearer ')[1];
-  if (!idToken) {
-    return res.status(401).json({ error: "No token provided" });
-  }
+router.post("/get-call-token", async (req, res) => {
   try {
-    const decodedToken = await getAuth().verifyIdToken(idToken);
-    const userId = decodedToken.uid; // Firebase UID as the GetStream.io user ID
-    const streamToken = client.createUserToken(userId);
-    res.json({ token: streamToken });
+    const { userId } = req.body;
+    const userToUpsert = { id: userId };
+    await ServerClient.upsertUsers([userToUpsert]);
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const issuedAtTime = nowSeconds - clockSkewLeeway; // Set 'issued at' slightly in the past
+    const expirationTime = nowSeconds + validity;     // Expiration based on current time
+
+    console.log(`Generating Stream token for user ${userId}. Server time: ${new Date(nowSeconds * 1000)}, IssuedAt: ${new Date(issuedAtTime * 1000)}, ExpiresAt: ${new Date(expirationTime * 1000)}`);
+
+    // *** Use createToken with explicit iat ***
+    const token = ServerClient.createToken(userId, expirationTime, issuedAtTime);
+
+    if (!token) {
+        console.error(`Stream token generation returned empty for user ${userId}.`);
+        return res.status(500).json({ message: 'Token generation failed unexpectedly' });
+    }
+    return res.status(200).json({ token });
   } catch (error) {
-    console.error("Error verifying token:", error);
-    res.status(401).json({ error: "Invalid token" });
+    console.error('Error generating call token:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
 });
 
