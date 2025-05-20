@@ -63,15 +63,16 @@ export default function ConversationHeader({
 
   const getCalleeId = () => {
     if (item.type === "direct") {
-      return item.participants[0] === currentStreamUser.id
-        ? item.participants[1]
-        : item.participants[0];
+      return item.participants[0].user_id == currentStreamUser.id
+        ? item.participants[1].user_id
+        : item.participants[0].user_id;
     }
     return null;
   }
 
   const initiateCall = async (isVideo) => {
     const calleeId = getCalleeId();
+    console.log("Callee ID:", calleeId);
     if (!calleeId) {
       console.error("Callee ID not found");
       return;
