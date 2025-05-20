@@ -1,14 +1,16 @@
 import React, {useEffect} from "react";
 import {Slot, useRouter, useSegments} from "expo-router";
 import {AuthContextProvider, useAuth} from "../context/authContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const MainLayout = () => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, isLoading } = useAuth();
     const segments = useSegments();
     const router = useRouter();
 
     useEffect(() => {
-        if (typeof isAuthenticated === "undefined") return;
+        if (isLoading || typeof isAuthenticated === "undefined") return;
         const inApp = segments[0] === "(app)";
 
         const redirect = () => {
@@ -21,15 +23,19 @@ const MainLayout = () => {
 
         const timer = setTimeout(redirect, 1000);
         return () => clearTimeout(timer);
-    }, [isAuthenticated]);
+    }, [isAuthenticated, isLoading, segments, router]);
 
     return <Slot />;
 };
 
 export default function RootLayout() {
     return (
-        <AuthContextProvider>
-                <MainLayout/>
-        </AuthContextProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <SafeAreaProvider>
+                <AuthContextProvider>
+                        <MainLayout/>
+                </AuthContextProvider>
+            </SafeAreaProvider>
+        </GestureHandlerRootView>
     );
 }

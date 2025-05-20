@@ -12,7 +12,7 @@ dotenv.config();
 const GETSTREAM_API_KEY = process.env.GETSTREAM_API_KEY;
 const GETSTREAM_SECRET = process.env.GETSTREAM_SECRET;
 const ServerClient = new StreamClient(GETSTREAM_API_KEY, GETSTREAM_SECRET);
-const validity = 60 * 60;
+const validity = 60 * 60 * 24;
 const clockSkewLeeway = 60;
 
 // Create a new user

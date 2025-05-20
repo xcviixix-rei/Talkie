@@ -4,6 +4,10 @@ import { Stack } from "expo-router";
 import { Entypo, Foundation, Ionicons } from "@expo/vector-icons";
 import { fetchConversation } from "../api/conversation";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { useAuth } from "../context/authContext";
+import { clearCurrentCall, createAndJoinCall } from "../services/streamService";
+import {v5 as uuidv5} from 'uuid';
+import { UUID_V4 } from "@env";
 
 export default function ConversationHeader({
   item,
@@ -11,10 +15,8 @@ export default function ConversationHeader({
   router,
   converName,
   converPic,
-  currentUser,
-  onVoiceCall,
-  onVideoCall,
 }) {
+  const { user: currentUser, streamClient } = useAuth();
   const openConversationInfor = () => {
     router.push({
       pathname: "/conversationInfor",
@@ -26,18 +28,45 @@ export default function ConversationHeader({
       },
     });
   };
-  // const initiateCall = async (callType) => {
-  //   router.push({
-  //     pathname: "/callScreen",
-  //     params: {
-  //       callType,
-  //       rawItem: JSON.stringify(item),
-  //       rawMockUsers: JSON.stringify(mockUsers),
-  //       converName,
-  //       converPic,
-  //     },
-  //   });
-  // };
+
+  const getCalleeId = () => {
+    if (item.type === "direct") {
+      return item.participants[0] === currentUser.id
+        ? item.participants[1]
+        : item.participants[0];
+    }
+    return null;
+  }
+
+  const initiateCall = async (isVideo) => {
+    const calleeId = getCalleeId();
+    if (!calleeId) {
+      console.error("Callee ID not found");
+      return;
+    }
+
+    const sortedId = [currentUser.id, calleeId].sort();
+    const pairedId = `${sortedId[0]}-${sortedId[1]}`;
+    const callIdBase = uuidv5(
+      pairedId,
+      UUID_V4
+    );
+    const callId = `${callIdBase}-${Date.now()}`;
+    try {
+      const call = await createAndJoinCall(streamClient, callId, [calleeId], isVideo);
+      router.push({
+        pathname: "/waiting",
+        params: {
+          callId: call.id,
+          calleeId: calleeId,
+          isVideo: isVideo.toString(),
+        },
+      });
+    } catch (error) {
+      console.error("Error initiating call:", error);
+      clearCurrentCall();
+    }
+  }
 
   return (
     <Stack.Screen
@@ -55,10 +84,10 @@ export default function ConversationHeader({
         ),
         headerRight: () => (
           <View style={styles.iconContainer}>
-            <TouchableOpacity /*onPress={initiateCall("voice")}*/>
+            <TouchableOpacity onPress={() => initiateCall(false)}>
               <Ionicons name="call" size={hp(2.8)} color="#737373" />
             </TouchableOpacity>
-            <TouchableOpacity /*onPress={initiateCall("video")}*/>
+            <TouchableOpacity onPress={() => initiateCall(true)}>
               <Foundation name="video" size={hp(3.8)} color="#737373" />
             </TouchableOpacity>
             <TouchableOpacity onPress={openConversationInfor}>

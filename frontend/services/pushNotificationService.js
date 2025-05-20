@@ -1,7 +1,6 @@
 import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
 import { getStreamClient } from './streamService';
-import { navigate } from '../navigation/RootNavigation';
 
 export async function requestUserPermission() {
     const authStatus = await messaging().requestPermission();

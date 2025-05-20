@@ -7,7 +7,6 @@ import {Octicons} from "@expo/vector-icons";
 import Loading from "../components/Loading";
 import CustomKeyboardView from "../components/CustomKeyboardView";
 import {useAuth} from "../context/authContext";
-import { initializeStreamClient } from "../services/streamService";
 
 export default function SignIn() {
     const [loading, setLoading] = useState(false);
@@ -26,19 +25,7 @@ export default function SignIn() {
         // login process
         setLoading(true);
         let response = await handleSignIn(emailRef.current, passwordRef.current);
-
-        if (response.success) {
-            // Initialize Stream client
-            console.log(response);
-            try {
-                // Initialize Stream client with the user ID
-                const client = await initializeStreamClient(response.uid)
-                console.log("Stream client initialized successfully for user:", response.uid);
-            } catch (error) {
-                console.error("Error in signIn initializing Stream client:", error);
-            }
-        }
-        else if (!response.success) {
+        if (!response.success) {
             Alert.alert("Error", response.data);
             setLoading(false);
         }

@@ -8,6 +8,8 @@ import {
     reauthenticateWithCredential
 } from "firebase/auth";
 import auth from "../config/firebaseConfig";
+import { initializeStreamClient, disconnectStreamClient } from "../services/streamService";
+import { requestUserPermission } from "../services/pushNotificationService";
 import {onAuthStateChanged, signOut} from "@react-native-firebase/auth";
 import {fetchUserData} from "../api/user";
 
@@ -18,6 +20,8 @@ export const AuthContextProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(undefined);
     const [isLoading, setIsLoading] = useState(true);
     const [currentUserPassword, setCurrentUserPassword] = useState(null);
+    const [streamClient, setStreamClient] = useState(null);
+    const [userIdForStream, setUserIdForStream] = useState(null);
     
     useEffect(() => {
         setIsLoading(true);
@@ -50,6 +54,32 @@ export const AuthContextProvider = ({ children }) => {
 
         return () => unsubscribe();
     }, []);
+
+    useEffect(() => {
+        // Initialize or disconnect Stream client when auth state changes
+        if (isAuthenticated && user && user.id && user.id !== userIdForStream) {
+            console.log("AuthContext: User authenticated, initializing Stream client...");
+            setUserIdForStream(user.id); // Store the ID being used
+            initializeStreamClient(user.id)
+                .then(client => {
+                    setStreamClient(client);
+                    console.log("AuthContext: Stream client set in context.");
+                    // Once client is ready, setup push notifications for this user
+                    requestUserPermission(client); // Pass client if needed by the function
+                })
+                .catch(error => {
+                    console.error("AuthContext: Failed to initialize Stream client:", error);
+                    // Handle initialization failure if needed
+                });
+        } else if (!isAuthenticated && streamClient) {
+            console.log("AuthContext: User logged out, disconnecting Stream client...");
+            disconnectStreamClient().then(() => {
+                 setStreamClient(null);
+                 setUserIdForStream(null);
+                 console.log("AuthContext: Stream client disconnected and cleared from context.");
+            });
+        }
+    }, [isAuthenticated, user, streamClient, userIdForStream]); // Add dependencies
 
 
     const handleSignIn = async (email, password) => {
@@ -159,7 +189,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value={{user, isAuthenticated, handleSignIn, handleSignOut , handleSignUp, currentUserPassword, handleChangePassword}}>
+        <AuthContext.Provider value={{user, streamClient, isLoading, isAuthenticated, handleSignIn, handleSignOut , handleSignUp, currentUserPassword, handleChangePassword}}>
             {children}
         </AuthContext.Provider>
     )
