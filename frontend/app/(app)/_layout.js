@@ -35,37 +35,57 @@ useEffect(() => {
     if (streamClient && user.id && isAuthenticated) {
       const handleIncomingCall = (event) => {
         console.log("--- handleIncomingCall ---");
-        console.log("Received event object:", JSON.stringify(event, null, 2));
 
-        const { call } = event;
-        
-        console.log("Received call object from event:", JSON.stringify(call, null, 2));
-        console.log("Call ID from event:", call.id);
-        console.log("Call state from event:", call.state);
-        if (!call.state) {
-          console.error(`handleIncomingCall: call.state is undefined for call ID ${call.id}. Full call object:`, call);
+        const { call: eventCall, members: eventMembers, user: eventCreator } = event;
+
+        if (!eventCall) {
+          console.error("CALLEE: eventCall is undefined in the event.");
           return;
         }
 
-        const isMember = call.state.members.find(m => m.user_id === user.id);
-        const isRinging = call.state.callingState === "RINGING";
+        const callerDetails = eventCreator;
+        let isForMe = false;
 
-        console.log(`handleIncomingCall: Processing call ${call.id}. IsMember: ${!!isMember}, IsRinging: ${isRinging}, UserID: ${user.id}`);
-        console.log("handleIncomingCall: Members in call.state:", call.state.members);
+        if (eventMembers && Array.isArray(eventMembers)) {
+          isForMe = eventMembers.some(member => member.user_id === user.id || member.user?.id === user.id);
+        } else {
+          console.error("CALLEE: eventMembers is not an array or is undefined.");
+        }
 
-        if (isMember && isRinging) {
-          setCurrentCall(call);
-          inCallManager.startRingtone('_BUNDLE_', 'ringtone');
+        // const isRinging = call.state.callingState === "RINGING";
+        const isRinging = true;
+        
+        if (isForMe && isRinging) {
+          setCurrentCall(eventCall);
+          const callerIdFromCallCreatedBy = eventCall.createdBy?.id;
+          const callerIdFromEventCreator = callerDetails?.id;
+
+          console.log("CALLEE: Caller ID from event.call.created_by:", callerIdFromCallCreatedBy);
+          console.log("CALLEE: Caller ID from event.user:", callerIdFromEventCreator);
           router.push({
             pathname: "/incomingCall",
             params: { 
-              callId: call.id, 
-              callerId: call.state.createdBy?.id 
+              callId: eventCall.id, 
+              callerId: callerIdFromEventCreator || callerIdFromCallCreatedBy,
             },
           });
         } else {
-          console.log(`(app)/_layout: Ignoring incoming call event for ${call.id}. IsMember: ${!!isMember}, IsRinging: ${isRinging}`);
+          console.log(`CALLEE: Ignoring incoming call event for ${eventCall.id}. IsForMe: ${isForMe}, IsRinging: ${isRinging}`);
         }
+
+    //     if (isMember && isRinging) {
+    //       setCurrentCall(call);
+    //       inCallManager.startRingtone('_BUNDLE_', 'ringtone');
+    //       router.push({
+    //         pathname: "/incomingCall",
+    //         params: { 
+    //           callId: call.id, 
+    //           callerId: call.state.createdBy?.id 
+    //         },
+    //       });
+    //     } else {
+    //       console.log(`(app)/_layout: Ignoring incoming call event for ${call.id}. IsMember: ${!!isMember}, IsRinging: ${isRinging}`);
+    //     }
       };
 
       const unsubscribe  = streamClient.on('call.ring', handleIncomingCall);
@@ -76,7 +96,7 @@ useEffect(() => {
     } else {
       console.log("(app)/_layout: Stream client not ready or user not authenticated.");
     }
-  }, [streamClient, user.id, isAuthenticated, router]);
+  }, [streamClient, user?.id, isAuthenticated, router]);
   if (!isAuthenticated) {
     console.log("(app)/_layout: Not authenticated after auth check. Should redirect via root.");
     // router.replace("/signIn");
