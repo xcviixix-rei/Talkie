@@ -22,7 +22,7 @@ export default function MessageList({messages, currentUser, theme, isGroupChat, 
         // Mark content as loaded after a safe delay from mount
         const loadTimer = setTimeout(() => {
             setContentFullyLoaded(true);
-        }, 500);
+        }, 1000);
         return () => clearTimeout(loadTimer);
     }, []);
 
