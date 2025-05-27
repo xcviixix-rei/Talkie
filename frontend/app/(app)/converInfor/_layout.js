@@ -9,8 +9,29 @@ export default function AppLayout() {
       <Stack.Screen
         name="conversationInfor"
         options={{
-          title: "Conversation",
-          headerShown: false,
+          title: "Conversation Information",
+          //headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="themeSelection"
+        options={{
+          title: "theme",
+          //headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="summaryMessages"
+        options={{
+          title: "Summarize",
+          //headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="searchMessage"
+        options={{
+          title: "Search",
+          //headerShown: false,
         }}
       />
       <Stack.Screen name="searchMessages" />

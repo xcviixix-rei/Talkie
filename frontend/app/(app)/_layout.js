@@ -3,30 +3,45 @@ import { Stack, Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 import inCallManager from "react-native-incall-manager";
-import { ActivityIndicator, View, Text, Platform, PermissionsAndroid } from "react-native";
+import {
+  ActivityIndicator,
+  View,
+  Text,
+  Platform,
+  PermissionsAndroid,
+} from "react-native";
 import { useAuth } from "../../context/authContext";
 import { notificationListener } from "../../services/pushNotificationService";
-import { setCurrentCall, clearCurrentCall, getStreamClient } from "../../services/streamService";
+import {
+  setCurrentCall,
+  clearCurrentCall,
+  getStreamClient,
+} from "../../services/streamService";
 import { StreamVideo } from "@stream-io/video-react-native-sdk";
 
 const requestAndroidPermissions = async () => {
-   if (Platform.OS !== 'android') return;
-    try {
-        const grants = await PermissionsAndroid.requestMultiple([
-            PermissionsAndroid.PERMISSIONS.CAMERA,
-            PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-        ]);
-    } catch (err) { 
-      console.warn(err); 
-    }
+  if (Platform.OS !== "android") return;
+  try {
+    const grants = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.CAMERA,
+      PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+    ]);
+  } catch (err) {
+    console.warn(err);
+  }
 };
 
 export default function AppLayout() {
-  const { streamClient, isAuthenticated, user, isLoading: authIsLoading } = useAuth();
+  const {
+    streamClient,
+    isAuthenticated,
+    user,
+    isLoading: authIsLoading,
+  } = useAuth();
   const router = useRouter();
 
-useEffect(() => {
-    if (isAuthenticated && Platform.OS === 'android') {
+  useEffect(() => {
+    if (isAuthenticated && Platform.OS === "android") {
       requestAndroidPermissions();
     }
   }, [isAuthenticated]);
@@ -34,10 +49,18 @@ useEffect(() => {
   useEffect(() => {
     if (streamClient && user.id && isAuthenticated) {
       const handleIncomingCall = (event) => {
-        console.log("CALLEE: 'call.ring' event received:", new Date().toISOString(), JSON.stringify(event, null, 2));
-        console.log('Check Client connection: ', streamClient);
+        console.log(
+          "CALLEE: 'call.ring' event received:",
+          new Date().toISOString(),
+          JSON.stringify(event, null, 2)
+        );
+        console.log("Check Client connection: ", streamClient);
 
-        const { call: eventCall, members: eventMembers, user: eventCreator } = event;
+        const {
+          call: eventCall,
+          members: eventMembers,
+          user: eventCreator,
+        } = event;
 
         if (!eventCall) {
           console.error("CALLEE: eventCall is undefined in the event.");
@@ -49,48 +72,63 @@ useEffect(() => {
           return;
         }
         if (eventCall.createdBy?.id === user.id) {
-          console.log(`(AppLayout) User ${user.id} created this call (${eventCall.id}). Ignoring call.ring in _layout as WaitingScreen should handle it.`);
+          console.log(
+            `(AppLayout) User ${user.id} created this call (${eventCall.id}). Ignoring call.ring in _layout as WaitingScreen should handle it.`
+          );
           return;
         }
-        console.log(`CALLEE: Event for call ID: ${eventCall.id}. Event creator: ${eventCreator?.id}. Call createdBy: ${eventCall.createdBy?.id}`);
+        console.log(
+          `CALLEE: Event for call ID: ${eventCall.id}. Event creator: ${eventCreator?.id}. Call createdBy: ${eventCall.createdBy?.id}`
+        );
         // Log state if available directly from event, though it might be partial
-        console.log(`CALLEE: eventCall.state.callingState (from event payload, if available): ${eventCall.state?.callingState}`);
+        console.log(
+          `CALLEE: eventCall.state.callingState (from event payload, if available): ${eventCall.state?.callingState}`
+        );
 
         let isForMe = false;
 
         if (eventMembers && Array.isArray(eventMembers)) {
-          isForMe = eventMembers.some(member => member.user_id === user.id || member.user?.id === user.id);
+          isForMe = eventMembers.some(
+            (member) =>
+              member.user_id === user.id || member.user?.id === user.id
+          );
         } else {
           isForMe = true;
         }
-        
+
         if (isForMe) {
           setCurrentCall(eventCall);
           const callerIdFromCallCreatedBy = eventCall.createdBy?.id;
           const callerIdFromEventCreator = eventCreator?.id;
           router.push({
             pathname: "/incomingCall",
-            params: { 
-              callId: eventCall.id, 
+            params: {
+              callId: eventCall.id,
               callerId: callerIdFromEventCreator || callerIdFromCallCreatedBy,
             },
           });
         } else {
-          console.log(`CALLEE: Ignoring incoming call event for ${eventCall.id}. IsForMe: ${isForMe}`);
+          console.log(
+            `CALLEE: Ignoring incoming call event for ${eventCall.id}. IsForMe: ${isForMe}`
+          );
         }
       };
 
-      const unsubscribe  = streamClient.on('call.ring', handleIncomingCall);
+      const unsubscribe = streamClient.on("call.ring", handleIncomingCall);
       return () => {
         unsubscribe();
         inCallManager.stopRingtone();
       };
     } else {
-      console.log("(app)/_layout: Stream client not ready or user not authenticated.");
+      console.log(
+        "(app)/_layout: Stream client not ready or user not authenticated."
+      );
     }
   }, [streamClient, user?.id, isAuthenticated, router]);
   if (!isAuthenticated) {
-    console.log("(app)/_layout: Not authenticated after auth check. Should redirect via root.");
+    console.log(
+      "(app)/_layout: Not authenticated after auth check. Should redirect via root."
+    );
     // router.replace("/signIn");
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -99,13 +137,15 @@ useEffect(() => {
     );
   }
   if (!streamClient) {
-      console.log("(app)/_layout: Authenticated, but Stream client is not ready. Waiting...");
-      return (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-              <ActivityIndicator size="large" color="#1E90FF" />
-              <Text>Connecting to call service...</Text>
-          </View>
-      );
+    console.log(
+      "(app)/_layout: Authenticated, but Stream client is not ready. Waiting..."
+    );
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#1E90FF" />
+        <Text>Connecting to call service...</Text>
+      </View>
+    );
   }
 
   return (
@@ -134,20 +174,26 @@ useEffect(() => {
           }}
         />
         <Stack.Screen
+          name="converInfor"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="waiting"
           options={{
-            title:"Calling",
+            title: "Calling",
             headerShown: false,
             presentation: "fullScreenModal",
           }}
         />
-        <Stack.Screen 
+        <Stack.Screen
           name="incomingCall"
           options={{
             title: "Incoming Call",
             headerShown: false,
             presentation: "fullScreenModal",
-          }} 
+          }}
         />
         <Stack.Screen
           name="call"
@@ -155,22 +201,22 @@ useEffect(() => {
             title: "Call",
             headerShown: false,
             presentation: "fullScreenModal",
-          }} 
+          }}
         />
-          <Stack.Screen
-              name="settings"
-              options={{
-                  headerShown: false,
-                  presentation: "fullScreenModal",
-              }}
-          />
-          <Stack.Screen
-              name="notifications-settings"
-              options={{
-                  headerShown: false,
-                  presentation: "fullScreenModal",
-              }}
-          />
+        <Stack.Screen
+          name="settings"
+          options={{
+            headerShown: false,
+            presentation: "fullScreenModal",
+          }}
+        />
+        <Stack.Screen
+          name="notifications-settings"
+          options={{
+            headerShown: false,
+            presentation: "fullScreenModal",
+          }}
+        />
         {/* <Stack.Screen
           name="conversationInfor"
           options={({ navigation }) => ({
