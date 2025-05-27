@@ -61,31 +61,29 @@ export default function ConversationHeader({
     });
   };
 
-  const getCalleeId = () => {
-    if (item.type === "direct") {
-      return item.participants[0].user_id == currentStreamUser.id
-        ? item.participants[1].user_id
-        : item.participants[0].user_id;
-    }
-    return null;
+  const getCalleeIds = () => {
+    return item.participants
+        .filter(participant => participant.user_id !== currentStreamUser.id)
+        .map(participant => participant.user_id);
   }
 
   const initiateCall = async (isVideo) => {
-    const calleeId = getCalleeId();
-    if (!calleeId) {
+    const calleeIds = getCalleeIds();
+    if (!calleeIds) {
       console.error("Callee ID not found");
       return;
     }
 
-    const sortedId = [currentStreamUser.id, calleeId].sort();
-    const pairedId = `${sortedId[0]}-${sortedId[1]}`;
+    const sortedId = [currentStreamUser.id, ...calleeIds].sort();
+    const pairedId = sortedId.join("-");
     const callIdBase = uuidv5(
       pairedId,
       UUID_V4
     );
     const callId = `${callIdBase}-${Date.now()}`;
     try {
-      const call = await createAndJoinCall(streamClient, callId, [calleeId], isVideo);
+      const call = await createAndJoinCall(streamClient, callId, calleeIds, isVideo);
+      await call.join();
       router.push({
         pathname: "/call",
         params: {

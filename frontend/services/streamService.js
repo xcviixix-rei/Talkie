@@ -40,7 +40,7 @@ export const getCurrentCall = () => currentCall;
 export const setCurrentCall = (call) => { currentCall = call; };
 export const clearCurrentCall = () => { currentCall = null; };
 
-export const createAndJoinCall = async (streamClient, callId, calleeUids, isVideo = false) => {
+export const createAndJoinCall = async (streamClient, callId, calleeIds, isVideo = false) => {
     if (!streamClient) throw new Error('Client not initialized');
     if (currentCall) {
         console.warn('Already in a call or initiating one.');
@@ -51,7 +51,7 @@ export const createAndJoinCall = async (streamClient, callId, calleeUids, isVide
     try {
         const members = [
             { user_id: streamClient.streamClient._user.id},
-            ...calleeUids.map(uid => ({ user_id: uid }))
+            ...calleeIds.map(uid => ({ user_id: uid }))
         ];
 
         await call.getOrCreate({ // Use getOrCreate for robustness

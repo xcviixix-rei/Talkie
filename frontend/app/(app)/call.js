@@ -70,9 +70,7 @@ export default function CallScreen() {
     const onHangupHandler = async () => {
         console.log(`CallScreen: Hangup button pressed for call ${call?.id}.`);
         if (call) {
-            console.log(`CallScreen: Hanging up call ${call.id}.`);
             await call.leave();
-            console.log(`CallScreen: Hangup complete for call ${call.id}.`);
              // cleanupAndGoBack will be triggered by the 'call.ended' event,
              // so we don't strictly need to call it here, but can for immediate feedback.
             cleanupAndGoBack(call, null); // Provide immediate navigation
