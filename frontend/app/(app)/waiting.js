@@ -29,7 +29,6 @@ export default function WaitingScreen() {
     useEffect(() => {
         if (!call) return;
 
-        console.log(`WaitingScreen: Listening for events on call ${call.id}`);
         InCallManager.startRingtone('_DEFAULT_', 'ringback'); // Start ringback tone
 
         const handleCallAccepted = (event) => {
@@ -56,7 +55,6 @@ export default function WaitingScreen() {
 
 
         return () => {
-             console.log(`WaitingScreen: Cleaning up listeners for call ${call.id}`);
              unsubscribeAccepted();
              unsubscribeRejected();
              unsubscribeEnded();
@@ -80,7 +78,6 @@ export default function WaitingScreen() {
     };
 
     const cancelCall = async () => {
-        console.log(`WaitingScreen: User cancelling call ${call?.id}`);
         InCallManager.stopRingtone();
         if (call) {
             try {

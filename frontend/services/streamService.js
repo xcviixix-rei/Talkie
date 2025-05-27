@@ -14,7 +14,6 @@ export const initializeStreamClient = async (userId) => {
         const token = await getCallToken(userId);
         if (!token) throw new Error('Failed to get call token');
         client = new StreamVideoClient({ apiKey: GETSTREAM_API_KEY, user, token });
-        console.log('Stream client initialized:', client);
         return client;
     } catch (error) {
         console.error('Error in service initializing Stream client:', error);
@@ -49,7 +48,6 @@ export const createAndJoinCall = async (streamClient, callId, calleeUids, isVide
     }
 
     const call = streamClient.call('default', callId);
-    console.log('Client', streamClient.streamClient);
     try {
         const members = [
             { user_id: streamClient.streamClient._user.id},
@@ -65,8 +63,6 @@ export const createAndJoinCall = async (streamClient, callId, calleeUids, isVide
         });
         
         setCurrentCall(call);
-
-        console.log(`Call ${callId} created and joined. Ringing...`);
         return call;
     } catch (error) {
         console.error('Error creating/joining call:', error);

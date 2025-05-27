@@ -64,18 +64,23 @@ export default function CallScreen() {
         }
          // Navigate back to a safe place (e.g., home or conversation list)
          // Using replace to prevent going back to the call screen
-         router.replace('/home'); // Or navigate back more intelligently if needed
+         router.back(); // Or navigate back more intelligently if needed
     };
 
     const onHangupHandler = async () => {
         console.log(`CallScreen: Hangup button pressed for call ${call?.id}.`);
         if (call) {
+            console.log(`CallScreen: Hanging up call ${call.id}.`);
             await call.leave();
+            console.log(`CallScreen: Hangup complete for call ${call.id}.`);
              // cleanupAndGoBack will be triggered by the 'call.ended' event,
              // so we don't strictly need to call it here, but can for immediate feedback.
-             cleanupAndGoBack(call, null); // Provide immediate navigation
+            cleanupAndGoBack(call, null); // Provide immediate navigation
+            console.log('CallScreen: Hangup complete, navigating back.');
         } else {
-             cleanupAndGoBack(null, null); // Fallback if call object is lost
+            console.warn("CallScreen: No call object to hang up. Attempting cleanup and navigation.");
+            cleanupAndGoBack(null, null); // Fallback if call object is lost
+            console.warn("CallScreen: No call object to hang up.");
         }
     };
 

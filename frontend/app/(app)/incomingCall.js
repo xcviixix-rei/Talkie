@@ -1,7 +1,8 @@
+// app/(app)/incomingCall.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { StreamCall, useStreamVideoClient, CallContent } from '@stream-io/video-react-native-sdk';
+import { StreamCall, useStreamVideoClient } from '@stream-io/video-react-native-sdk';
 import { getCurrentCall, setCurrentCall, clearCurrentCall } from '../../services/streamService';
 import InCallManager from 'react-native-incall-manager';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,140 +10,178 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function IncomingCallScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
-    const { callId, callerId } = params;
-    const client = useStreamVideoClient(); // Get client from context
+    const { callId, callerId: paramCallerId } = params;
+    const streamVideoClient = useStreamVideoClient();
 
-    const [call, setCall] = useState(null);
-    const [isVideo, setIsVideo] = useState(false);
+    const [callObject, setCallObject] = useState(null);
+    const [isVideoCall, setIsVideoCall] = useState(false);
+    const [displayCallerId, setDisplayCallerId] = useState(paramCallerId || 'Unknown Caller');
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showCallEndedMessage, setShowCallEndedMessage] = useState(false); // New state to control UI
 
     useEffect(() => {
-        let callInstance = getCurrentCall();
+        setIsLoading(true);
+        setError(null);
+        setShowCallEndedMessage(false);
 
-        // If global call doesn't match or doesn't exist, try to get it from client
-        if (!callInstance || callInstance.id !== callId) {
-            if (client && callId) {
-                console.log(`IncomingCallScreen: Fetching call object for ID ${callId}`);
-                // Query calls to get the ringing one - more reliable than just getting currentCall
-                // This might be async, handle appropriately
-                // OR rely on the listener in _layout having set the *correct* currentCall
-                 callInstance = client.call('default', callId); // Get instance
-                // Need to ensure its state is loaded if not already set by listener
-                 callInstance.get().then(() => {
-                     if (callInstance.state.callingState === 'RINGING') {
-                         setCurrentCall(callInstance); // Make sure it's set globally
-                         setCall(callInstance);
-                         setIsVideo(callInstance.state.custom.isVideoCall || false);
-                     } else {
-                         // Call is no longer ringing (maybe cancelled?)
-                         setError("Call is no longer available.");
-                         cleanupAndGoBack(null, "Call ended before pickup");
-                     }
-                 }).catch(err => {
-                     console.error("IncomingCallScreen: Error fetching call state:", err);
-                     setError("Could not load call details.");
-                     cleanupAndGoBack(null, "Error loading call");
-                 });
+        if (!streamVideoClient) {
+            setError("Call service not ready.");
+            setIsLoading(false);
+            return;
+        }
 
-            } else {
-                console.error("IncomingCallScreen: Client not ready or callId missing.");
-                 setError("Call details unavailable.");
-                 cleanupAndGoBack(null, "Call details missing");
-                 return; // Exit early
+        if (!callId) {
+            setError("Call identifier missing.");
+            setIsLoading(false);
+            return;
+        }
+
+        const activeCallInstance = streamVideoClient.call('default', callId);
+
+        // Store the cleanup function for listeners
+        let listenerCleanupFunction = () => {};
+
+        const setupCall = async (callToLoad) => {
+            try {
+                await callToLoad.get();
+
+                if (!callToLoad.state) {
+                    throw new Error("Failed to load call state after .get().");
+                }
+
+                InCallManager.startRingtone('_DEFAULT_');
+
+                setCallObject(callToLoad); // Set call object regardless of state for listeners
+                setCurrentCall(callToLoad); // Update global currentCall
+
+                // Set up listeners immediately after getting the call object
+                const handleCallEndedOrRejected = (event) => {
+                    if (event.call?.id !== callToLoad.id && event.callCid !== callToLoad.cid) return;
+                    setError(`Call ${event.reason || 'has ended'}.`); // Update error state
+                    setShowCallEndedMessage(true); // Indicate that call ended UI should be shown
+                    // Do not navigate here, let the UI reflect the state
+                    // cleanupAndGoBack will be called if user presses "Go Back"
+                };
+                const unsubRejected = callToLoad.on('call.rejected', handleCallEndedOrRejected);
+                const unsubEnded = callToLoad.on('call.ended', handleCallEndedOrRejected);
+                listenerCleanupFunction = () => { // Assign to the outer scope variable
+                    unsubRejected();
+                    unsubEnded();
+                };
+                    // Call is RINGING, set UI details
+                    setIsVideoCall(callToLoad.state.custom?.isVideoCall || false);
+                    setDisplayCallerId(callToLoad.state.createdBy?.id || paramCallerId || 'Unknown Caller');
+
+            } catch (err) {
+                console.error(`IncomingCallScreen: Error in setupCall for call ID ${callToLoad.id}:`, err);
+                setError(`Could not load call details: ${err.message}`);
+                setShowCallEndedMessage(true); // Treat as an ended call for UI
+            } finally {
+                setIsLoading(false);
             }
-        } else {
-             // Global call exists and matches ID
-             setCall(callInstance);
-             setIsVideo(callInstance.state.custom.isVideoCall || false);
-        }
+        };
 
-        // Even if we found the call, start listening for its end/cancellation
-        if (callInstance) {
-            const handleCallEndedOrRejected = (event) => {
-                 if (event.call?.id !== callInstance.id) return;
-                 console.log('IncomingCallScreen: Call ended/rejected remotely while screen is open.');
-                 cleanupAndGoBack(null, 'Call cancelled or ended.');
-            };
+        setupCall(activeCallInstance);
 
-            const unsubRejected = callInstance.on('call.rejected', handleCallEndedOrRejected);
-            const unsubEnded = callInstance.on('call.ended', handleCallEndedOrRejected);
+        return () => {
+            console.log(`IncomingCallScreen: useEffect cleanup for callId ${callId}. Stopping ringtone.`);
+            listenerCleanupFunction(); // Call the stored cleanup function
+            InCallManager.stopRingtone();
+        };
 
-            return () => {
-                unsubRejected();
-                unsubEnded();
-            };
-        }
+    }, [streamVideoClient, callId, paramCallerId]);
 
 
-    }, [client, callId]); // Depend on client and callId
-
-    const cleanupAndGoBack = (callInstance = call, alertMessage = null) => {
+    const cleanupAndGoBack = (alertMessage = null) => {
         InCallManager.stopRingtone();
-        if (alertMessage) {
-             Alert.alert('Call Ended', alertMessage, [{ text: 'OK' }]);
+        if (alertMessage) Alert.alert('Call Info', alertMessage, [{ text: 'OK' }]);
+        
+        // Clear currentCall only if it's the one this screen was managing
+        if (callObject && getCurrentCall()?.id === callObject.id) {
+            clearCurrentCall();
         }
-         // No need to leave if rejecting/ending, accept/reject handles it.
-         // But clear the global state ONLY IF it's the current call being processed
-         if (callInstance && getCurrentCall()?.id === callInstance.id) {
-             clearCurrentCall();
-         }
-         if (router.canGoBack()) {
-             router.back();
-         } else {
-             router.replace('/home'); // Fallback
-         }
+        setCallObject(null); // Clear local call object
+
+        if (router.canGoBack()) {
+            router.back();
+        } else {
+            router.replace('/home');
+        }
     };
 
     const acceptCall = async () => {
-        if (!call) return;
-        console.log(`IncomingCallScreen: Accepting call ${call.id}`);
+        if (!callObject || showCallEndedMessage) { // Don't accept if call already ended
+            Alert.alert("Cannot Accept", "This call is no longer active.");
+            return;
+        }
+        console.log(`IncomingCallScreen: Accepting call ${callObject.id}`);
         InCallManager.stopRingtone();
         try {
-            await call.join();
-            // await call.accept(); // join() should implicitly accept for ringing calls? Test this. If not, uncomment accept().
-            console.log(`IncomingCallScreen: Call ${call.id} joined/accepted.`);
-            // Navigate to the main call screen
-            router.replace({ pathname: '/call', params: { callId: call.id, isVideo } });
+            await callObject.join();
+            console.log(`IncomingCallScreen: Call ${callObject.id} joined.`);
+            router.replace({ pathname: '/call', params: { callId: callObject.id, isVideo: isVideoCall.toString() } });
         } catch (error) {
             console.error('IncomingCallScreen: Error accepting call:', error);
-            Alert.alert('Error', 'Could not accept call.');
-            cleanupAndGoBack(call, null); // Pass call to potentially clear state
+            Alert.alert('Error', 'Could not accept call: ' + error.message);
+            setError("Failed to accept call."); // Update UI
+            setShowCallEndedMessage(true); // Treat as an ended call for UI
         }
     };
 
     const rejectCall = async () => {
-        if (!call) return;
-        console.log(`IncomingCallScreen: Rejecting call ${call.id}`);
+        if (!callObject) return; // No need to check showCallEndedMessage, rejecting an ended call is fine
+        console.log(`IncomingCallScreen: Rejecting call ${callObject.id}`);
         InCallManager.stopRingtone();
         try {
-            await call.reject();
-            console.log(`IncomingCallScreen: Call ${call.id} rejected.`);
+            await callObject.reject();
+            console.log(`IncomingCallScreen: Call ${callObject.id} rejected by user.`);
         } catch (error) {
             console.error('IncomingCallScreen: Error rejecting call:', error);
-            // Even if reject fails, leave the screen.
+            // Even if API reject fails, we still want to leave this screen
         } finally {
-            cleanupAndGoBack(call, null); // Pass call to potentially clear state
+            // The call.rejected listener should handle UI update and eventual navigation if needed
+            // For immediate feedback and cleanup:
+            cleanupAndGoBack(null);
         }
     };
 
-
-    if (error) {
-         return <SafeAreaView style={styles.container}><Text style={styles.errorText}>{error}</Text></SafeAreaView>;
+    if (isLoading) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <ActivityIndicator size="large" color="#FFFFFF" />
+                <Text style={styles.loadingText}>Loading call...</Text>
+            </SafeAreaView>
+        );
     }
-    if (!call) {
-        return <SafeAreaView style={styles.container}><ActivityIndicator size="large" /></SafeAreaView>;
+
+    // If showCallEndedMessage is true, or if there's an error and no call object yet
+    if (showCallEndedMessage || (error && !callObject) ) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <Text style={styles.errorText}>{error || "Call has ended."}</Text>
+                <Button title="Go Back" onPress={() => cleanupAndGoBack(null)} />
+            </SafeAreaView>
+        );
+    }
+    
+    // If callObject is null after loading and no specific "ended" message, it's an unexpected error
+    if (!callObject) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <Text style={styles.errorText}>Could not load call information.</Text>
+                <Button title="Go Back" onPress={() => cleanupAndGoBack(null)} />
+            </SafeAreaView>
+        );
     }
 
-    const actualCallerId = call.state.createdBy?.id || callerId || 'Unknown Caller';
-
-
-    // Use StreamCall provider for potential future use, even if not using CallContent here
     return (
-         <StreamCall call={call}>
+         <StreamCall call={callObject}>
              <SafeAreaView style={styles.container}>
-                <Text style={styles.title}>Incoming {isVideo ? 'Video' : 'Voice'} Call</Text>
-                <Text style={styles.callerText}>From: {actualCallerId}</Text>
-                {/* Add Avatar etc. if desired */}
+                {/* Display a general error if one occurred but we still show buttons */}
+                {error && !showCallEndedMessage && <Text style={[styles.errorText, {marginBottom: 10}]}>{error}</Text>}
+                <Text style={styles.title}>Incoming {isVideoCall ? 'Video' : 'Voice'} Call</Text>
+                <Text style={styles.callerText}>From: {displayCallerId}</Text>
                 <View style={styles.buttonRow}>
                     <Button title="Decline" onPress={rejectCall} color="red" />
                     <Button title="Accept" onPress={acceptCall} color="green" />
@@ -172,14 +211,21 @@ const styles = StyleSheet.create({
         marginBottom: 30, 
         textAlign: 'center' 
     },
+    loadingText: {
+        marginTop: 10, 
+        fontSize: 16, 
+        color: 'lightgrey'
+    },
+    errorText: { 
+        fontSize: 16, 
+        color: 'red', // Keep red for errors
+        textAlign: 'center', 
+        marginBottom: 20 
+    },
     buttonRow: { 
         flexDirection: 'row', 
         justifyContent: 'space-around', 
         width: '100%', 
         paddingHorizontal: 20 
-    },
-     errorText: { 
-        fontSize: 16, 
-        color: 'red' 
     },
 });

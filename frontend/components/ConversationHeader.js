@@ -72,7 +72,6 @@ export default function ConversationHeader({
 
   const initiateCall = async (isVideo) => {
     const calleeId = getCalleeId();
-    console.log("Callee ID:", calleeId);
     if (!calleeId) {
       console.error("Callee ID not found");
       return;
@@ -88,10 +87,9 @@ export default function ConversationHeader({
     try {
       const call = await createAndJoinCall(streamClient, callId, [calleeId], isVideo);
       router.push({
-        pathname: "/waiting",
+        pathname: "/call",
         params: {
           callId: call.id,
-          calleeId: calleeId,
           isVideo: isVideo.toString(),
         },
       });

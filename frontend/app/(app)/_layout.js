@@ -34,7 +34,8 @@ useEffect(() => {
   useEffect(() => {
     if (streamClient && user.id && isAuthenticated) {
       const handleIncomingCall = (event) => {
-        console.log("--- handleIncomingCall ---");
+        console.log("CALLEE: 'call.ring' event received:", new Date().toISOString(), JSON.stringify(event, null, 2));
+        console.log('Check Client connection: ', streamClient);
 
         const { call: eventCall, members: eventMembers, user: eventCreator } = event;
 
@@ -43,25 +44,30 @@ useEffect(() => {
           return;
         }
 
-        const callerDetails = eventCreator;
+        if (!eventCall.id) {
+          console.error("CALLEE: eventCall.id is undefined in the event.");
+          return;
+        }
+        if (eventCall.createdBy?.id === user.id) {
+          console.log(`(AppLayout) User ${user.id} created this call (${eventCall.id}). Ignoring call.ring in _layout as WaitingScreen should handle it.`);
+          return;
+        }
+        console.log(`CALLEE: Event for call ID: ${eventCall.id}. Event creator: ${eventCreator?.id}. Call createdBy: ${eventCall.createdBy?.id}`);
+        // Log state if available directly from event, though it might be partial
+        console.log(`CALLEE: eventCall.state.callingState (from event payload, if available): ${eventCall.state?.callingState}`);
+
         let isForMe = false;
 
         if (eventMembers && Array.isArray(eventMembers)) {
           isForMe = eventMembers.some(member => member.user_id === user.id || member.user?.id === user.id);
         } else {
-          console.error("CALLEE: eventMembers is not an array or is undefined.");
+          isForMe = true;
         }
-
-        // const isRinging = call.state.callingState === "RINGING";
-        const isRinging = true;
         
-        if (isForMe && isRinging) {
+        if (isForMe) {
           setCurrentCall(eventCall);
           const callerIdFromCallCreatedBy = eventCall.createdBy?.id;
-          const callerIdFromEventCreator = callerDetails?.id;
-
-          console.log("CALLEE: Caller ID from event.call.created_by:", callerIdFromCallCreatedBy);
-          console.log("CALLEE: Caller ID from event.user:", callerIdFromEventCreator);
+          const callerIdFromEventCreator = eventCreator?.id;
           router.push({
             pathname: "/incomingCall",
             params: { 
@@ -70,22 +76,8 @@ useEffect(() => {
             },
           });
         } else {
-          console.log(`CALLEE: Ignoring incoming call event for ${eventCall.id}. IsForMe: ${isForMe}, IsRinging: ${isRinging}`);
+          console.log(`CALLEE: Ignoring incoming call event for ${eventCall.id}. IsForMe: ${isForMe}`);
         }
-
-    //     if (isMember && isRinging) {
-    //       setCurrentCall(call);
-    //       inCallManager.startRingtone('_BUNDLE_', 'ringtone');
-    //       router.push({
-    //         pathname: "/incomingCall",
-    //         params: { 
-    //           callId: call.id, 
-    //           callerId: call.state.createdBy?.id 
-    //         },
-    //       });
-    //     } else {
-    //       console.log(`(app)/_layout: Ignoring incoming call event for ${call.id}. IsMember: ${!!isMember}, IsRinging: ${isRinging}`);
-    //     }
       };
 
       const unsubscribe  = streamClient.on('call.ring', handleIncomingCall);

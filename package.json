@@ -3,11 +3,14 @@
   "private": true,
   "scripts": {
     "start": "concurrently \"cd frontend && npx expo run:android\" \"cd backend && node server.js\"",
-    "dev:frontend": "cd frontend && npx expo run:android",
-    "dev:backend": "cd backend && node server.js",
+    "fe": "cd frontend && npx expo run:android",
+    "fe1": "cd frontend && npx expo run:android --device p1",
+    "fe2": "cd frontend && npx expo run:android --device p2",
+    "be": "cd backend && node server.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "emu": "emulator -avd phone1 -no-snapshot-load"
+    "emu1": "emulator -avd p1 -no-snapshot-load",
+    "emu2": "emulator -avd p2 -no-snapshot-load"
   },
   "dependencies": {
     "concurrently": "^8.2.0",

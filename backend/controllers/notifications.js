@@ -1,6 +1,7 @@
 import express from "express";
 import { query, getDocs, where } from "firebase/firestore";
 import { Notification } from "../models/Notification.js";
+import { ServerClient } from "./users.js";
 
 const router = express.Router();
 
@@ -22,10 +23,13 @@ router.post('/register-device', async (req, res) => {
     if (!userId || !deviceToken || !platform) {
         return res.status(400).send('userId, deviceToken, and platform are required.');
     }
+    if (!ServerClient) {
+        return res.status(500).send('Failed to register device due to server configuration error.');
+    }
 
     try {
         // For Video, push config is usually done on GetStream dashboard
-        await serverClient.addDevice(deviceToken, platform === 'firebase' ? 'firebase' : 'apn', userId);
+        await ServerClient.addDevice(deviceToken, platform === 'firebase' ? 'firebase' : 'apn', userId);
         console.log(`Device ${deviceToken} registered for user ${userId}`);
         res.status(200).send('Device registered successfully.');
     } catch (error) {
