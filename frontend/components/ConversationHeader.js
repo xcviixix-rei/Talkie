@@ -89,6 +89,8 @@ export default function ConversationHeader({
         params: {
           callId: call.id,
           isVideo: isVideo.toString(),
+          converName,
+          converPic,
         },
       });
     } catch (error) {
