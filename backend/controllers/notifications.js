@@ -30,7 +30,6 @@ router.post('/register-device', async (req, res) => {
     try {
         // For Video, push config is usually done on GetStream dashboard
         await ServerClient.addDevice(deviceToken, platform === 'firebase' ? 'firebase' : 'apn', userId);
-        console.log(`Device ${deviceToken} registered for user ${userId}`);
         res.status(200).send('Device registered successfully.');
     } catch (error) {
         console.error('Error registering device:', error);

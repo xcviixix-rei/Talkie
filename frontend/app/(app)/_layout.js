@@ -49,13 +49,6 @@ export default function AppLayout() {
   useEffect(() => {
     if (streamClient && user.id && isAuthenticated) {
       const handleIncomingCall = (event) => {
-        console.log(
-          "CALLEE: 'call.ring' event received:",
-          new Date().toISOString(),
-          JSON.stringify(event, null, 2)
-        );
-        console.log("Check Client connection: ", streamClient);
-
         const {
           call: eventCall,
           members: eventMembers,
@@ -72,18 +65,8 @@ export default function AppLayout() {
           return;
         }
         if (eventCall.createdBy?.id === user.id) {
-          console.log(
-            `(AppLayout) User ${user.id} created this call (${eventCall.id}). Ignoring call.ring in _layout as WaitingScreen should handle it.`
-          );
           return;
         }
-        console.log(
-          `CALLEE: Event for call ID: ${eventCall.id}. Event creator: ${eventCreator?.id}. Call createdBy: ${eventCall.createdBy?.id}`
-        );
-        // Log state if available directly from event, though it might be partial
-        console.log(
-          `CALLEE: eventCall.state.callingState (from event payload, if available): ${eventCall.state?.callingState}`
-        );
 
         let isForMe = false;
 
@@ -107,10 +90,6 @@ export default function AppLayout() {
               callerId: callerIdFromEventCreator || callerIdFromCallCreatedBy,
             },
           });
-        } else {
-          console.log(
-            `CALLEE: Ignoring incoming call event for ${eventCall.id}. IsForMe: ${isForMe}`
-          );
         }
       };
 
@@ -119,16 +98,9 @@ export default function AppLayout() {
         unsubscribe();
         inCallManager.stopRingtone();
       };
-    } else {
-      console.log(
-        "(app)/_layout: Stream client not ready or user not authenticated."
-      );
     }
   }, [streamClient, user?.id, isAuthenticated, router]);
   if (!isAuthenticated) {
-    console.log(
-      "(app)/_layout: Not authenticated after auth check. Should redirect via root."
-    );
     // router.replace("/signIn");
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -137,9 +109,6 @@ export default function AppLayout() {
     );
   }
   if (!streamClient) {
-    console.log(
-      "(app)/_layout: Authenticated, but Stream client is not ready. Waiting..."
-    );
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#1E90FF" />

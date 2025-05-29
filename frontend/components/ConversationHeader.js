@@ -83,6 +83,7 @@ export default function ConversationHeader({
     const callId = `${callIdBase}-${Date.now()}`;
     try {
       const call = await createAndJoinCall(streamClient, callId, calleeIds, isVideo);
+      await call.camera.enable(isVideo);
       await call.join();
       router.push({
         pathname: "/call",

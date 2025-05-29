@@ -33,7 +33,6 @@ export default function WaitingScreen() {
 
         const handleCallAccepted = (event) => {
              if (event.call?.id !== call.id) return; // Ensure it's for this call
-             console.log(`WaitingScreen: Call ${call.id} accepted by ${event.user.id}`);
             InCallManager.stopRingtone();
             // No need to start InCallManager media here, CallScreen will handle it
             router.replace({ pathname: '/call', params: { callId: call.id, isVideo } });
@@ -42,7 +41,6 @@ export default function WaitingScreen() {
         const handleCallRejectedOrEnded = (event) => {
              if (event.call?.id !== call.id) return;
              const reason = event.type === 'call.rejected' ? 'rejected' : 'ended';
-             console.log(`WaitingScreen: Call ${call.id} ${reason}. Event:`, event);
             InCallManager.stopRingtone();
             Alert.alert('Call Not Connected', `The call was ${reason}.`, [
                  { text: 'OK', onPress: () => cleanupAndGoBack() },

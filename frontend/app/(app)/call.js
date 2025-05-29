@@ -9,8 +9,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function CallScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
-    // const { callId, isVideo: isVideoParam } = params; // We get call from getCurrentCall
-    // const isVideo = isVideoParam === 'true';
 
     const [call, setCall] = useState(null);
     const [isVideoCall, setIsVideoCall] = useState(false);
@@ -22,30 +20,24 @@ export default function CallScreen() {
         if (activeCall) {
              setCall(activeCall);
              setIsVideoCall(activeCall.state.custom.isVideoCall || false);
-             console.log(`CallScreen: Mounting for call ${activeCall.id}, Video: ${activeCall.state.custom.isVideoCall}`);
         } else {
              console.error("CallScreen: Active call object not found!");
              setError("Call session not found.");
              Alert.alert("Error", "Call session not found. Returning.", [{ text: "OK", onPress: () => cleanupAndGoBack(null) }]);
-             return; // Stop further execution in this effect
+             return;
         }
 
-         // Setup InCallManager for the call type
         InCallManager.start({ media: activeCall.state.custom.isVideoCall ? 'video' : 'audio' });
-         // Optional: Force speaker for voice calls initially?
-         // if (!activeCall.state.custom.isVideoCall) { InCallManager.setSpeakerphoneOn(true); }
 
 
         // Listener for when the call actually ends (e.g., other person hangs up)
         const handleCallEnded = (event) => {
              if (event.call?.id !== activeCall.id) return;
-             console.log('CallScreen: Call ended event received.');
              cleanupAndGoBack(null, 'The call has ended.'); // Pass null as call is already gone
         };
          const unsubscribeEnded = activeCall.on('call.ended', handleCallEnded);
 
         return () => {
-             console.log(`CallScreen: Unmounting for call ${activeCall?.id}. Cleaning up.`);
              unsubscribeEnded();
              // Stop InCallManager only if we are SURE the call is over when navigating away
              // If navigating to another screen *during* the call, don't stop it here.
@@ -54,7 +46,6 @@ export default function CallScreen() {
     }, []); // Run only once on mount
 
     const cleanupAndGoBack = (callInstance = call, alertMessage = null) => {
-        console.log(`CallScreen: cleanupAndGoBack triggered. Alert: ${alertMessage}`);
         InCallManager.stop(); // Stop speaker, proximity sensor etc.
         if (callInstance && getCurrentCall()?.id === callInstance.id) {
              clearCurrentCall(); // Clear global state if it's the active call
@@ -68,17 +59,13 @@ export default function CallScreen() {
     };
 
     const onHangupHandler = async () => {
-        console.log(`CallScreen: Hangup button pressed for call ${call?.id}.`);
         if (call) {
             await call.leave();
              // cleanupAndGoBack will be triggered by the 'call.ended' event,
              // so we don't strictly need to call it here, but can for immediate feedback.
             cleanupAndGoBack(call, null); // Provide immediate navigation
-            console.log('CallScreen: Hangup complete, navigating back.');
         } else {
-            console.warn("CallScreen: No call object to hang up. Attempting cleanup and navigation.");
             cleanupAndGoBack(null, null); // Fallback if call object is lost
-            console.warn("CallScreen: No call object to hang up.");
         }
     };
 
