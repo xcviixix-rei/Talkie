@@ -32,6 +32,9 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../config/firebaseConfig";
+// In your conversation.js component
+import { messageNotificationService } from "../../config/firebaseConfig";
+
 
 export default function Conversation() {
   const { rawItem, rawMockUsers, converName, converPic } =
@@ -52,6 +55,15 @@ export default function Conversation() {
   const timerRef = useRef(null);
   const audioControlsRef = useRef(null);
   const [attachments, setAttachments] = useState(null);
+  useEffect(() => {
+    // Set this as the active conversation when viewing
+    messageNotificationService.setActiveConversation(item.id);
+
+    // Clear active conversation when leaving
+    return () => {
+      messageNotificationService.clearActiveConversation();
+    };
+  }, [item.id]);
 
   useFocusEffect(
     useCallback(() => {
@@ -71,6 +83,8 @@ export default function Conversation() {
         where("conversation_id", "==", item.id),
         orderBy("timestamp", "asc")
       );
+
+
 
       const unsubscribe = onSnapshot(
         messagesQuery,

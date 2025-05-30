@@ -1,11 +1,12 @@
 import ConversationList from "../../../components/ConversationList";
 import HomeHeader from "../../../components/HomeHeader";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { ActivityIndicator, StatusBar, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../../context/authContext";
 import axios from "axios";
+import { messageNotificationService } from "../../../config/firebaseConfig";
 
 export default function Home() {
   const router = useRouter();
@@ -32,6 +33,20 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // When user auth state changes
+    if (user?.id) {
+      // Then set up conversation listeners
+      const unsubscribe = messageNotificationService.setupConversationsListener(user.id);
+
+      return () => {
+        if (unsubscribe) unsubscribe();
+        messageNotificationService.unsubscribeAllListeners();
+      };
+    }
+  }, [user?.id]);
+
 
   useFocusEffect(
     useCallback(() => {
