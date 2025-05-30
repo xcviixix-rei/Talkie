@@ -74,7 +74,6 @@ export default function Conversation() {
         setItem(tmp);
       };
 
-
       fetchData();
 
       const messagesRef = collection(db, "messages");
@@ -237,41 +236,7 @@ export default function Conversation() {
   };
 
   const handleLocation = async () => {
-    // try {
-    //   // Show loading indicator or similar
-    //   // Get current location
-    //   const location = await locationService.getCurrentLocation();
-    //   if (!location) {
-    //     Alert.alert("Error", "Unable to get your location");
-    //     return;
-    //   }
-    //   // Format location text for message
-    //   const locationText = `📍 Location: ${location.latitude.toFixed(
-    //     6
-    //   )}, ${location.longitude.toFixed(6)}`;
-    //   // Send as a message
-    //   await sendMessage({
-    //     conversation_id: item.id,
-    //     sender: user.id,
-    //     text: locationText,
-    //     attachments: [],
-    //     timestamp: new Date().toISOString(),
-    //     seen_by: [user.id],
-    //   });
-    //   // Optionally: save location to be sent to server
-    //   try {
-    //     await locationService.sendLocationToServer(
-    //       location,
-    //       "YOUR_SERVER_ENDPOINT_HERE" // Replace with your actual endpoint
-    //     );
-    //   } catch (serverError) {
-    //     console.error("Error sending location to server:", serverError);
-    //     // Don't alert here as the message was already sent
-    //   }
-    // } catch (error) {
-    //   console.error("Error handling location:", error);
-    //   Alert.alert("Error", "Failed to share your location");
-    // }
+    setAttachments(image);
   };
 
   // Start recording when the mic button is pressed
@@ -382,9 +347,16 @@ export default function Conversation() {
         router={router}
         currentUser={user}
       />
-      <ImageBackground source={{ uri: theme?.url || "1"}} style={styles.main}>
+      <ImageBackground source={{ uri: theme?.url || "1" }} style={styles.main}>
         <View style={styles.messageList}>
-          <MessageList messages={messages} currentUser={user} theme={theme} isGroupChat={item.type === 'group'} pars={item.participants} usersInfo={mockUsers} />
+          <MessageList
+            messages={messages}
+            currentUser={user}
+            theme={theme}
+            isGroupChat={item.type === "group"}
+            pars={item.participants}
+            usersInfo={mockUsers}
+          />
         </View>
         <View style={styles.inputContainer}>
           {showMediaButtons && (
@@ -439,37 +411,6 @@ export default function Conversation() {
                 </Text>
               </View>
               <Text style={styles.recordingHint}>Release to stop</Text>
-            </View>
-          )}
-
-          {/* Playback UI */}
-          {recordingInfo && !isRecording && (
-            <View style={styles.playbackContainer}>
-              <TouchableOpacity
-                style={styles.playButton}
-                onPress={() => playRecording(recordingInfo.uri)}
-                disabled={isPlayingAudio}
-              >
-                <Ionicons
-                  name={isPlayingAudio ? "pause" : "play"}
-                  size={hp(2.5)}
-                  color="white"
-                />
-              </TouchableOpacity>
-              <View style={styles.audioProgressContainer}>
-                <View
-                  style={[
-                    styles.audioProgress,
-                    { width: isPlayingAudio ? "100%" : "0%" },
-                  ]}
-                />
-              </View>
-              <TouchableOpacity
-                style={styles.sendAudioButton}
-                onPress={sendAudioMessage}
-              >
-                <Ionicons name="send" size={hp(2.2)} color="white" />
-              </TouchableOpacity>
             </View>
           )}
 
