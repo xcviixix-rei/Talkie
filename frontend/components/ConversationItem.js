@@ -83,6 +83,7 @@ export default function ConversationItem({
   const [isActive, setIsActive] = useState(false);
   const [lastActiveTime, setLastActiveTime] = useState("");
 
+
   // Format time like Messenger (now, minutes, hours, yesterday, date)
   const formatMessageTime = (timestamp) => {
     if (!timestamp) return "";

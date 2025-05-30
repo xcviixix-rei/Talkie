@@ -6,7 +6,11 @@ import { ActivityIndicator, StatusBar, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../../context/authContext";
 import axios from "axios";
-import { messageNotificationService } from "../../../config/firebaseConfig";
+import {db, messageNotificationService} from "../../../config/firebaseConfig";
+import {changeLastMessages, fetchConversation} from "../../../api/conversation";
+import {fetchTheme} from "../../../api/theme";
+import {collection, onSnapshot, orderBy, query, where} from "firebase/firestore";
+import MediaService from "../../../services/mediaService";
 
 export default function Home() {
   const router = useRouter();
@@ -51,11 +55,13 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       loadUsers();
-      const timeInterval = setInterval(loadUsers, 60000);
+      const timeInterval = setInterval(loadUsers, 3000);
 
       return () => clearInterval(timeInterval);
     }, [])
   );
+
+
 
   return (
     <View style={styles.container}>
