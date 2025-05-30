@@ -6,6 +6,7 @@ import * as Notifications from 'expo-notifications';
 import {router} from 'expo-router';
 import {messageNotificationService} from "../../config/firebaseConfig";
 import {sendMessage} from "../../api/message";
+import {changeLastMessages} from "../../api/conversation";
 
 export default function NotificationsSettings() {
   const [loading, setLoading] = useState(true);
@@ -57,11 +58,17 @@ export default function NotificationsSettings() {
     }, 6000);
     const message = {
       conversation_id: "8BQ4wthHSAwDEbV1tUk8",
-      text: "hello dat, thong bao duoc chua",
+      text: "hello manh2, thong bao duoc chua",
       sender: "HPBfuadfSBelrChAfcl5VtsWuyh2",
       timestamp: new Date().toISOString(),
     }
     sendMessage(message);
+    changeLastMessages(
+        "8BQ4wthHSAwDEbV1tUk8",
+        "HPBfuadfSBelrChAfcl5VtsWuyh2",
+        "hello manh2, thong bao duoc chua",
+        new Date().toISOString(),
+    );
   };
 
   const sendTestNotification = async () => {

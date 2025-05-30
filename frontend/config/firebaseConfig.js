@@ -268,7 +268,6 @@ import {initializeApp} from "firebase/app";
 
                 userConversations.forEach(doc => {
                     const conversation = {id: doc.id, ...doc.data()};
-                    console.log("Setting up listener for conversation:", conversation.id);
 
                     this.listenToConversation(
                         conversation.id,

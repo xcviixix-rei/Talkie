@@ -395,9 +395,9 @@ class MediaService {
 
     // Return controls to manage the recording from the UI
     return {
-      startRecording: this.startRecording.bind(this),
-      stopRecording: this.stopRecording.bind(this),
-      playRecording: this.playRecording.bind(this),
+      //startRecording: this.startRecording.bind(this),
+      //stopRecording: this.stopRecording.bind(this),
+      // playRecording: this.playRecording.bind(this),
     };
   }
 
