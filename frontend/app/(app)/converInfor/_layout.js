@@ -16,7 +16,7 @@ export default function AppLayout() {
       <Stack.Screen
         name="themeSelection"
         options={{
-          title: "theme",
+          title: "Theme",
           //headerShown: false,
         }}
       />
@@ -28,13 +28,12 @@ export default function AppLayout() {
         }}
       />
       <Stack.Screen
-        name="searchMessage"
+        name="searchMessages"
         options={{
-          title: "Search",
+          title: "Search Messages",
           //headerShown: false,
         }}
       />
-      <Stack.Screen name="searchMessages" />
     </Stack>
   );
 }

@@ -186,26 +186,29 @@ export default function AppLayout() {
             presentation: "fullScreenModal",
           }}
         />
-        {/* <Stack.Screen
-          name="conversationInfor"
-          options={({ navigation }) => ({
-            title: "Conversation Info",
-            headerBackTitle: "Back",
-            // This allows us to customize the back button behavior
-            headerLeft: () => (
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.getParent()?.emit({
-                    type: "customBackAction",
-                    target: navigation.getId(),
-                  })
-                }
-              >
-                <Ionicons name="chevron-back" size={24} color="#007AFF" />
-              </TouchableOpacity>
-            ),
-          })}
-        /> */}
+        <Stack.Screen
+            name="collection"
+            options={{
+              headerShown: false,
+              presentation: "fullScreenModal",
+            }}
+        />
+        <Stack.Screen
+            name="collectionInfo"
+            options={{
+              headerShown: false,
+              presentation: "fullScreenModal",
+            }}
+        />
+        <Stack.Screen
+            name="createCollection"
+            options={{
+              headerShown: false,
+              presentation: "fullScreenModal",
+            }}
+        />
+
+
       </Stack>
     </StreamVideo>
   );
