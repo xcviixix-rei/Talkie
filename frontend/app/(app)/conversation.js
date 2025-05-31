@@ -35,7 +35,6 @@ import { db } from "../../config/firebaseConfig";
 // In your conversation.js component
 import { messageNotificationService } from "../../config/firebaseConfig";
 
-
 export default function Conversation() {
   const { rawItem, rawMockUsers, converName, converPic } =
     useLocalSearchParams();
@@ -82,8 +81,6 @@ export default function Conversation() {
         where("conversation_id", "==", item.id),
         orderBy("timestamp", "asc")
       );
-
-
 
       const unsubscribe = onSnapshot(
         messagesQuery,
@@ -270,31 +267,44 @@ export default function Conversation() {
   const handleMicRelease = async () => {
     if (!isRecording) return;
 
-    try {
-      // Stop timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-
-      // Stop recording
-      const recordingResult = await audioControlsRef.current.stopRecording();
-      setIsRecording(false);
-
-      if (recordingResult && recordingDuration >= 1) {
-        setRecordingInfo(recordingResult);
-        // Auto-play the recording
-        playRecording(recordingResult.uri);
-      } else {
-        // Recording was too short, discard it
-        setRecordingInfo(null);
-        Alert.alert("Info", "Recording was too short");
-      }
-    } catch (error) {
-      console.error("Error stopping recording:", error);
-      setIsRecording(false);
-      Alert.alert("Error", "Failed to stop recording");
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
+    setIsRecording(false);
+
+    await sendMessage({
+      conversation_id: item.id,
+      sender: user.id,
+      text: "▶︎ .ılııllllııılıılı. 0:08",
+      timestamp: new Date().toISOString(),
+      seen_by: [user.id],
+    });
+    // try {
+    //   // Stop timer
+    //   if (timerRef.current) {
+    //     clearInterval(timerRef.current);
+    //     timerRef.current = null;
+    //   }
+
+    //   // Stop recording
+    //   const recordingResult = await audioControlsRef.current.stopRecording();
+    //   setIsRecording(false);
+
+    //   if (recordingResult && recordingDuration >= 1) {
+    //     setRecordingInfo(recordingResult);
+    //     // Auto-play the recording
+    //     playRecording(recordingResult.uri);
+    //   } else {
+    //     // Recording was too short, discard it
+    //     setRecordingInfo(null);
+    //     Alert.alert("Info", "Recording was too short");
+    //   }
+    // } catch (error) {
+    //   console.error("Error stopping recording:", error);
+    //   setIsRecording(false);
+    //   Alert.alert("Error", "Failed to stop recording");
+    // }
   };
 
   // Play recorded audio
