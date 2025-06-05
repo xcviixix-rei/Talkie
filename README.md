@@ -125,12 +125,12 @@ Contributors:
 
 3. Start the Android emulator:
    ```bash
-   npm run emu
+   emulator -avd 'device-name' -no-snapshot-load
    ```
 
 4. Run the app on Android:
    ```bash
-   npm run android
+   cd frontend && npx expo run:android
    ```
 
 
@@ -162,7 +162,7 @@ Talkie/
 3. Set up environment variables (see .env.example)
 4. Start the development server:
    ```bash
-   npm run dev
+   cd backend && node server.js
    ```
 
 ## Contributing
